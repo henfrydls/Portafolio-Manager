@@ -1,0 +1,3365 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load markdown_extras %}
+
+{% block title %}{{ post.title }} - {{ profile.name|default:"Henfry de los Santos" }}{% endblock %}
+
+{% block content %}
+<div class="medium-page">
+    <!-- Reading Progress Bar -->
+    <div class="reading-progress">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Top Navigation -->
+    <nav class="medium-top-nav">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="{% url 'portfolio:home' %}" class="nav-link">Home</a>
+            </div>
+            <div class="nav-right">
+                <a href="{% url 'portfolio:post-list' %}" class="nav-link">All Posts</a>
+                <a href="{% url 'portfolio:home' %}#recent" class="nav-link">Recent</a>
+                <a href="{% url 'portfolio:home' %}#featured" class="nav-link">Featured Work</a>
+                <a href="{% url 'portfolio:home' %}#projects" class="nav-link">Projects</a>
+                <button onclick="openContactModal()" class="nav-link contact-nav-btn">Contact</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="breadcrumb-nav">
+        <div class="breadcrumb-container">
+            <a href="{% url 'portfolio:home' %}" class="breadcrumb-link">Home</a>
+            <span class="breadcrumb-separator">→</span>
+            <a href="{% url 'portfolio:post-list' %}" class="breadcrumb-link">Posts</a>
+            <span class="breadcrumb-separator">→</span>
+            <span class="breadcrumb-current">{{ post.title|truncatewords:6 }}</span>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="medium-main">
+        <article class="medium-article">
+            <div class="article-content">
+                <!-- Article Header -->
+                <header class="article-header">
+                    <!-- Post Type Badge -->
+                    <div class="post-badges">
+                        {% if post.category %}
+                        <span class="post-type-badge post-type-{{ post.category.slug }}">
+                            {{ post.category.name }}
+                        </span>
+                        {% else %}
+                        <span class="post-type-badge post-type-{{ post.post_type }}">
+                            {% if post.post_type == 'tutorial' %}Tutorial
+                            {% elif post.post_type == 'opinion' %}Opinion
+                            {% elif post.post_type == 'project' %}Project
+                            {% elif post.post_type == 'career' %}Career
+                            {% else %}Article
+                            {% endif %}
+                        </span>
+                        {% endif %}
+                        {% if post.featured %}
+                        <span class="featured-badge">Featured</span>
+                        {% endif %}
+                    </div>
+
+                    <h1 class="article-title">{{ post.title }}</h1>
+
+                    <div class="article-meta">
+                        <div class="author-info">
+                            {% if profile.profile_image %}
+                            <img src="{{ profile.profile_image.url }}"
+                                alt="{{ profile.name|default:'Henfry de los Santos' }}" class="author-avatar">
+                            {% else %}
+                            <div class="author-avatar-placeholder">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            {% endif %}
+                            <div class="author-details">
+                                <div class="author-line">
+                                    <span class="author-name">{{ profile.name|default:"Henfry de los Santos" }}</span>
+                                </div>
+                                <div class="meta-info">
+                                    <time class="publish-date" datetime="{{ post.publish_date|date:'Y-m-d' }}">
+                                        {{ post.publish_date|date:"F d, Y" }}
+                                    </time>
+                                    <span class="meta-separator">·</span>
+                                    <span class="read-time">
+                                        <i class="far fa-clock"></i>
+                                        {{ post.reading_time }} min read
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Social Sharing -->
+                        <div class="social-sharing">
+                            <button class="share-btn" onclick="sharePost()" title="Share this post">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
+                            <div class="share-dropdown" id="shareDropdown">
+                                <a href="#" onclick="shareTwitter()" class="share-option twitter">
+                                    <i class="fab fa-twitter"></i> Twitter
+                                </a>
+                                <a href="#" onclick="shareLinkedIn()" class="share-option linkedin">
+                                    <i class="fab fa-linkedin"></i> LinkedIn
+                                </a>
+                                <a href="#" onclick="copyLink()" class="share-option copy">
+                                    <i class="fas fa-link"></i> Copy Link
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reference Links -->
+                    {% if post.github_url or post.medium_url or post.linkedin_url %}
+                    <div class="reference-links">
+                        <h4 class="reference-title">Reference Links</h4>
+                        <div class="reference-icons">
+                            {% if post.github_url %}
+                            <a href="{{ post.github_url }}" target="_blank" class="reference-link github"
+                                title="GitHub Repository">
+                                <i class="fab fa-github"></i>
+                                <span>GitHub</span>
+                            </a>
+                            {% endif %}
+                            {% if post.medium_url %}
+                            <a href="{{ post.medium_url }}" target="_blank" class="reference-link medium"
+                                title="Medium Article">
+                                <i class="fab fa-medium"></i>
+                                <span>Medium</span>
+                            </a>
+                            {% endif %}
+                            {% if post.linkedin_url %}
+                            <a href="{{ post.linkedin_url }}" target="_blank" class="reference-link linkedin"
+                                title="LinkedIn Post">
+                                <i class="fab fa-linkedin"></i>
+                                <span>LinkedIn</span>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </header>
+
+                <!-- Table of Contents -->
+                <div class="table-of-contents" id="tableOfContents" style="display: none;">
+                    <div class="toc-header">
+                        <h4 class="toc-title">Table of Contents</h4>
+                        <button class="toc-toggle" onclick="toggleTOC()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <nav class="toc-nav" id="tocNav">
+                        <!-- TOC will be generated by JavaScript -->
+                    </nav>
+                </div>
+
+                <!-- Featured Image -->
+                {% if post.featured_image %}
+                <figure class="article-image">
+                    <img src="{{ post.featured_image.url }}" alt="{{ post.title }}">
+                    <figcaption class="image-caption">{{ post.title }}</figcaption>
+                </figure>
+                {% endif %}
+
+                <!-- Article Body -->
+                <div class="article-body">
+                    {% if post.excerpt %}
+                    <p class="article-subtitle">{{ post.excerpt }}</p>
+                    {% endif %}
+
+                    <div class="article-text">
+                        {{ post.content|markdown }}
+                    </div>
+
+                    <!-- Tags -->
+                    {% if post.get_tags_list %}
+                    <div class="article-tags">
+                        {% for tag in post.get_tags_list %}
+                        <span class="tag">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Article Footer -->
+                <footer class="article-footer">
+
+                    <!-- Author Bio -->
+                    <div class="author-bio">
+                        {% if profile.profile_image %}
+                        <img src="{{ profile.profile_image.url }}"
+                            alt="{{ profile.name|default:'Henfry de los Santos' }}" class="bio-avatar">
+                        {% else %}
+                        <div class="bio-avatar-placeholder">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        {% endif %}
+                        <div class="bio-content">
+                            <h3 class="bio-name">{{ profile.name|default:"Henfry de los Santos" }}</h3>
+                            <p class="bio-text">{{ profile.bio|truncatewords:30|default:"Innovation & Digital Transformation Manager focused on building scalable systems and leading high-performing teams." }}</p>
+                            <div class="bio-actions">
+                                {% if profile.github_url %}
+                                <a href="{{ profile.github_url }}" target="_blank" class="social-link">
+                                    <i class="fab fa-github"></i> GitHub
+                                </a>
+                                {% endif %}
+                                {% if profile.linkedin_url %}
+                                <a href="{{ profile.linkedin_url }}" target="_blank" class="social-link">
+                                    <i class="fab fa-linkedin"></i> LinkedIn
+                                </a>
+                                {% endif %}
+                                <a href="javascript:void(0)" onclick="openContactModal()" class="contact-cta">
+                                    <i class="fas fa-envelope"></i> Get in touch
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subtle Contact CTA -->
+                    <div class="post-contact-cta">
+                        <div class="cta-content">
+                            <h4 class="cta-title">Enjoyed this post?</h4>
+                            <p class="cta-text">Let's discuss your next project or share thoughts on this topic.</p>
+                            <a href="javascript:void(0)" onclick="openContactModal()" class="cta-button">
+                                Start a conversation
+                            </a>
+                        </div>
+                    </div>
+                </footer>
+
+                <!-- Related Posts - Compact -->
+                {% if related_posts %}
+                <section class="continue-reading-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Continue Reading</h2>
+                        <p class="section-subtitle">More insights and perspectives</p>
+                    </div>
+
+                    <div class="related-posts-horizontal">
+                        {% for related_post in related_posts|slice:":3" %}
+                        <article class="related-post-horizontal">
+                            <a href="{% url 'portfolio:post-detail' related_post.slug %}"
+                                class="related-horizontal-link">
+                                <div class="related-horizontal-content">
+                                    <div class="related-horizontal-meta">
+                                        <span class="related-type-simple">
+                                            {% if related_post.post_type == 'tutorial' %}Tutorial
+                                            {% elif related_post.post_type == 'opinion' %}Opinion
+                                            {% elif related_post.post_type == 'project' %}Project
+                                            {% elif related_post.post_type == 'career' %}Career
+                                            {% else %}Article
+                                            {% endif %}
+                                        </span>
+                                        <span class="meta-separator">·</span>
+                                        <span class="related-date">{{ related_post.publish_date|date:"M d" }}</span>
+                                        <span class="meta-separator">·</span>
+                                        <span class="related-read-time">{{ related_post.reading_time }} min</span>
+                                    </div>
+
+                                    <h3 class="related-horizontal-title">{{ related_post.title }}</h3>
+                                    <p class="related-horizontal-excerpt">{{ related_post.excerpt|truncatewords:12 }}
+                                    </p>
+                                </div>
+
+                                {% if related_post.featured_image %}
+                                <div class="related-horizontal-image">
+                                    <img src="{{ related_post.featured_image.url }}" alt="{{ related_post.title }}"
+                                        loading="lazy">
+                                </div>
+                                {% endif %}
+                            </a>
+                        </article>
+                        {% endfor %}
+                    </div>
+
+                    <!-- View All Posts CTA - Enhanced -->
+                    <div class="view-all-section">
+                        <a href="{% url 'portfolio:post-list' %}" class="view-all-button">
+                            <span class="view-all-text">View All Posts</span>
+                            <div class="view-all-icon">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+                {% endif %}
+            </div>
+        </article>
+    </main>
+
+    <!-- Contact Modal -->
+    <div id="contactModal" class="contact-modal">
+        <div class="modal-overlay" onclick="closeContactModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Get In Touch</h2>
+                <button class="modal-close" onclick="closeContactModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="contact-intro">
+                    <p class="contact-description">
+                        Ready to collaborate on your next project? Whether you need technical leadership, system
+                        architecture, or digital transformation guidance, I'd love to hear from you.
+                    </p>
+                </div>
+
+                <div class="contact-methods">
+                    <div class="contact-grid">
+                        <!-- Email Contact -->
+                        {% if profile.email %}
+                        <div class="contact-method primary">
+                            <div class="contact-method-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="contact-method-content">
+                                <h3 class="contact-method-title">Email</h3>
+                                <p class="contact-method-description">Best for detailed project discussions</p>
+                                <a href="mailto:{{ profile.email }}" class="contact-method-action">
+                                    Send an Email
+                                    <i class="fas fa-paper-plane"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- LinkedIn Contact -->
+                        {% if profile.linkedin_url %}
+                        <div class="contact-method">
+                            <div class="contact-method-icon">
+                                <i class="fab fa-linkedin"></i>
+                            </div>
+                            <div class="contact-method-content">
+                                <h3 class="contact-method-title">LinkedIn</h3>
+                                <p class="contact-method-description">Professional networking & quick messages</p>
+                                <a href="{{ profile.linkedin_url }}" target="_blank" class="contact-method-action">
+                                    Connect on LinkedIn
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- GitHub Contact -->
+                        {% if profile.github_url %}
+                        <div class="contact-method">
+                            <div class="contact-method-icon">
+                                <i class="fab fa-github"></i>
+                            </div>
+                            <div class="contact-method-content">
+                                <h3 class="contact-method-title">GitHub</h3>
+                                <p class="contact-method-description">Code collaboration & technical discussions</p>
+                                <a href="{{ profile.github_url }}" target="_blank" class="contact-method-action">
+                                    View GitHub Profile
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Contact Form Alternative -->
+                    <div class="contact-form-section">
+                        <div class="contact-form-header">
+                            <h3 class="form-title">Send a Message</h3>
+                            <p class="form-description">Prefer a contact form? Fill out the details below.</p>
+                        </div>
+
+                        <form class="contact-form" method="post" action="{% url 'portfolio:home' %}" id="contactForm">
+                            {% csrf_token %}
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="contact_name">Name *</label>
+                                    <input type="text" id="contact_name" name="name" required placeholder="Your full name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="contact_email">Email *</label>
+                                    <input type="email" id="contact_email" name="email" required
+                                        placeholder="your.email@example.com">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="contact_subject">Subject *</label>
+                                <input type="text" id="contact_subject" name="subject" required
+                                    placeholder="What's this about?">
+                            </div>
+                            <div class="form-group">
+                                <label for="contact_message">Message *</label>
+                                <textarea id="contact_message" name="message" rows="5" required
+                                    placeholder="Tell me about your project, ideas, or just say hello..."></textarea>
+                            </div>
+                            <button type="submit" class="contact-submit-btn" id="submitBtn">
+                                <span class="btn-text">Send Message</span>
+                                <i class="fas fa-paper-plane btn-icon"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Contact CTA -->
+                <div class="contact-cta-section">
+                    <div class="cta-content">
+                        <h3 class="cta-title">Let's Build Something Great Together</h3>
+                        <p class="cta-description">
+                            From concept to deployment, I help organizations leverage technology
+                            to achieve their strategic goals.
+                        </p>
+                        <div class="cta-stats">
+                            <div class="cta-stat">
+                                <span class="stat-number">{{ projects_count|default:"10" }}+</span>
+                                <span class="stat-label">Projects Delivered</span>
+                            </div>
+                            <div class="cta-stat">
+                                <span class="stat-number">{{ experience_years|default:"5" }}+</span>
+                                <span class="stat-label">Years Experience</span>
+                            </div>
+                            <div class="cta-stat">
+                                <span class="stat-number">{{ technologies_count|default:"15" }}+</span>
+                                <span class="stat-label">Technologies</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Buttons -->
+    <div class="floating-actions">
+        <button class="fab-btn toc-btn" onclick="toggleTOC()" title="Table of Contents" id="tocBtn"
+            style="display: none;">
+            <i class="fas fa-list"></i>
+        </button>
+        <a href="{% url 'portfolio:post-list' %}" class="fab-btn back-btn" title="Back to All Posts">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <button class="fab-btn scroll-top-btn" onclick="scrollToTop()" title="Scroll to Top" id="scrollTopBtn"
+            style="display: none;">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+    // Reading Progress Bar
+    function updateReadingProgress() {
+        const article = document.querySelector('.article-content');
+        const progressBar = document.getElementById('progressBar');
+
+        if (!article || !progressBar) return;
+
+        const articleTop = article.offsetTop;
+        const articleHeight = article.offsetHeight;
+        const windowHeight = window.innerHeight;
+        const scrollTop = window.pageYOffset;
+
+        const progress = Math.min(100, Math.max(0,
+            ((scrollTop - articleTop + windowHeight) / articleHeight) * 100
+        ));
+
+        progressBar.style.width = progress + '%';
+    }
+
+    // Table of Contents Generation
+    function generateTOC() {
+        const headings = document.querySelectorAll('.article-text h1, .article-text h2, .article-text h3');
+        const tocNav = document.getElementById('tocNav');
+        const tocBtn = document.getElementById('tocBtn');
+
+        if (headings.length < 3) return; // Only show TOC if there are 3+ headings
+
+        tocBtn.style.display = 'flex';
+
+        let tocHTML = '<ul class="toc-list">';
+        headings.forEach((heading, index) => {
+            const id = `heading-${index}`;
+            heading.id = id;
+
+            const level = heading.tagName.toLowerCase();
+            const text = heading.textContent;
+
+            tocHTML += `<li class="toc-item toc-${level}">
+            <a href="#${id}" class="toc-link">${text}</a>
+        </li>`;
+        });
+        tocHTML += '</ul>';
+
+        tocNav.innerHTML = tocHTML;
+    }
+
+    // TOC Toggle
+    function toggleTOC() {
+        const toc = document.getElementById('tableOfContents');
+        const isVisible = toc.style.display !== 'none';
+        toc.style.display = isVisible ? 'none' : 'block';
+    }
+
+    // Social Sharing Functions
+    function sharePost() {
+        const dropdown = document.getElementById('shareDropdown');
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function shareTwitter() {
+        const url = encodeURIComponent(window.location.href);
+        const text = encodeURIComponent(document.title);
+        window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+        document.getElementById('shareDropdown').style.display = 'none';
+    }
+
+    function shareLinkedIn() {
+        const url = encodeURIComponent(window.location.href);
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
+        document.getElementById('shareDropdown').style.display = 'none';
+    }
+
+    function copyLink() {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            const copyBtn = document.querySelector('.share-option.copy');
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+            }, 2000);
+        });
+        document.getElementById('shareDropdown').style.display = 'none';
+    }
+
+    // Scroll Functions
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function handleScroll() {
+        updateReadingProgress();
+
+        // Show/hide scroll to top button
+        const scrollTopBtn = document.getElementById('scrollTopBtn');
+        if (window.pageYOffset > 300) {
+            scrollTopBtn.style.display = 'flex';
+        } else {
+            scrollTopBtn.style.display = 'none';
+        }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function () {
+        generateTOC();
+        updateReadingProgress();
+
+        // Close share dropdown when clicking outside
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.social-sharing')) {
+                document.getElementById('shareDropdown').style.display = 'none';
+            }
+        });
+
+        // Smooth scrolling for TOC links
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('toc-link')) {
+                e.preventDefault();
+                const targetId = e.target.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                    toggleTOC(); // Close TOC after clicking
+                }
+            }
+        });
+    });
+
+    window.addEventListener('scroll', handleScroll);
+</script>
+
+<!-- Contact Modal -->
+<div id="contactModal" class="contact-modal">
+    <div class="modal-overlay" onclick="closeContactModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Get In Touch</h2>
+            <button class="modal-close" onclick="closeContactModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="contact-intro">
+                <p class="contact-description">
+                    Ready to collaborate on your next project? Whether you need technical leadership, system
+                    architecture, or digital transformation guidance, I'd love to hear from you.
+                </p>
+            </div>
+
+            <div class="contact-methods">
+                <div class="contact-grid">
+                    <!-- Email Contact -->
+                    {% if profile.email %}
+                    <div class="contact-method primary">
+                        <div class="contact-method-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-method-content">
+                            <h3 class="contact-method-title">Email</h3>
+                            <p class="contact-method-description">Best for detailed project discussions</p>
+                            <a href="mailto:{{ profile.email }}" class="contact-method-action">
+                                Send an Email
+                                <i class="fas fa-paper-plane"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- LinkedIn Contact -->
+                    {% if profile.linkedin_url %}
+                    <div class="contact-method">
+                        <div class="contact-method-icon">
+                            <i class="fab fa-linkedin"></i>
+                        </div>
+                        <div class="contact-method-content">
+                            <h3 class="contact-method-title">LinkedIn</h3>
+                            <p class="contact-method-description">Professional networking & quick messages</p>
+                            <a href="{{ profile.linkedin_url }}" target="_blank" class="contact-method-action">
+                                Connect on LinkedIn
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- GitHub Contact -->
+                    {% if profile.github_url %}
+                    <div class="contact-method">
+                        <div class="contact-method-icon">
+                            <i class="fab fa-github"></i>
+                        </div>
+                        <div class="contact-method-content">
+                            <h3 class="contact-method-title">GitHub</h3>
+                            <p class="contact-method-description">Code collaboration & technical discussions</p>
+                            <a href="{{ profile.github_url }}" target="_blank" class="contact-method-action">
+                                View GitHub Profile
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Contact Form Alternative -->
+                <div class="contact-form-section">
+                    <div class="contact-form-header">
+                        <h3 class="form-title">Send a Message</h3>
+                        <p class="form-description">Prefer a contact form? Fill out the details below.</p>
+                    </div>
+
+                    <form class="contact-form" method="post" action="{% url 'portfolio:home' %}" id="contactForm">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="contact_name">Name *</label>
+                                <input type="text" id="contact_name" name="name" required placeholder="Your full name">
+                            </div>
+                            <div class="form-group">
+                                <label for="contact_email">Email *</label>
+                                <input type="email" id="contact_email" name="email" required
+                                    placeholder="your.email@example.com">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="contact_subject">Subject *</label>
+                            <input type="text" id="contact_subject" name="subject" required
+                                placeholder="What's this about?">
+                        </div>
+                        <div class="form-group">
+                            <label for="contact_message">Message *</label>
+                            <textarea id="contact_message" name="message" rows="5" required
+                                placeholder="Tell me about your project, ideas, or just say hello..."></textarea>
+                        </div>
+                        <button type="submit" class="contact-submit-btn" id="submitBtn">
+                            <span class="btn-text">Send Message</span>
+                            <i class="fas fa-paper-plane btn-icon"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Contact CTA -->
+            <div class="contact-cta-section">
+                <div class="cta-content">
+                    <h3 class="cta-title">Let's Build Something Great Together</h3>
+                    <p class="cta-description">
+                        From concept to deployment, I help organizations leverage technology
+                        to achieve their strategic goals.
+                    </p>
+                    <div class="cta-stats">
+                        <div class="cta-stat">
+                            <span class="stat-number">{{ projects_count|default:"10" }}+</span>
+                            <span class="stat-label">Projects Delivered</span>
+                        </div>
+                        <div class="cta-stat">
+                            <span class="stat-number">{{ experience_years|default:"5" }}+</span>
+                            <span class="stat-label">Years Experience</span>
+                        </div>
+                        <div class="cta-stat">
+                            <span class="stat-number">{{ technologies_count|default:"15" }}+</span>
+                            <span class="stat-label">Technologies</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Contact Modal Functions
+    function openContactModal() {
+        const modal = document.getElementById('contactModal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        // Focus on first input
+        setTimeout(() => {
+            const firstInput = modal.querySelector('input');
+            if (firstInput) firstInput.focus();
+        }, 300);
+    }
+
+    function closeContactModal() {
+        const modal = document.getElementById('contactModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+
+        // Reset modal content opacity
+        const modalContent = document.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.style.opacity = '';
+        }
+
+        // Reset form if it exists
+        const form = document.getElementById('contactForm');
+        if (form) {
+            form.reset();
+
+            // Reset button state
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = submitBtn?.querySelector('.btn-text');
+            const btnIcon = submitBtn?.querySelector('.btn-icon');
+
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
+            }
+            if (btnText) btnText.textContent = 'Send Message';
+            if (btnIcon) btnIcon.className = 'fas fa-paper-plane btn-icon';
+
+            // Clear validation states
+            const formGroups = form.querySelectorAll('.form-group');
+            formGroups.forEach(group => {
+                group.classList.remove('valid', 'invalid', 'focused');
+            });
+        }
+    }
+
+    // Contact Form Enhancement
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('contactForm');
+
+        if (form) {
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnIcon = submitBtn.querySelector('.btn-icon');
+
+            // Form validation and enhancement
+            const inputs = form.querySelectorAll('input, textarea');
+
+            inputs.forEach(input => {
+                // Add floating label effect
+                input.addEventListener('focus', function () {
+                    this.parentElement.classList.add('focused');
+                });
+
+                input.addEventListener('blur', function () {
+                    if (!this.value) {
+                        this.parentElement.classList.remove('focused');
+                    }
+                });
+
+                // Real-time validation
+                input.addEventListener('input', function () {
+                    validateField(this);
+                });
+            });
+
+            function validateField(field) {
+                const value = field.value.trim();
+                const fieldGroup = field.parentElement;
+
+                // Remove existing validation classes
+                fieldGroup.classList.remove('valid', 'invalid');
+
+                if (field.hasAttribute('required') && value === '') {
+                    fieldGroup.classList.add('invalid');
+                    return false;
+                }
+
+                if (field.type === 'email' && value !== '') {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(value)) {
+                        fieldGroup.classList.add('invalid');
+                        return false;
+                    }
+                }
+
+                if (value !== '') {
+                    fieldGroup.classList.add('valid');
+                }
+
+                return true;
+            }
+
+            // Form submission with loading state
+            form.addEventListener('submit', function (e) {
+                let isValid = true;
+
+                inputs.forEach(input => {
+                    if (!validateField(input)) {
+                        isValid = false;
+                    }
+                });
+
+                if (isValid) {
+                    // Show loading state
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('loading');
+                    btnText.textContent = 'Sending...';
+                    btnIcon.className = 'fas fa-spinner fa-spin btn-icon';
+
+                    // Add a subtle animation to the modal content
+                    const modalContent = document.querySelector('.modal-content');
+                    if (modalContent) {
+                        modalContent.style.opacity = '0.8';
+                    }
+                } else {
+                    e.preventDefault();
+                    // Focus on first invalid field
+                    const firstInvalid = form.querySelector('.invalid input, .invalid textarea');
+                    if (firstInvalid) {
+                        firstInvalid.focus();
+                    }
+                }
+            });
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeContactModal();
+            }
+        });
+    });
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Medium-like Typography and Layout */
+    .medium-page {
+        font-family: sohne, "Helvetica Neue", Helvetica, Arial, sans-serif;
+        background: #fff;
+        color: rgba(41, 41, 41, 1);
+        line-height: 1.58;
+        letter-spacing: -0.004em;
+    }
+
+    /* Reading Progress Bar */
+    .reading-progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: #F2F2F2;
+        z-index: 1001;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: #242424;
+        width: 0%;
+        transition: width 0.1s ease;
+    }
+
+    /* Breadcrumb Navigation */
+    .breadcrumb-nav {
+        background: #F8F9FA;
+        padding: 16px 20px;
+        border-bottom: 1px solid #F2F2F2;
+    }
+
+    .breadcrumb-container {
+        max-width: 1192px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .breadcrumb-link {
+        color: #6B6B6B;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 400;
+        transition: color 0.2s ease;
+    }
+
+    .breadcrumb-link:hover {
+        color: #242424;
+        text-decoration: none;
+    }
+
+    .breadcrumb-separator {
+        color: #6B6B6B;
+        font-size: 14px;
+        margin: 0 4px;
+    }
+
+    .breadcrumb-current {
+        color: #242424;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    /* Top Navigation */
+    .medium-top-nav {
+        position: sticky;
+        top: 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid #F2F2F2;
+        z-index: 1000;
+        padding: 0 20px;
+    }
+
+    .nav-container {
+        max-width: 1192px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 57px;
+    }
+
+    .nav-left {
+        display: flex;
+        align-items: center;
+    }
+
+    .nav-right {
+        display: flex;
+        gap: 32px;
+    }
+
+    .nav-link {
+        color: rgba(117, 117, 117, 1);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 400;
+        transition: color 0.15s ease;
+    }
+
+    .nav-link:hover {
+        color: #242424;
+    }
+
+    /* Home link styling - bold like Option 3 */
+    .nav-left .nav-link {
+        font-size: 16px;
+        font-weight: 600;
+        color: #242424;
+    }
+
+    .nav-left .nav-link:hover {
+        opacity: 0.7;
+    }
+
+    /* Contact button styling */
+    .contact-nav-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+    }
+
+    /* Main Content */
+    .medium-main {
+        max-width: 1192px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .medium-article {
+        max-width: 680px;
+        margin: 0 auto;
+    }
+
+    .article-content {
+        padding-top: 56px;
+    }
+
+    /* Article Header */
+    .article-header {
+        margin-bottom: 32px;
+    }
+
+    /* Post Badges */
+    .post-badges {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .post-type-badge,
+    .featured-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 16px;
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .post-type-badge {
+        background: #F2F2F2;
+        color: #6B6B6B;
+    }
+
+    .post-type-tutorial {
+        background: #F8F9FA;
+        color: #495057;
+        border: 1px solid #E9ECEF;
+    }
+
+    .post-type-opinion {
+        background: #F8F9FA;
+        color: #495057;
+        border: 1px solid #E9ECEF;
+    }
+
+    .post-type-project {
+        background: #F8F9FA;
+        color: #495057;
+        border: 1px solid #E9ECEF;
+    }
+
+    .post-type-career {
+        background: #F8F9FA;
+        color: #495057;
+        border: 1px solid #E9ECEF;
+    }
+
+    .post-type-news {
+        background: #F8F9FA;
+        color: #495057;
+        border: 1px solid #E9ECEF;
+    }
+
+    .featured-badge {
+        background: #242424;
+        color: #FFFFFF;
+    }
+
+    .article-title {
+        font-size: 42px;
+        line-height: 52px;
+        letter-spacing: -0.011em;
+        font-weight: 700;
+        color: #242424;
+        margin: 0 0 32px 0;
+        font-family: sohne, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+
+    .article-meta {
+        margin-bottom: 32px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    /* Social Sharing */
+    .social-sharing {
+        position: relative;
+    }
+
+    .share-btn {
+        background: #F8F9FA;
+        border: 1px solid #E9ECEF;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #6B6B6B;
+        transition: all 0.2s ease;
+    }
+
+    .share-btn:hover {
+        background: #E9ECEF;
+        color: #242424;
+    }
+
+    .share-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border: 1px solid #E9ECEF;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        padding: 8px 0;
+        min-width: 160px;
+        display: none;
+        z-index: 1000;
+    }
+
+    .share-option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        color: #242424;
+        text-decoration: none;
+        font-size: 14px;
+        transition: background 0.2s ease;
+    }
+
+    .share-option:hover {
+        background: #F8F9FA;
+        text-decoration: none;
+        color: #242424;
+    }
+
+    .share-option.twitter:hover {
+        background: #E3F2FD;
+        color: #1DA1F2;
+    }
+
+    .share-option.linkedin:hover {
+        background: #E3F2FD;
+        color: #0077B5;
+    }
+
+    .share-option.copy:hover {
+        background: #F3E5F5;
+        color: #7B1FA2;
+    }
+
+    .author-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .author-avatar,
+    .bio-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .author-avatar-placeholder,
+    .bio-avatar-placeholder {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #f2f2f2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #757575;
+    }
+
+    .author-details {
+        flex: 1;
+    }
+
+    .author-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+
+    .author-name,
+    .bio-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #242424;
+        margin: 0;
+    }
+
+    .follow-btn,
+    .follow-btn-footer {
+        background: transparent;
+        border: none;
+        color: #1A8917;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .follow-btn:hover,
+    .follow-btn-footer:hover {
+        text-decoration: underline;
+    }
+
+    .meta-info,
+    .related-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #6B6B6B;
+    }
+
+    .meta-separator {
+        color: #6B6B6B;
+    }
+
+    /* Reference Links */
+    .reference-links {
+        padding: 24px 0;
+        border-top: 1px solid #F2F2F2;
+        border-bottom: 1px solid #F2F2F2;
+        margin: 32px 0;
+    }
+
+    .reference-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #242424;
+        margin: 0 0 16px 0;
+    }
+
+    .reference-icons {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .reference-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+
+    .reference-link.github {
+        color: #24292e;
+        background: #f6f8fa;
+        border-color: #e1e4e8;
+    }
+
+    .reference-link.github:hover {
+        background: #e1e4e8;
+        text-decoration: none;
+        color: #24292e;
+    }
+
+    .reference-link.medium {
+        color: #000;
+        background: #f5f5f5;
+        border-color: #e6e6e6;
+    }
+
+    .reference-link.medium:hover {
+        background: #e6e6e6;
+        text-decoration: none;
+        color: #000;
+    }
+
+    .reference-link.linkedin {
+        color: #0077b5;
+        background: #f3f9fc;
+        border-color: #b3d9f0;
+    }
+
+    .reference-link.linkedin:hover {
+        background: #e1f0f8;
+        text-decoration: none;
+        color: #0077b5;
+    }
+
+    .reference-link i {
+        font-size: 16px;
+    }
+
+    /* Table of Contents */
+    .table-of-contents {
+        background: #F8F9FA;
+        border: 1px solid #E9ECEF;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 32px 0;
+    }
+
+    .toc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .toc-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #242424;
+        margin: 0;
+    }
+
+    .toc-toggle {
+        background: none;
+        border: none;
+        color: #6B6B6B;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        transition: background 0.2s ease;
+    }
+
+    .toc-toggle:hover {
+        background: #E9ECEF;
+    }
+
+    .toc-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .toc-item {
+        margin-bottom: 8px;
+    }
+
+    .toc-h1 {
+        margin-left: 0;
+    }
+
+    .toc-h2 {
+        margin-left: 20px;
+    }
+
+    .toc-h3 {
+        margin-left: 40px;
+    }
+
+    .toc-link {
+        color: #6B6B6B;
+        text-decoration: none;
+        font-size: 14px;
+        line-height: 1.4;
+        transition: color 0.2s ease;
+    }
+
+    .toc-link:hover {
+        color: #242424;
+        text-decoration: none;
+    }
+
+    /* Article Image */
+    .article-image {
+        margin: 32px 0;
+        text-align: center;
+    }
+
+    .article-image img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 6px;
+    }
+
+    .image-caption {
+        font-size: 14px;
+        color: #6B6B6B;
+        font-style: italic;
+        margin-top: 8px;
+        text-align: center;
+    }
+
+    /* Article Body */
+    .article-body {
+        font-size: 20px;
+        line-height: 32px;
+        letter-spacing: -0.003em;
+        word-break: break-word;
+    }
+
+    .article-subtitle {
+        font-size: 24px;
+        line-height: 32px;
+        font-weight: 400;
+        color: #6B6B6B;
+        font-style: italic;
+        margin: 0 0 32px 0;
+    }
+
+    .article-text {
+        color: rgba(41, 41, 41, 1);
+    }
+
+    .article-text h1 {
+        font-size: 34px;
+        line-height: 44px;
+        font-weight: 700;
+        margin: 56px 0 16px 0;
+        color: #242424;
+    }
+
+    .article-text h2 {
+        font-size: 24px;
+        line-height: 30px;
+        font-weight: 600;
+        margin: 48px 0 16px 0;
+        color: #242424;
+    }
+
+    .article-text h3 {
+        font-size: 20px;
+        line-height: 28px;
+        font-weight: 600;
+        margin: 40px 0 16px 0;
+        color: #242424;
+    }
+
+    .article-text p {
+        margin: 0 0 24px 0;
+    }
+
+    .article-text strong {
+        font-weight: 700;
+    }
+
+    .article-text em {
+        font-style: italic;
+    }
+
+    .article-text code {
+        background: #F2F2F2;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+        font-size: 16px;
+        color: #FF6B35;
+    }
+
+    .article-text pre {
+        background: #F8F8F8;
+        padding: 20px;
+        border-radius: 6px;
+        border: 1px solid #F2F2F2;
+        overflow-x: auto;
+        margin: 32px 0;
+    }
+
+    .article-text pre code {
+        background: none;
+        padding: 0;
+        color: #333;
+        font-size: 14px;
+    }
+
+    .article-text blockquote {
+        border-left: 4px solid #242424;
+        padding-left: 20px;
+        margin: 32px 0;
+        font-style: italic;
+        color: #6B6B6B;
+        font-size: 22px;
+        line-height: 32px;
+    }
+
+    .article-text ul,
+    .article-text ol {
+        margin: 24px 0;
+        padding-left: 30px;
+    }
+
+    .article-text li {
+        margin-bottom: 8px;
+    }
+
+    .article-text a {
+        color: inherit;
+        text-decoration: underline;
+        text-decoration-color: rgba(117, 117, 117, 1);
+        text-underline-offset: 2px;
+    }
+
+    .article-text a:hover {
+        text-decoration-color: rgba(41, 41, 41, 1);
+    }
+
+    /* Tags */
+    .article-tags {
+        margin: 48px 0;
+        padding-top: 32px;
+        border-top: 1px solid #F2F2F2;
+    }
+
+    .tag {
+        display: inline-block;
+        background: #F2F2F2;
+        color: #6B6B6B;
+        padding: 8px 16px;
+        border-radius: 100px;
+        font-size: 14px;
+        margin: 0 8px 8px 0;
+        text-decoration: none;
+    }
+
+    .tag:hover {
+        background: #E5E5E5;
+    }
+
+    /* Article Footer */
+    .article-footer {
+        padding-top: 48px;
+        border-top: 1px solid #F2F2F2;
+        margin-top: 48px;
+    }
+
+    .footer-actions {
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        margin-bottom: 48px;
+        padding-bottom: 32px;
+        border-bottom: 1px solid #F2F2F2;
+    }
+
+    .claps-footer {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .clap-btn-footer,
+    .comment-btn-footer {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: #6B6B6B;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        padding: 8px;
+        border-radius: 50%;
+    }
+
+    /* Author Bio */
+    .author-bio {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 48px;
+    }
+
+    .bio-content {
+        flex: 1;
+    }
+
+    .bio-text {
+        color: #6B6B6B;
+        font-size: 16px;
+        line-height: 24px;
+        margin: 8px 0 16px 0;
+    }
+
+    .bio-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .social-link {
+        color: #1A8917;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .social-link:hover {
+        text-decoration: underline;
+    }
+
+    .contact-cta {
+        color: #1A8917;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .contact-cta:hover {
+        text-decoration: underline;
+        color: #1A8917;
+    }
+
+    /* Post Contact CTA */
+    .post-contact-cta {
+        background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
+        border: 1px solid #E9ECEF;
+        border-radius: 12px;
+        padding: 32px;
+        margin: 48px 0;
+        text-align: center;
+    }
+
+    .cta-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #242424;
+        margin: 0 0 8px 0;
+    }
+
+    .cta-text {
+        color: #6B6B6B;
+        font-size: 16px;
+        margin: 0 0 24px 0;
+    }
+
+    .cta-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #242424;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .cta-button:hover {
+        background: #1a1a1a;
+        text-decoration: none;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    /* Floating Action Buttons */
+    .floating-actions {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        z-index: 1000;
+    }
+
+    .fab-btn {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #242424;
+        color: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: all 0.2s ease;
+    }
+
+    .fab-btn:hover {
+        background: #1a1a1a;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        color: white;
+        text-decoration: none;
+    }
+
+    .fab-btn i {
+        font-size: 16px;
+    }
+
+    /* Related Posts - Enhanced */
+    .more-from-author {
+        border-top: 1px solid #F2F2F2;
+        padding-top: 48px;
+    }
+
+    .more-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .more-title {
+        font-size: 28px;
+        line-height: 36px;
+        font-weight: 700;
+        color: #242424;
+        margin: 0 0 8px 0;
+    }
+
+    .more-subtitle {
+        font-size: 16px;
+        color: #6B6B6B;
+        margin: 0;
+    }
+
+    .related-posts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+
+    .related-post-card {
+        background: white;
+        border: 1px solid #F2F2F2;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .related-post-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        border-color: #E9ECEF;
+    }
+
+    .related-card-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .related-image-container {
+        position: relative;
+        width: 100%;
+        height: 180px;
+        overflow: hidden;
+    }
+
+    .related-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .related-post-card:hover .related-image {
+        transform: scale(1.05);
+    }
+
+    .image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(36, 36, 36, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .related-post-card:hover .image-overlay {
+        opacity: 1;
+    }
+
+    .image-overlay i {
+        color: white;
+        font-size: 24px;
+    }
+
+    .related-image-placeholder {
+        width: 100%;
+        height: 180px;
+        background: #F8F9FA;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6B6B6B;
+        font-size: 32px;
+    }
+
+    .related-card-content {
+        padding: 24px;
+    }
+
+    .related-badges {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .related-type-badge,
+    .related-featured-badge {
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 12px;
+        background: #F8F9FA;
+        color: #495057;
+        border: 1px solid #E9ECEF;
+    }
+
+    .related-featured-badge {
+        background: #242424;
+        color: #FFFFFF;
+        border-color: #242424;
+    }
+
+    .related-card-title {
+        font-size: 18px;
+        line-height: 24px;
+        font-weight: 600;
+        color: #242424;
+        margin: 0 0 12px 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .related-card-excerpt {
+        color: #6B6B6B;
+        font-size: 14px;
+        line-height: 20px;
+        margin: 0 0 16px 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .related-card-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #6B6B6B;
+    }
+
+    .view-all-cta {
+        text-align: center;
+        padding-top: 32px;
+        border-top: 1px solid #F2F2F2;
+    }
+
+    .view-all-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #F8F9FA;
+        color: #242424;
+        padding: 12px 24px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: 1px solid #E9ECEF;
+    }
+
+    .view-all-btn:hover {
+        background: #E9ECEF;
+        text-decoration: none;
+        color: #242424;
+        transform: translateY(-1px);
+    }
+
+    /* Continue Reading Section - Horizontal Layout */
+    .continue-reading-section {
+        margin: 80px 0 60px 0;
+        padding: 40px 0;
+        border-top: 1px solid #F2F2F2;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 48px;
+    }
+
+    .section-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #242424;
+        margin: 0 0 8px 0;
+        font-family: sohne, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+
+    .section-subtitle {
+        font-size: 16px;
+        color: #6B6B6B;
+        margin: 0;
+    }
+
+    .related-posts-horizontal {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        margin-bottom: 48px;
+    }
+
+    .related-post-horizontal {
+        border-bottom: 1px solid #F2F2F2;
+        padding-bottom: 32px;
+    }
+
+    .related-post-horizontal:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .related-horizontal-link {
+        display: flex;
+        gap: 24px;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.2s ease;
+    }
+
+    .related-horizontal-link:hover {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .related-horizontal-link:hover .related-horizontal-title {
+        color: #242424;
+    }
+
+    .related-horizontal-content {
+        flex: 1;
+    }
+
+    .related-horizontal-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        font-size: 14px;
+        color: #6B6B6B;
+    }
+
+    .related-type-simple {
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6B6B6B;
+    }
+
+    .related-horizontal-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #242424;
+        margin: 0 0 8px 0;
+        line-height: 1.3;
+        transition: color 0.2s ease;
+    }
+
+    .related-horizontal-excerpt {
+        font-size: 16px;
+        color: #6B6B6B;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .related-horizontal-image {
+        width: 120px;
+        height: 80px;
+        flex-shrink: 0;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    .related-horizontal-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.2s ease;
+    }
+
+    .related-horizontal-link:hover .related-horizontal-image img {
+        transform: scale(1.05);
+    }
+
+    /* View All Posts Button - Enhanced */
+    .view-all-section {
+        text-align: center;
+        padding-top: 32px;
+        border-top: 1px solid #F2F2F2;
+    }
+
+    .view-all-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 32px;
+        background: #242424;
+        color: #FFFFFF;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .view-all-button:hover {
+        background: #1a1a1a;
+        text-decoration: none;
+        color: #FFFFFF;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(36, 36, 36, 0.2);
+    }
+
+    .view-all-text {
+        position: relative;
+        z-index: 2;
+    }
+
+    .view-all-icon {
+        position: relative;
+        z-index: 2;
+        transition: transform 0.3s ease;
+    }
+
+    .view-all-button:hover .view-all-icon {
+        transform: translateX(4px);
+    }
+
+    .view-all-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .view-all-button:hover::before {
+        left: 100%;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .article-title {
+            font-size: 32px;
+            line-height: 40px;
+        }
+
+        .article-body {
+            font-size: 18px;
+            line-height: 28px;
+        }
+
+        .article-subtitle {
+            font-size: 20px;
+            line-height: 28px;
+        }
+
+        .nav-right {
+            gap: 16px;
+        }
+
+        .nav-link {
+            font-size: 13px;
+        }
+
+        .related-posts-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .related-image-container,
+        .related-image-placeholder {
+            height: 160px;
+        }
+
+        .more-header {
+            margin-bottom: 32px;
+        }
+
+        .more-title {
+            font-size: 24px;
+            line-height: 32px;
+        }
+
+        .author-bio {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        /* Mobile responsive for new features */
+        .article-meta {
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .social-sharing {
+            align-self: flex-end;
+        }
+
+        .share-dropdown {
+            right: 0;
+        }
+
+        .post-badges {
+            flex-wrap: wrap;
+        }
+
+        .breadcrumb-container {
+            font-size: 12px;
+        }
+
+        .breadcrumb-current {
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .table-of-contents {
+            margin: 24px -20px;
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
+        }
+
+        .floating-actions {
+            bottom: 16px;
+            right: 16px;
+        }
+
+        .fab-btn {
+            width: 44px;
+            height: 44px;
+        }
+
+        .post-contact-cta {
+            margin: 32px -20px;
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
+        }
+    }
+
+    @media (max-width: 480px) {
+
+        .medium-main,
+        .nav-container {
+            padding: 0 16px;
+        }
+
+        .article-content {
+            padding-top: 32px;
+        }
+    }
+
+    /* Contact Modal Styles */
+    .contact-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .contact-modal.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .modal-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+        position: relative;
+        background: white;
+        border-radius: 16px;
+        max-width: 900px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        transform: scale(0.9) translateY(20px);
+        transition: all 0.3s ease;
+    }
+
+    .contact-modal.active .modal-content {
+        transform: scale(1) translateY(0);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 32px 40px 0 40px;
+        border-bottom: 1px solid #F2F2F2;
+        margin-bottom: 32px;
+    }
+
+    .modal-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #242424;
+        margin: 0;
+    }
+
+    .modal-close {
+        background: #F8F9FA;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #6B6B6B;
+        transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+        background: #E9ECEF;
+        color: #242424;
+        transform: scale(1.1);
+    }
+
+    .modal-body {
+        padding: 0 40px 40px 40px;
+    }
+
+    .modal-body .contact-intro {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .modal-body .contact-description {
+        font-size: 18px;
+        color: #6B6B6B;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .modal-body .contact-methods {
+        margin-bottom: 0;
+    }
+
+    .modal-body .contact-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+
+    .modal-body .contact-method {
+        background: #F8F9FA;
+        border-radius: 12px;
+        padding: 24px;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .modal-body .contact-method.primary {
+        background: linear-gradient(135deg, #242424 0%, #1a1a1a 100%);
+        color: white;
+    }
+
+    .modal-body .contact-method:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        border-color: #242424;
+    }
+
+    .modal-body .contact-method.primary:hover {
+        box-shadow: 0 8px 25px rgba(36, 36, 36, 0.3);
+    }
+
+    .modal-body .contact-method-icon {
+        width: 50px;
+        height: 50px;
+        background: rgba(36, 36, 36, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        font-size: 20px;
+        color: #242424;
+        transition: all 0.3s ease;
+    }
+
+    .modal-body .contact-method.primary .contact-method-icon {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .modal-body .contact-method:hover .contact-method-icon {
+        transform: scale(1.1);
+    }
+
+    .modal-body .contact-method-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #242424;
+        margin: 0 0 6px 0;
+    }
+
+    .modal-body .contact-method.primary .contact-method-title {
+        color: white;
+    }
+
+    .modal-body .contact-method-description {
+        font-size: 13px;
+        color: #6B6B6B;
+        margin: 0 0 16px 0;
+        line-height: 1.4;
+    }
+
+    .modal-body .contact-method.primary .contact-method-description {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .modal-body .contact-method-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #242424;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        padding: 8px 12px;
+        border-radius: 6px;
+        background: rgba(36, 36, 36, 0.05);
+    }
+
+    .modal-body .contact-method.primary .contact-method-action {
+        color: white;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-body .contact-method-action:hover {
+        text-decoration: none;
+        transform: translateY(-1px);
+        background: rgba(36, 36, 36, 0.1);
+    }
+
+    .modal-body .contact-method.primary .contact-method-action:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Modal Form Styles */
+    .modal-body .contact-form-section {
+        background: #F8F9FA;
+        border-radius: 12px;
+        padding: 32px;
+        margin-top: 32px;
+    }
+
+    .modal-body .contact-form-header {
+        text-align: center;
+        margin-bottom: 24px;
+    }
+
+    .modal-body .form-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #242424;
+        margin: 0 0 6px 0;
+    }
+
+    .modal-body .form-description {
+        font-size: 14px;
+        color: #6B6B6B;
+        margin: 0;
+    }
+
+    .modal-body .contact-form {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .modal-body .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .modal-body .form-group {
+        margin-bottom: 16px;
+    }
+
+    .modal-body .form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: #242424;
+        margin-bottom: 6px;
+    }
+
+    .modal-body .form-group input,
+    .modal-body .form-group textarea {
+        width: 100%;
+        padding: 10px 14px;
+        border: 2px solid #E9ECEF;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        background: white;
+    }
+
+    .modal-body .form-group input:focus,
+    .modal-body .form-group textarea:focus {
+        outline: none;
+        border-color: #242424;
+        box-shadow: 0 0 0 3px rgba(36, 36, 36, 0.1);
+        transform: translateY(-1px);
+    }
+
+    .modal-body .form-group input::placeholder,
+    .modal-body .form-group textarea::placeholder {
+        color: #999;
+        font-style: italic;
+    }
+
+    .modal-body .form-group.valid input,
+    .modal-body .form-group.valid textarea {
+        border-color: #28a745;
+        background: #f8fff9;
+    }
+
+    .modal-body .form-group.invalid input,
+    .modal-body .form-group.invalid textarea {
+        border-color: #dc3545;
+        background: #fff8f8;
+    }
+
+    .modal-body .contact-submit-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: #242424;
+        color: white;
+        border: none;
+        padding: 14px 28px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .modal-body .contact-submit-btn:hover {
+        background: #1a1a1a;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(36, 36, 36, 0.2);
+    }
+
+    .modal-body .contact-submit-btn:disabled,
+    .modal-body .contact-submit-btn.loading {
+        background: #6B6B6B;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .modal-body .contact-submit-btn .btn-icon {
+        transition: transform 0.3s ease;
+    }
+
+    .modal-body .contact-submit-btn:hover .btn-icon {
+        transform: translateX(3px);
+    }
+
+    .modal-body .contact-submit-btn.loading .btn-icon {
+        transform: none;
+    }
+
+    /* Modal CTA Section */
+    .modal-body .contact-cta-section {
+        background: linear-gradient(135deg, #242424 0%, #1a1a1a 100%);
+        border-radius: 12px;
+        padding: 32px;
+        text-align: center;
+        color: white;
+        margin-top: 32px;
+    }
+
+    .modal-body .cta-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: white;
+        margin: 0 0 8px 0;
+    }
+
+    .modal-body .cta-description {
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.5;
+        margin: 0 0 24px 0;
+        font-size: 14px;
+    }
+
+    .modal-body .cta-stats {
+        display: flex;
+        justify-content: center;
+        gap: 32px;
+        flex-wrap: wrap;
+    }
+
+    .modal-body .cta-stat {
+        text-align: center;
+    }
+
+    .modal-body .stat-number {
+        display: block;
+        font-size: 24px;
+        font-weight: 700;
+        color: white;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .modal-body .stat-label {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.7);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Modal Responsive */
+    @media (max-width: 768px) {
+        .modal-content {
+            width: 95%;
+            margin: 20px;
+        }
+
+        .modal-header {
+            padding: 24px 24px 0 24px;
+        }
+
+        .modal-body {
+            padding: 0 24px 24px 24px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+        }
+
+        .modal-body .contact-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .modal-body .form-row {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        .modal-body .contact-form-section {
+            padding: 24px;
+        }
+
+        .modal-body .contact-cta-section {
+            padding: 24px;
+        }
+
+        .modal-body .cta-stats {
+            gap: 24px;
+        }
+
+        .modal-body .stat-number {
+            font-size: 20px;
+        }
+    }
+
+    /* Responsive Styles for Continue Reading */
+    @media (max-width: 768px) {
+        .continue-reading-section {
+            margin: 60px 0 40px 0;
+            padding: 32px 0;
+        }
+
+        .section-header {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 24px;
+        }
+
+        .related-posts-horizontal {
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .related-post-horizontal {
+            padding-bottom: 24px;
+        }
+
+        .related-horizontal-link {
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .related-horizontal-image {
+            width: 100%;
+            height: 200px;
+            order: -1;
+        }
+
+        .related-horizontal-title {
+            font-size: 18px;
+        }
+
+        .related-horizontal-excerpt {
+            font-size: 15px;
+        }
+
+        .view-all-button {
+            padding: 14px 28px;
+            font-size: 15px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .related-horizontal-image {
+            height: 160px;
+        }
+
+        .related-horizontal-title {
+            font-size: 16px;
+        }
+
+        .view-all-button {
+            padding: 12px 24px;
+            font-size: 14px;
+        }
+    }
+
+    /* Contact Modal Styles */
+    .contact-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .contact-modal.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .modal-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+        position: relative;
+        background: white;
+        border-radius: 16px;
+        max-width: 900px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        transform: scale(0.9) translateY(20px);
+        transition: all 0.3s ease;
+    }
+
+    .contact-modal.active .modal-content {
+        transform: scale(1) translateY(0);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 32px 40px 0 40px;
+        border-bottom: 1px solid #F2F2F2;
+        margin-bottom: 32px;
+    }
+
+    .modal-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #242424;
+        margin: 0;
+    }
+
+    .modal-close {
+        background: #F8F9FA;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #6B6B6B;
+        transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+        background: #E9ECEF;
+        color: #242424;
+        transform: scale(1.1);
+    }
+
+    .modal-body {
+        padding: 0 40px 40px 40px;
+    }
+
+    .contact-intro {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .contact-description {
+        font-size: 18px;
+        color: #6B6B6B;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .contact-methods {
+        margin-bottom: 0;
+    }
+
+    .contact-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+
+    .contact-method {
+        background: #F8F9FA;
+        border-radius: 12px;
+        padding: 24px;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .contact-method.primary {
+        background: linear-gradient(135deg, #242424 0%, #1a1a1a 100%);
+        color: white;
+    }
+
+    .contact-method:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        border-color: #242424;
+    }
+
+    .contact-method.primary:hover {
+        box-shadow: 0 8px 25px rgba(36, 36, 36, 0.3);
+    }
+
+    .contact-method-icon {
+        width: 50px;
+        height: 50px;
+        background: rgba(36, 36, 36, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        font-size: 20px;
+        color: #242424;
+        transition: all 0.3s ease;
+    }
+
+    .contact-method.primary .contact-method-icon {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .contact-method:hover .contact-method-icon {
+        transform: scale(1.1);
+    }
+
+    .contact-method-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #242424;
+        margin: 0 0 6px 0;
+    }
+
+    .contact-method.primary .contact-method-title {
+        color: white;
+    }
+
+    .contact-method-description {
+        font-size: 13px;
+        color: #6B6B6B;
+        margin: 0 0 16px 0;
+        line-height: 1.4;
+    }
+
+    .contact-method.primary .contact-method-description {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .contact-method-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #242424;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        padding: 8px 12px;
+        border-radius: 6px;
+        background: rgba(36, 36, 36, 0.05);
+    }
+
+    .contact-method.primary .contact-method-action {
+        color: white;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .contact-method-action:hover {
+        text-decoration: none;
+        transform: translateY(-1px);
+        background: rgba(36, 36, 36, 0.1);
+    }
+
+    .contact-method.primary .contact-method-action:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Contact Form Section */
+    .contact-form-section {
+        background: #F8F9FA;
+        border-radius: 12px;
+        padding: 32px;
+        margin-top: 32px;
+    }
+
+    .contact-form-header {
+        text-align: center;
+        margin-bottom: 24px;
+    }
+
+    .form-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #242424;
+        margin: 0 0 6px 0;
+    }
+
+    .form-description {
+        font-size: 14px;
+        color: #6B6B6B;
+        margin: 0;
+    }
+
+    .contact-form {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: #242424;
+        margin-bottom: 6px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 10px 14px;
+        border: 2px solid #E9ECEF;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        background: white;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #242424;
+        box-shadow: 0 0 0 3px rgba(36, 36, 36, 0.1);
+        transform: translateY(-1px);
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+        color: #999;
+        font-style: italic;
+    }
+
+    .form-group.valid input,
+    .form-group.valid textarea {
+        border-color: #28a745;
+        background: #f8fff9;
+    }
+
+    .form-group.invalid input,
+    .form-group.invalid textarea {
+        border-color: #dc3545;
+        background: #fff8f8;
+    }
+
+    .contact-submit-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: #242424;
+        color: white;
+        border: none;
+        padding: 14px 28px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .contact-submit-btn:hover {
+        background: #1a1a1a;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(36, 36, 36, 0.2);
+    }
+
+    .contact-submit-btn:disabled,
+    .contact-submit-btn.loading {
+        background: #6B6B6B;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .contact-submit-btn .btn-icon {
+        transition: transform 0.3s ease;
+    }
+
+    .contact-submit-btn:hover .btn-icon {
+        transform: translateX(3px);
+    }
+
+    .contact-submit-btn.loading .btn-icon {
+        transform: none;
+    }
+
+    /* Contact CTA Section */
+    .contact-cta-section {
+        background: linear-gradient(135deg, #242424 0%, #1a1a1a 100%);
+        border-radius: 12px;
+        padding: 32px;
+        text-align: center;
+        color: white;
+        margin-top: 32px;
+    }
+
+    .cta-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: white;
+        margin: 0 0 8px 0;
+    }
+
+    .cta-description {
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.5;
+        margin: 0 0 24px 0;
+        font-size: 14px;
+    }
+
+    .cta-stats {
+        display: flex;
+        justify-content: center;
+        gap: 32px;
+        flex-wrap: wrap;
+    }
+
+    .cta-stat {
+        text-align: center;
+    }
+
+    .stat-number {
+        display: block;
+        font-size: 24px;
+        font-weight: 700;
+        color: white;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.7);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Responsive for Medium screens (around 800px) */
+    @media (max-width: 1024px) and (min-width: 769px) {
+        .medium-main {
+            padding: 0 16px;
+        }
+
+        .article-content {
+            padding-top: 24px;
+        }
+
+        .article-header {
+            margin-bottom: 32px;
+        }
+
+        .article-title {
+            font-size: 38px;
+            line-height: 46px;
+            margin-bottom: 24px;
+        }
+
+        .author-bio {
+            margin-bottom: 32px;
+        }
+
+        .bio-text {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .bio-actions {
+            gap: 12px;
+        }
+
+        .social-link {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        /* Ensure content doesn't get cut off */
+        .article-content {
+            min-height: auto;
+            padding-bottom: 40px;
+        }
+
+        /* Compact spacing for better fit */
+        .continue-reading-section {
+            margin-top: 40px;
+        }
+
+        .section-header {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 24px;
+        }
+    }
+
+    /* Specific height adjustments for screens around 800px width */
+    @media (max-width: 900px) and (min-width: 700px) {
+        .medium-page {
+            min-height: 100vh;
+        }
+
+        .medium-main {
+            padding-bottom: 60px;
+        }
+
+        /* Ensure footer and bio section are visible */
+        .author-bio {
+            padding: 20px 0;
+        }
+
+        .article-footer {
+            margin-top: 32px;
+        }
+
+        /* Floating actions positioning */
+        .floating-actions {
+            bottom: 20px;
+            right: 20px;
+        }
+
+        /* Make sure continue reading section doesn't overflow */
+        .continue-reading-section {
+            margin-top: 32px;
+            margin-bottom: 40px;
+        }
+
+        .related-posts-horizontal {
+            gap: 16px;
+        }
+
+        .related-post-horizontal {
+            padding: 16px;
+        }
+    }
+
+    /* Modal Responsive */
+    @media (max-width: 768px) {
+        .modal-content {
+            width: 95%;
+            margin: 20px;
+        }
+
+        .modal-header {
+            padding: 24px 24px 0 24px;
+        }
+
+        .modal-body {
+            padding: 0 24px 24px 24px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+        }
+
+        .contact-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        .contact-form-section {
+            padding: 24px;
+        }
+
+        .contact-cta-section {
+            padding: 24px;
+        }
+
+        .cta-stats {
+            gap: 24px;
+        }
+
+        .stat-number {
+            font-size: 20px;
+        }
+    }
+    }
+</style>
+
+<script>
+// Contact Modal Functions
+function openContactModal() {
+    const modal = document.getElementById('contactModal');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Focus on first input
+    setTimeout(() => {
+        const firstInput = modal.querySelector('input');
+        if (firstInput) firstInput.focus();
+    }, 300);
+}
+
+function closeContactModal() {
+    const modal = document.getElementById('contactModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+
+    // Reset form if it exists
+    const form = document.getElementById('contactForm');
+    if (form) {
+        form.reset();
+
+        // Reset button state
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = submitBtn?.querySelector('.btn-text');
+        const btnIcon = submitBtn?.querySelector('.btn-icon');
+
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+        }
+        if (btnText) btnText.textContent = 'Send Message';
+        if (btnIcon) btnIcon.className = 'fas fa-paper-plane btn-icon';
+
+        // Clear validation states
+        const formGroups = form.querySelectorAll('.form-group');
+        formGroups.forEach(group => {
+            group.classList.remove('valid', 'invalid', 'focused');
+        });
+    }
+}
+
+// Contact Form Enhancement
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('contactForm');
+
+    if (form) {
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const btnIcon = submitBtn.querySelector('.btn-icon');
+
+        // Form validation and enhancement
+        const inputs = form.querySelectorAll('input, textarea');
+
+        inputs.forEach(input => {
+            // Add floating label effect
+            input.addEventListener('focus', function () {
+                this.parentElement.classList.add('focused');
+            });
+
+            input.addEventListener('blur', function () {
+                if (!this.value) {
+                    this.parentElement.classList.remove('focused');
+                }
+            });
+
+            // Real-time validation
+            input.addEventListener('input', function () {
+                validateField(this);
+            });
+        });
+
+        function validateField(field) {
+            const value = field.value.trim();
+            const fieldGroup = field.parentElement;
+
+            // Remove existing validation classes
+            fieldGroup.classList.remove('valid', 'invalid');
+
+            if (field.hasAttribute('required') && value === '') {
+                fieldGroup.classList.add('invalid');
+                return false;
+            }
+
+            if (field.type === 'email' && value !== '') {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(value)) {
+                    fieldGroup.classList.add('invalid');
+                    return false;
+                }
+            }
+
+            if (value !== '') {
+                fieldGroup.classList.add('valid');
+            }
+
+            return true;
+        }
+
+        // Form submission with loading state
+        form.addEventListener('submit', function (e) {
+            let isValid = true;
+
+            inputs.forEach(input => {
+                if (!validateField(input)) {
+                    isValid = false;
+                }
+            });
+
+            if (isValid) {
+                // Show loading state
+                submitBtn.disabled = true;
+                submitBtn.classList.add('loading');
+                btnText.textContent = 'Sending...';
+                btnIcon.className = 'fas fa-spinner fa-spin btn-icon';
+            } else {
+                e.preventDefault();
+                // Focus on first invalid field
+                const firstInvalid = form.querySelector('.invalid input, .invalid textarea');
+                if (firstInvalid) {
+                    firstInvalid.focus();
+                }
+            }
+        });
+    }
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeContactModal();
+        }
+    });
+});
+</script>
+{% endblock %}

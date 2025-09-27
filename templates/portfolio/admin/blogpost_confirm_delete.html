@@ -1,0 +1,112 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+
+{% block admin_title %}Eliminar Post{% endblock %}
+
+{% block admin_actions %}
+<a href="{% url 'portfolio:admin-blog-list' %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-1"></i>Volver al Blog
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmar Eliminación
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <h6><i class="fas fa-warning me-1"></i>¡Atención!</h6>
+                    <p class="mb-0">Esta acción no se puede deshacer. El post será eliminado permanentemente.</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        {% if object.featured_image %}
+                            <img src="{{ object.featured_image.url }}" alt="{{ object.title }}" 
+                                 class="img-fluid rounded">
+                        {% else %}
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                 style="height: 200px;">
+                                <i class="fas fa-file-alt fa-3x text-muted"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <h4>{{ object.title }}</h4>
+                        <p class="text-muted">{{ object.excerpt|default:object.content|truncatewords:20 }}</p>
+                        
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <strong>Tipo:</strong> {{ object.get_post_type_display }}<br>
+                                <strong>Estado:</strong> 
+                                <span class="badge badge-{{ object.status }}">
+                                    {{ object.get_status_display }}
+                                </span><br>
+                                <strong>Destacado:</strong> 
+                                {% if object.featured %}
+                                    <i class="fas fa-star text-warning"></i> Sí
+                                {% else %}
+                                    <i class="far fa-star text-muted"></i> No
+                                {% endif %}
+                            </div>
+                            <div class="col-sm-6">
+                                <strong>Creado:</strong> {{ object.created_at|date:"d/m/Y H:i" }}<br>
+                                <strong>Actualizado:</strong> {{ object.updated_at|date:"d/m/Y H:i" }}<br>
+                                {% if object.status == 'published' %}
+                                    <strong>Publicado:</strong> {{ object.publish_date|date:"d/m/Y H:i" }}<br>
+                                {% endif %}
+                                <strong>Tiempo de lectura:</strong> {{ object.reading_time }} min
+                            </div>
+                        </div>
+
+                        {% if object.tags %}
+                        <div class="mt-3">
+                            <strong>Tags:</strong><br>
+                            {% for tag in object.get_tags_list %}
+                                <span class="badge bg-secondary me-1">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <hr>
+
+                <form method="post" class="d-flex justify-content-between align-items-center">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <a href="{% url 'portfolio:admin-blog-list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>Cancelar
+                        </a>
+                        <a href="{% url 'portfolio:admin-blog-edit' object.pk %}" class="btn btn-outline-primary ms-2">
+                            <i class="fas fa-edit me-1"></i>Editar en su lugar
+                        </a>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Sí, eliminar post
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+// Add confirmation dialog
+document.querySelector('form').addEventListener('submit', function(e) {
+    if (!confirm('¿Estás absolutamente seguro de que quieres eliminar este post? Esta acción no se puede deshacer.')) {
+        e.preventDefault();
+    }
+});
+</script>
+{% endblock %}

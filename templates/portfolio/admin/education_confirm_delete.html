@@ -1,0 +1,67 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+
+{% block admin_title %}Eliminar Educación{% endblock %}
+{% block admin_subtitle %}Confirma la eliminación de este registro de formación{% endblock %}
+
+{% block admin_actions %}
+<a href="{% url 'portfolio:admin-education-list' %}" class="btn-secondary-custom">
+    <i class="fas fa-arrow-left"></i>Volver a Educación
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<div class="content-card">
+    <div class="card-header-custom">
+        <div>
+            <h2 class="card-title-custom">Confirmar Eliminación</h2>
+            <p class="card-subtitle-custom">Esta acción no se puede deshacer</p>
+        </div>
+    </div>
+
+    <div class="delete-confirmation">
+        <div class="delete-item-info">
+            <div class="delete-icon">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div class="delete-details">
+                <h3>{{ object.degree }}</h3>
+                <p><strong>Institución:</strong> {{ object.institution }}</p>
+                <p><strong>Campo de estudio:</strong> {{ object.field_of_study }}</p>
+                <p><strong>Tipo:</strong> {{ object.get_education_type_display }}</p>
+                <p><strong>Período:</strong> 
+                    {{ object.start_date|date:"M Y" }}
+                    {% if object.current %}
+                        - Presente
+                    {% elif object.end_date %}
+                        - {{ object.end_date|date:"M Y" }}
+                    {% endif %}
+                </p>
+                {% if object.credential_id %}
+                    <p><strong>ID Credencial:</strong> {{ object.credential_id }}</p>
+                {% endif %}
+                {% if object.description %}
+                    <p><strong>Descripción:</strong> {{ object.description|truncatewords:20 }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="delete-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>¿Estás seguro de que quieres eliminar este registro de educación? Esta acción no se puede deshacer.</p>
+        </div>
+
+        <form method="post" class="delete-form">
+            {% csrf_token %}
+            <div class="form-actions">
+                <button type="submit" class="btn-danger-custom">
+                    <i class="fas fa-trash"></i>Sí, Eliminar Educación
+                </button>
+                <a href="{% url 'portfolio:admin-education-list' %}" class="btn-secondary-custom">
+                    <i class="fas fa-times"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

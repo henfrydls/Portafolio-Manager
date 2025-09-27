@@ -1,0 +1,360 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+
+{% block admin_title %}
+{% if object %}Editar Proyecto{% else %}Nuevo Proyecto{% endif %}
+{% endblock %}
+
+{% block admin_actions %}
+<a href="{% url 'portfolio:admin-project-list' %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-1"></i>Volver a Proyectos
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-folder me-2"></i>
+                    {% if object %}Editar Proyecto{% else %}Nuevo Proyecto{% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Basic Information -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Información Básica</h6>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">
+                                {{ form.title.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="text-danger small">{{ form.title.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                {{ form.description.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.description }}
+                            <div class="form-text">Descripción breve que aparecerá en las tarjetas de proyecto</div>
+                            {% if form.description.errors %}
+                                <div class="text-danger small">{{ form.description.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.detailed_description.id_for_label }}" class="form-label">
+                                {{ form.detailed_description.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.detailed_description }}
+                            <div class="form-text">Descripción completa que aparecerá en la página de detalle</div>
+                            {% if form.detailed_description.errors %}
+                                <div class="text-danger small">{{ form.detailed_description.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.image.id_for_label }}" class="form-label">
+                                {{ form.image.label }}
+                            </label>
+                            {{ form.image }}
+                            {% if form.image.errors %}
+                                <div class="text-danger small">{{ form.image.errors.0 }}</div>
+                            {% endif %}
+                            {% if object.image %}
+                                <div class="mt-2">
+                                    <small class="text-muted">Imagen actual:</small><br>
+                                    <img src="{{ object.image.url }}" alt="{{ object.title }}" 
+                                         class="img-thumbnail" style="max-width: 200px;">
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Project Details -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Detalles del Proyecto</h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.project_type_obj.id_for_label }}" class="form-label">
+                                        {{ form.project_type_obj.label }}
+                                    </label>
+                                    {{ form.project_type_obj }}
+                                    {% if form.project_type_obj.errors %}
+                                        <div class="text-danger small">{{ form.project_type_obj.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <!-- Tecnologías se mostrarán aquí abajo -->
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.technologies.id_for_label }}" class="form-label">
+                                {{ form.technologies.label }}
+                            </label>
+                            {{ form.technologies }}
+                            <div class="form-text">Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples tecnologías</div>
+                            {% if form.technologies.errors %}
+                                <div class="text-danger small">{{ form.technologies.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.primary_language.id_for_label }}" class="form-label">
+                                        {{ form.primary_language.label }}
+                                    </label>
+                                    {{ form.primary_language }}
+                                    {% if form.primary_language.errors %}
+                                        <div class="text-danger small">{{ form.primary_language.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.github_owner.id_for_label }}" class="form-label">
+                                        {{ form.github_owner.label }}
+                                    </label>
+                                    {{ form.github_owner }}
+                                    {% if form.github_owner.errors %}
+                                        <div class="text-danger small">{{ form.github_owner.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Links -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Enlaces</h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.github_url.id_for_label }}" class="form-label">
+                                        {{ form.github_url.label }}
+                                    </label>
+                                    {{ form.github_url }}
+                                    {% if form.github_url.errors %}
+                                        <div class="text-danger small">{{ form.github_url.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.demo_url.id_for_label }}" class="form-label">
+                                        {{ form.demo_url.label }}
+                                    </label>
+                                    {{ form.demo_url }}
+                                    {% if form.demo_url.errors %}
+                                        <div class="text-danger small">{{ form.demo_url.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Featured Work Settings -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Configuración de Featured Work</h6>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.featured_link_type.id_for_label }}" class="form-label">
+                                {{ form.featured_link_type.label }}
+                            </label>
+                            {{ form.featured_link_type }}
+                            <div class="form-text">Tipo de enlace cuando aparezca en Featured Work</div>
+                            {% if form.featured_link_type.errors %}
+                                <div class="text-danger small">{{ form.featured_link_type.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.featured_link_post.id_for_label }}" class="form-label">
+                                        {{ form.featured_link_post.label }}
+                                    </label>
+                                    {{ form.featured_link_post }}
+                                    <div class="form-text">Solo si tipo es "Enlace a Post"</div>
+                                    {% if form.featured_link_post.errors %}
+                                        <div class="text-danger small">{{ form.featured_link_post.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.featured_link_pdf.id_for_label }}" class="form-label">
+                                        {{ form.featured_link_pdf.label }}
+                                    </label>
+                                    {{ form.featured_link_pdf }}
+                                    <div class="form-text">Solo si tipo es "Archivo PDF"</div>
+                                    {% if form.featured_link_pdf.errors %}
+                                        <div class="text-danger small">{{ form.featured_link_pdf.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings -->
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Configuración</h6>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="{{ form.visibility.id_for_label }}" class="form-label">
+                                        {{ form.visibility.label }}
+                                    </label>
+                                    {{ form.visibility }}
+                                    {% if form.visibility.errors %}
+                                        <div class="text-danger small">{{ form.visibility.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="{{ form.order.id_for_label }}" class="form-label">
+                                        {{ form.order.label }}
+                                    </label>
+                                    {{ form.order }}
+                                    <div class="form-text">Menor número = mayor prioridad</div>
+                                    {% if form.order.errors %}
+                                        <div class="text-danger small">{{ form.order.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <div class="form-check mt-4">
+                                        {{ form.featured }}
+                                        <label class="form-check-label" for="{{ form.featured.id_for_label }}">
+                                            {{ form.featured.label }}
+                                        </label>
+                                    </div>
+                                    {% if form.featured.errors %}
+                                        <div class="text-danger small">{{ form.featured.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-check">
+                            {{ form.is_private_project }}
+                            <label class="form-check-label" for="{{ form.is_private_project.id_for_label }}">
+                                {{ form.is_private_project.label }}
+                            </label>
+                        </div>
+                        {% if form.is_private_project.errors %}
+                            <div class="text-danger small">{{ form.is_private_project.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'portfolio:admin-project-list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>
+                            {% if object %}Actualizar Proyecto{% else %}Crear Proyecto{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Ayuda
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-lightbulb me-1"></i>Consejos:</h6>
+                    <ul class="mb-0 small">
+                        <li>Usa imágenes de alta calidad para mejor presentación</li>
+                        <li>La descripción breve debe ser concisa y atractiva</li>
+                        <li>Selecciona las tecnologías más relevantes</li>
+                        <li>Los proyectos destacados aparecen en la página principal</li>
+                        <li>El orden determina la posición en las listas</li>
+                    </ul>
+                </div>
+
+                {% if object %}
+                <div class="mt-3">
+                    <h6>Vista Previa:</h6>
+                    <div class="card">
+                        <div class="card-body p-3">
+                            {% if object.image %}
+                                <img src="{{ object.image.url }}" alt="{{ object.title }}" 
+                                     class="img-fluid rounded mb-2">
+                            {% endif %}
+                            <h6 class="mb-1">
+                                {{ object.title }}
+                            </h6>
+                            <p class="small text-muted mb-2">{{ object.description|truncatewords:15 }}</p>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for tech in object.technologies.all|slice:":3" %}
+                                    <span class="badge bg-secondary">{{ tech.name }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+// Add form-control class to form fields
+document.addEventListener('DOMContentLoaded', function() {
+    const formFields = document.querySelectorAll('input[type="text"], input[type="url"], input[type="number"], textarea, select');
+    formFields.forEach(field => {
+        if (!field.classList.contains('form-check-input')) {
+            field.classList.add('form-control');
+        }
+    });
+    
+    // File input styling
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+        input.classList.add('form-control');
+    });
+
+    // Auto-generate slug from title
+    const titleField = document.querySelector('#id_title');
+    if (titleField && !document.querySelector('#id_slug').value) {
+        titleField.addEventListener('input', function() {
+            const slug = this.value.toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .trim('-');
+            // Note: slug field is auto-generated in the model
+        });
+    }
+});
+</script>
+{% endblock %}

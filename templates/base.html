@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ profile.name|default:"Henfry de los Santos" }}{% endblock %}</title>
+    {% load static %}
+
+    <!-- Google Fonts - Montserrat for clean typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    {% block extra_css %}{% endblock %}
+
+    <style>
+        /* Clean portfolio styling */
+        body {
+            background-color: #fafafa;
+            font-family: 'Montserrat', sans-serif;
+            min-width: 1000px;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        /* Navigation - Hidden for single-page layout */
+        .top-nav {
+            display: none;
+        }
+
+        .nav-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+        }
+
+        .nav-brand {
+            font-weight: 600;
+            color: #333;
+            text-decoration: none;
+            font-size: 1rem;
+        }
+
+        .nav-brand:hover {
+            color: #0085ff;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #666;
+            text-decoration: none;
+            font-size: 1rem;
+            padding: 5px;
+            border-radius: 3px;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: #0085ff;
+            text-decoration: none;
+        }
+
+        .nav-links i {
+            font-size: 1rem;
+        }
+
+        /* Main content container - Removed for single-page layout */
+        .main-wrapper {
+            background-color: transparent;
+            min-height: calc(100vh - 60px);
+            box-shadow: none;
+            max-width: none;
+            margin: 0;
+        }
+
+        /* Messages */
+        .messages {
+            padding: 20px 40px 0;
+        }
+
+        .alert {
+            border-radius: 6px;
+            border: none;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* Footer - Hidden for single-page layout */
+        .footer {
+            display: none;
+        }
+
+        /* Global link styles */
+        a {
+            color: #0085ff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 1000px) {
+            body {
+                min-width: auto;
+            }
+
+            .nav-container {
+                padding: 0 20px;
+            }
+
+            .main-wrapper {
+                margin: 0;
+                box-shadow: none;
+            }
+
+            .messages {
+                padding: 20px 20px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                henfrydls.com
+            </a>
+
+            <div class="nav-links">
+                {% if user.is_authenticated %}
+                <a href="{% url 'portfolio:admin-dashboard' %}" title="Dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                </a>
+                <a href="{% url 'admin:index' %}" title="Admin">
+                    <i class="fas fa-cog"></i>
+                </a>
+                {% endif %}
+
+                {% if profile %}
+                    {% if profile.github_url %}
+                    <a href="{{ profile.github_url }}" target="_blank" title="GitHub">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    {% endif %}
+                    {% if profile.linkedin_url %}
+                    <a href="{{ profile.linkedin_url }}" target="_blank" title="LinkedIn">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content wrapper -->
+    <div class="main-wrapper">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; {% now "Y" %} {{ profile.name|default:"Henfry de los Santos" }}. All rights reserved.</p>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Session Management for Admin Pages -->
+    {% if user.is_authenticated and user.is_staff %}
+    <script src="{% static 'js/session-manager.js' %}"></script>
+    <script>
+        document.body.classList.add('admin-page');
+    </script>
+    {% endif %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

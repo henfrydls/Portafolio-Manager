@@ -1,0 +1,162 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+
+{% block admin_title %}Gestión de Experiencia Laboral{% endblock %}
+{% block admin_subtitle %}Administra tu historial profesional y experiencia laboral{% endblock %}
+
+{% block admin_actions %}
+<a href="{% url 'portfolio:admin-experience-create' %}" class="btn-primary-custom">
+    <i class="fas fa-plus"></i>Nueva Experiencia
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Filters -->
+<div class="filters-section">
+    <form method="get" class="filters-grid">
+        <div>
+            <label class="form-label-custom">Buscar experiencias</label>
+            <input type="text" name="search" class="form-control-custom" 
+                   placeholder="Empresa, posición..." value="{{ current_search }}">
+        </div>
+        <div>
+            <label class="form-label-custom">Estado</label>
+            <select name="current" class="form-control-custom">
+                <option value="">Todas las experiencias</option>
+                <option value="true" {% if current_filter == 'true' %}selected{% endif %}>Trabajo actual</option>
+                <option value="false" {% if current_filter == 'false' %}selected{% endif %}>Trabajos anteriores</option>
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="btn-primary-custom">
+                <i class="fas fa-search"></i>Filtrar
+            </button>
+        </div>
+        <div>
+            <a href="{% url 'portfolio:admin-experience-list' %}" class="btn-secondary-custom">
+                <i class="fas fa-times"></i>Limpiar
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Experience Table -->
+<div class="content-card">
+    <div class="card-header-custom">
+        <div>
+            <h2 class="card-title-custom">Experiencia Laboral</h2>
+            <p class="card-subtitle-custom">{{ experiences|length }} experiencias mostradas • Total: {{ paginator.count }}</p>
+        </div>
+    </div>
+    
+    {% if experiences %}
+    <div style="overflow-x: auto;">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Posición</th>
+                    <th>Empresa</th>
+                    <th>Período</th>
+                    <th>Estado</th>
+                    <th width="200">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for experience in experiences %}
+                <tr>
+                    <td>
+                        <div>
+                            <div style="font-weight: 500; color: #242424; margin-bottom: 4px;">
+                                {{ experience.position }}
+                            </div>
+                            <div style="font-size: 12px; color: #6B6B6B;">{{ experience.description|truncatewords:10 }}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500; color: #242424;">
+                            {{ experience.company }}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-size: 13px; color: #6B6B6B;">
+                            {{ experience.start_date|date:"M Y" }}
+                            {% if experience.current %}
+                                - Presente
+                            {% elif experience.end_date %}
+                                - {{ experience.end_date|date:"M Y" }}
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        {% if experience.current %}
+                            <span class="badge-custom badge-success">
+                                <i class="fas fa-briefcase" style="margin-right: 4px;"></i>Actual
+                            </span>
+                        {% else %}
+                            <span class="badge-custom badge-secondary">
+                                <i class="fas fa-history" style="margin-right: 4px;"></i>Anterior
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="quick-actions">
+                            <a href="{% url 'portfolio:admin-experience-edit' experience.pk %}" 
+                               class="btn" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'portfolio:admin-experience-delete' experience.pk %}" 
+                               class="btn" title="Eliminar" style="color: #dc3545;">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-briefcase"></i>
+        <h3>No hay experiencias laborales</h3>
+        <p>
+            {% if current_search or current_filter %}
+                No se encontraron experiencias con los filtros aplicados.
+            {% else %}
+                Comienza agregando tu primera experiencia laboral.
+            {% endif %}
+        </p>
+        <a href="{% url 'portfolio:admin-experience-create' %}" class="btn-primary-custom">
+            <i class="fas fa-plus"></i>Agregar Experiencia
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="pagination-custom">
+    {% if page_obj.has_previous %}
+        <a class="page-link" href="?page=1{% if current_search %}&search={{ current_search }}{% endif %}{% if current_filter %}&current={{ current_filter }}{% endif %}">
+            <i class="fas fa-angle-double-left"></i>
+        </a>
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_filter %}&current={{ current_filter }}{% endif %}">
+            <i class="fas fa-angle-left"></i>
+        </a>
+    {% endif %}
+
+    <span class="page-link active">
+        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_filter %}&current={{ current_filter }}{% endif %}">
+            <i class="fas fa-angle-right"></i>
+        </a>
+        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_filter %}&current={{ current_filter }}{% endif %}">
+            <i class="fas fa-angle-double-right"></i>
+        </a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

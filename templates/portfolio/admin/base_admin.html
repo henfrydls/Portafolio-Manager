@@ -1,0 +1,565 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Admin - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Base Styles - Consistent with blog design */
+body {
+    font-family: sohne, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background: #fafafa;
+    color: rgba(41, 41, 41, 1);
+    line-height: 1.58;
+    letter-spacing: -0.004em;
+}
+
+/* Top Navigation - Same as blog */
+.admin-top-nav {
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid #F2F2F2;
+    z-index: 1000;
+    padding: 0 20px;
+}
+
+.nav-container {
+    max-width: 1192px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 57px;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+}
+
+.nav-right {
+    display: flex;
+    gap: 32px;
+}
+
+.nav-link {
+    color: rgba(117, 117, 117, 1);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 400;
+    transition: color 0.15s ease;
+}
+
+.nav-link:hover {
+    color: #242424;
+}
+
+.nav-left .nav-link {
+    font-size: 16px;
+    font-weight: 600;
+    color: #242424;
+}
+
+.nav-left .nav-link:hover {
+    opacity: 0.7;
+}
+
+.nav-link.active {
+    color: #242424 !important;
+    font-weight: 500;
+}
+
+/* Main Content */
+.admin-main {
+    max-width: 1192px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.admin-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding-top: 56px;
+    min-height: calc(100vh - 200px);
+}
+
+/* Header - Blog style */
+.admin-header {
+    margin-bottom: 48px;
+    text-align: left;
+}
+
+.admin-title {
+    font-size: 42px;
+    line-height: 52px;
+    letter-spacing: -0.011em;
+    font-weight: 700;
+    color: #242424;
+    margin: 0 0 16px 0;
+}
+
+.admin-subtitle {
+    font-size: 20px;
+    line-height: 28px;
+    color: #6B6B6B;
+    margin: 0;
+}
+
+/* Content Cards */
+.content-card {
+    background: white;
+    border-radius: 8px;
+    padding: 32px;
+    border: 1px solid #F2F2F2;
+    margin-bottom: 32px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.content-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.card-header-custom {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #F2F2F2;
+}
+
+.card-title-custom {
+    font-size: 24px;
+    line-height: 32px;
+    font-weight: 600;
+    color: #242424;
+    margin: 0;
+}
+
+.card-subtitle-custom {
+    font-size: 16px;
+    color: #6B6B6B;
+    margin: 0;
+}
+
+/* Buttons - Blog style */
+.btn-primary-custom {
+    background: #242424;
+    color: white;
+    border: 1px solid #242424;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-primary-custom:hover {
+    background: #1a1a1a;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.btn-secondary-custom {
+    background: #F2F2F2;
+    color: #242424;
+    border: 1px solid #F2F2F2;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary-custom:hover {
+    background: #242424;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.btn-danger-custom {
+    background: #dc3545;
+    color: white;
+    border: 1px solid #dc3545;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-danger-custom:hover {
+    background: #c82333;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+/* Form Elements */
+.form-control-custom {
+    width: 100%;
+    border: 1px solid #F2F2F2;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-family: inherit;
+    background: white;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+.form-control-custom:focus {
+    border-color: #242424;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(36, 36, 36, 0.1);
+}
+
+.form-label-custom {
+    font-size: 14px;
+    font-weight: 500;
+    color: #242424;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-text-custom {
+    font-size: 12px;
+    color: #6B6B6B;
+    margin-top: 4px;
+}
+
+/* Tables */
+.table-custom {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.table-custom th {
+    background: #F2F2F2;
+    padding: 16px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 500;
+    color: #242424;
+    border-bottom: 1px solid #F2F2F2;
+}
+
+.table-custom td {
+    padding: 16px;
+    border-bottom: 1px solid #F2F2F2;
+    font-size: 14px;
+    color: #242424;
+}
+
+.table-custom tr:hover {
+    background: #fafafa;
+}
+
+/* Badges */
+.badge-custom {
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.badge-success { background: #E8F5E8; color: #2D7D32; }
+.badge-warning { background: #FFF3E0; color: #F57C00; }
+.badge-danger { background: #FFEBEE; color: #D32F2F; }
+.badge-info { background: #E3F2FD; color: #1976D2; }
+.badge-secondary { background: #F2F2F2; color: #242424; }
+
+/* Quick Actions */
+.quick-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.quick-actions .btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    border-radius: 6px;
+    border: 1px solid #F2F2F2;
+    background: white;
+    color: #6B6B6B;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.quick-actions .btn:hover {
+    background: #242424;
+    color: white;
+    border-color: #242424;
+    text-decoration: none;
+}
+
+/* Filters */
+.filters-section {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    border: 1px solid #F2F2F2;
+    margin-bottom: 32px;
+}
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    align-items: end;
+}
+
+/* Pagination */
+.pagination-custom {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 32px;
+}
+
+.pagination-custom .page-link {
+    padding: 8px 16px;
+    border: 1px solid #F2F2F2;
+    background: white;
+    color: #242424;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.pagination-custom .page-link:hover {
+    background: #242424;
+    color: white;
+    border-color: #242424;
+}
+
+.pagination-custom .page-link.active {
+    background: #242424;
+    color: white;
+    border-color: #242424;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 64px 32px;
+    color: #6B6B6B;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #242424;
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    font-size: 16px;
+    margin: 0 0 24px 0;
+}
+
+/* Messages */
+.alert-custom {
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    border: 1px solid;
+    font-size: 14px;
+}
+
+.alert-success {
+    background: #E8F5E8;
+    color: #2D7D32;
+    border-color: #C8E6C9;
+}
+
+.alert-danger {
+    background: #FFEBEE;
+    color: #D32F2F;
+    border-color: #FFCDD2;
+}
+
+.alert-warning {
+    background: #FFF3E0;
+    color: #F57C00;
+    border-color: #FFE0B2;
+}
+
+.alert-info {
+    background: #E3F2FD;
+    color: #1976D2;
+    border-color: #BBDEFB;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .admin-main {
+        padding: 0 16px;
+    }
+
+    .admin-container {
+        padding-top: 32px;
+    }
+
+    .admin-title {
+        font-size: 32px;
+        line-height: 40px;
+    }
+
+    .content-card {
+        padding: 24px;
+    }
+
+    .filters-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-actions {
+        flex-direction: column;
+        gap: 4px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-container {
+        padding: 0 16px;
+    }
+
+    .content-card {
+        padding: 20px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <!-- Top Navigation -->
+    <nav class="admin-top-nav">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="{% url 'portfolio:admin-dashboard' %}" class="nav-link">Dashboard</a>
+            </div>
+            <div class="nav-right">
+                <a href="{% url 'portfolio:admin-project-list' %}" class="nav-link {% if 'project' in request.resolver_match.url_name %}active{% endif %}">Proyectos</a>
+                <a href="{% url 'portfolio:admin-blog-list' %}" class="nav-link {% if 'blog' in request.resolver_match.url_name %}active{% endif %}">Blog</a>
+                <a href="{% url 'portfolio:admin-contact-list' %}" class="nav-link {% if 'contact' in request.resolver_match.url_name %}active{% endif %}">Mensajes</a>
+                <a href="{% url 'portfolio:admin-cv-hub' %}" class="nav-link {% if 'cv' in request.resolver_match.url_name or 'experience' in request.resolver_match.url_name or 'education' in request.resolver_match.url_name or 'skill' in request.resolver_match.url_name %}active{% endif %}">CV</a>
+                <a href="{% url 'portfolio:admin-profile-edit' %}" class="nav-link {% if request.resolver_match.url_name == 'admin-profile-edit' %}active{% endif %}">Mi Perfil</a>
+                <a href="{% url 'portfolio:admin-analytics' %}" class="nav-link">Analytics</a>
+                <a href="{% url 'admin:index' %}" class="nav-link">Admin Panel</a>
+                <a href="{% url 'portfolio:home' %}" class="nav-link" target="_blank">Ver Sitio</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <div class="admin-container">
+            <!-- Page Header -->
+            <header class="admin-header">
+                <h1 class="admin-title">{% block admin_title %}Administración{% endblock %}</h1>
+                <p class="admin-subtitle">{% block admin_subtitle %}Gestiona tu contenido{% endblock %}</p>
+                <div style="margin-top: 24px;">
+                    {% block admin_actions %}{% endblock %}
+                </div>
+            </header>
+
+            <!-- Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert-custom alert-{{ message.tags }}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block admin_content %}{% endblock %}
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// CSRF token for AJAX requests
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+// Quick toggle functions
+function quickToggle(url, data, successCallback) {
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrftoken,
+        },
+        body: new URLSearchParams(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            successCallback(data);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error de conexión');
+    });
+}
+
+// Auto-hide alerts after 5 seconds
+setTimeout(function() {
+    const alerts = document.querySelectorAll('.alert-admin');
+    alerts.forEach(alert => {
+        if (alert.classList.contains('show')) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    });
+}, 5000);
+</script>
+{% endblock %}

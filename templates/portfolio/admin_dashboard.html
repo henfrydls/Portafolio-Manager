@@ -1,0 +1,947 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - {{ profile.name|default:"Henfry de los Santos" }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Base Styles - Consistent with blog design */
+body {
+    font-family: sohne, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background: #fafafa;
+    color: rgba(41, 41, 41, 1);
+    line-height: 1.58;
+    letter-spacing: -0.004em;
+}
+
+/* Top Navigation - Same as admin */
+.admin-top-nav {
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid #F2F2F2;
+    z-index: 1000;
+    padding: 0 20px;
+}
+
+.nav-container {
+    max-width: 1192px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 57px;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+}
+
+.nav-right {
+    display: flex;
+    gap: 32px;
+}
+
+.nav-link {
+    color: rgba(117, 117, 117, 1);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 400;
+    transition: color 0.15s ease;
+}
+
+.nav-link:hover {
+    color: #242424;
+}
+
+.nav-left .nav-link {
+    font-size: 16px;
+    font-weight: 600;
+    color: #242424;
+}
+
+.nav-left .nav-link:hover {
+    opacity: 0.7;
+}
+
+.nav-link.active {
+    color: #242424 !important;
+    font-weight: 500;
+}
+
+/* Main Content */
+.dashboard-main {
+    max-width: 1192px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.dashboard-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding-top: 56px;
+    min-height: calc(100vh - 200px);
+}
+
+/* Header - Blog style */
+.dashboard-header {
+    margin-bottom: 48px;
+    text-align: left;
+}
+
+.dashboard-title {
+    font-size: 42px;
+    line-height: 52px;
+    letter-spacing: -0.011em;
+    font-weight: 700;
+    color: #242424;
+    margin: 0 0 16px 0;
+}
+
+.dashboard-subtitle {
+    font-size: 20px;
+    line-height: 28px;
+    color: #6B6B6B;
+    margin: 0;
+}
+
+/* Stats Grid - Clean cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 48px;
+}
+
+.stats-card {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    border: 1px solid #F2F2F2;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.stats-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.stats-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #6B6B6B;
+    background: #F2F2F2;
+}
+
+.stats-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6B6B6B;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stats-number {
+    font-size: 32px;
+    line-height: 40px;
+    font-weight: 700;
+    color: #242424;
+    margin: 0 0 8px 0;
+}
+
+.stats-meta {
+    font-size: 13px;
+    color: #6B6B6B;
+    line-height: 18px;
+}
+
+/* Chart Section */
+.chart-section {
+    background: white;
+    border-radius: 8px;
+    padding: 32px;
+    border: 1px solid #F2F2F2;
+    margin-bottom: 48px;
+}
+
+.chart-header {
+    margin-bottom: 32px;
+}
+
+.chart-title {
+    font-size: 24px;
+    line-height: 32px;
+    font-weight: 600;
+    color: #242424;
+    margin: 0 0 8px 0;
+}
+
+.chart-subtitle {
+    font-size: 16px;
+    color: #6B6B6B;
+    margin: 0;
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 300px;
+    width: 100%;
+    overflow: hidden;
+}
+
+#visitsChart {
+    max-height: 300px !important;
+    max-width: 100% !important;
+}
+
+/* Quick Actions - Blog style buttons */
+.quick-actions-section {
+    background: white;
+    border-radius: 8px;
+    padding: 32px;
+    border: 1px solid #F2F2F2;
+    margin-bottom: 48px;
+}
+
+.section-title {
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 600;
+    color: #242424;
+    margin: 0 0 24px 0;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: #F2F2F2;
+    color: #242424;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.action-btn:hover {
+    background: #242424;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.action-btn i {
+    font-size: 16px;
+}
+
+.action-btn .badge {
+    background: #FF6B35;
+    color: white;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: auto;
+}
+
+.action-btn {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    min-height: 80px;
+    justify-content: space-between;
+}
+
+.action-btn-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.action-btn-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.action-btn-title {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.action-meta {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-top: 4px;
+    line-height: 1.3;
+}
+
+.action-btn:hover .action-meta {
+    opacity: 0.9;
+}
+
+/* Content Sections */
+.content-sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px;
+    margin-bottom: 48px;
+}
+
+.content-section {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    border: 1px solid #F2F2F2;
+}
+
+.content-item {
+    padding: 16px 0;
+    border-bottom: 1px solid #F2F2F2;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.content-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.content-item:first-child {
+    padding-top: 0;
+}
+
+.item-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.item-title {
+    font-size: 16px;
+    line-height: 22px;
+    font-weight: 500;
+    color: #242424;
+    margin: 0 0 4px 0;
+}
+
+.item-meta {
+    font-size: 13px;
+    color: #6B6B6B;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.item-badge {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.badge-success {
+    background: #E8F5E8;
+    color: #2D7D32;
+}
+
+.badge-warning {
+    background: #FFF3E0;
+    color: #F57C00;
+}
+
+.badge-danger {
+    background: #FFEBEE;
+    color: #D32F2F;
+}
+
+.badge-info {
+    background: #E3F2FD;
+    color: #1976D2;
+}
+
+/* Popular Pages */
+.popular-section {
+    background: white;
+    border-radius: 8px;
+    padding: 32px;
+    border: 1px solid #F2F2F2;
+    margin-bottom: 48px;
+}
+
+.popular-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px;
+}
+
+.popular-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #F2F2F2;
+}
+
+.popular-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.popular-item:first-child {
+    padding-top: 0;
+}
+
+.popular-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.popular-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #242424;
+    margin: 0 0 4px 0;
+}
+
+.popular-url {
+    font-size: 13px;
+    color: #6B6B6B;
+    word-break: break-all;
+}
+
+.visit-count {
+    background: #F2F2F2;
+    color: #242424;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 48px 0;
+    color: #6B6B6B;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-main {
+        padding: 0 16px;
+    }
+
+    .dashboard-container {
+        padding-top: 32px;
+    }
+
+    .dashboard-title {
+        font-size: 32px;
+        line-height: 40px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .content-sections {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .popular-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .actions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-wrapper {
+        height: 250px;
+    }
+
+    #visitsChart {
+        max-height: 250px !important;
+    }
+
+    .content-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-container {
+        padding: 0 16px;
+    }
+
+    .chart-section,
+    .quick-actions-section,
+    .popular-section {
+        padding: 24px;
+    }
+
+    .content-section {
+        padding: 20px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <!-- Top Navigation -->
+    <nav class="admin-top-nav">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="{% url 'portfolio:admin-dashboard' %}" class="nav-link">Dashboard</a>
+            </div>
+            <div class="nav-right">
+                <a href="{% url 'portfolio:admin-project-list' %}" class="nav-link">Proyectos</a>
+                <a href="{% url 'portfolio:admin-blog-list' %}" class="nav-link">Blog</a>
+                <a href="{% url 'portfolio:admin-contact-list' %}" class="nav-link">Mensajes</a>
+                <a href="{% url 'portfolio:admin-cv-hub' %}" class="nav-link">CV</a>
+                <a href="{% url 'portfolio:admin-profile-edit' %}" class="nav-link">Mi Perfil</a>
+                <a href="{% url 'portfolio:admin-analytics' %}" class="nav-link">Analytics</a>
+                <a href="{% url 'admin:index' %}" class="nav-link">Admin Panel</a>
+                <a href="{% url 'portfolio:home' %}" class="nav-link" target="_blank">Ver Sitio</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="dashboard-container">
+            <!-- Page Header -->
+            <header class="dashboard-header">
+                <h1 class="dashboard-title">Dashboard</h1>
+                <p class="dashboard-subtitle">Overview of your portfolio performance and content</p>
+            </header>
+
+            <!-- Statistics Grid -->
+            <div class="stats-grid">
+                <div class="stats-card">
+                    <div class="stats-header">
+                        <div class="stats-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="stats-label">Site Visits</div>
+                    </div>
+                    <h3 class="stats-number">{{ stats.total_visits }}</h3>
+                    <div class="stats-meta">{{ today_visits }} today, {{ week_visits }} this week</div>
+                </div>
+
+                <div class="stats-card">
+                    <div class="stats-header">
+                        <div class="stats-icon">
+                            <i class="fas fa-blog"></i>
+                        </div>
+                        <div class="stats-label">Blog Posts</div>
+                    </div>
+                    <h3 class="stats-number">{{ stats.total_posts }}</h3>
+                    <div class="stats-meta">{{ stats.published_posts }} published, {{ stats.draft_posts }} drafts</div>
+                </div>
+
+                <div class="stats-card">
+                    <div class="stats-header">
+                        <div class="stats-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="stats-label">Messages</div>
+                    </div>
+                    <h3 class="stats-number">{{ stats.total_messages }}</h3>
+                    <div class="stats-meta">
+                        {% if stats.unread_messages > 0 %}
+                        {{ stats.unread_messages }} unread messages
+                        {% else %}
+                        All messages read
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="chart-section">
+                <div class="chart-header">
+                    <h2 class="chart-title">Site Traffic</h2>
+                    <p class="chart-subtitle">Visits over the last 30 days</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="visitsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions-section">
+                <h2 class="section-title">Quick Actions</h2>
+                <div class="actions-grid">
+                    <a href="{% url 'portfolio:admin-blog-create' %}" class="action-btn">
+                        <div class="action-btn-header">
+                            <i class="fas fa-plus"></i>
+                            <div class="action-btn-content">
+                                <div class="action-btn-title">New Blog Post</div>
+                                <div class="action-meta">Create a new article or tutorial</div>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="{% url 'portfolio:admin-project-create' %}" class="action-btn">
+                        <div class="action-btn-header">
+                            <i class="fas fa-folder-plus"></i>
+                            <div class="action-btn-content">
+                                <div class="action-btn-title">New Project</div>
+                                <div class="action-meta">Add a new project to portfolio</div>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="{% url 'portfolio:admin-profile-edit' %}" class="action-btn">
+                        <div class="action-btn-header">
+                            <i class="fas fa-user-edit"></i>
+                            <div class="action-btn-content">
+                                <div class="action-btn-title">Edit Profile</div>
+                                <div class="action-meta">Update personal information</div>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="{% url 'portfolio:admin-analytics' %}" class="action-btn">
+                        <div class="action-btn-header">
+                            <i class="fas fa-chart-bar"></i>
+                            <div class="action-btn-content">
+                                <div class="action-btn-title">Analytics</div>
+                                <div class="action-meta">View detailed site statistics</div>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="{% url 'portfolio:home' %}" class="action-btn" target="_blank">
+                        <div class="action-btn-header">
+                            <i class="fas fa-external-link-alt"></i>
+                            <div class="action-btn-content">
+                                <div class="action-btn-title">View Site</div>
+                                <div class="action-meta">Open public portfolio</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Content Management -->
+            <div class="quick-actions-section">
+                <h2 class="section-title">Content Management</h2>
+                <div class="actions-grid">
+                    <a href="{% url 'portfolio:admin-blog-list' %}" class="action-btn">
+                        <div class="action-btn-header">
+                            <i class="fas fa-blog"></i>
+                            <div class="action-btn-content">
+                                <div class="action-btn-title">Manage Blog Posts</div>
+                                <div class="action-meta">{{ stats.total_posts }} posts total • {{ stats.published_posts }} published</div>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="{% url 'portfolio:admin-project-list' %}" class="action-btn">
+                        <div class="action-btn-header">
+                            <i class="fas fa-folder"></i>
+                            <div class="action-btn-content">
+                                <div class="action-btn-title">Manage Projects</div>
+                                <div class="action-meta">View, edit and organize projects</div>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="{% url 'portfolio:admin-contact-list' %}" class="action-btn">
+                        <div class="action-btn-header">
+                            <i class="fas fa-inbox"></i>
+                            <div class="action-btn-content">
+                                <div class="action-btn-title">Message Inbox</div>
+                                <div class="action-meta">
+                                    {% if stats.unread_messages > 0 %}
+                                        {{ stats.unread_messages }} unread message{{ stats.unread_messages|pluralize }}
+                                    {% else %}
+                                        All messages read • {{ stats.total_messages }} total
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if stats.unread_messages > 0 %}
+                            <span class="badge">{{ stats.unread_messages }}</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Advanced Actions -->
+            <div class="quick-actions-section">
+                <h2 class="section-title">Advanced Management</h2>
+                <div class="actions-grid">
+                    <a href="{% url 'portfolio:admin-blog-list' %}?status=draft" class="action-btn">
+                        <div class="action-btn-header">
+                            <i class="fas fa-edit"></i>
+                            <div class="action-btn-content">
+                                <div class="action-btn-title">Draft Posts</div>
+                                <div class="action-meta">{{ stats.draft_posts }} draft{{ stats.draft_posts|pluralize }} to review</div>
+                            </div>
+                            {% if stats.draft_posts > 0 %}
+                            <span class="badge">{{ stats.draft_posts }}</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                    <a href="{% url 'portfolio:admin-blog-list' %}?status=published&featured=true" class="action-btn">
+                        <div class="action-btn-header">
+                            <i class="fas fa-star"></i>
+                            <div class="action-btn-content">
+                                <div class="action-btn-title">Featured Content</div>
+                                <div class="action-meta">Manage highlighted posts and projects</div>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="{% url 'portfolio:admin-contact-list' %}?status=unread" class="action-btn">
+                        <div class="action-btn-header">
+                            <i class="fas fa-envelope-open"></i>
+                            <div class="action-btn-content">
+                                <div class="action-btn-title">Unread Messages</div>
+                                <div class="action-meta">
+                                    {% if stats.unread_messages > 0 %}
+                                        {{ stats.unread_messages }} message{{ stats.unread_messages|pluralize }} need{{ stats.unread_messages|pluralize:"s," }} attention
+                                    {% else %}
+                                        No unread messages
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if stats.unread_messages > 0 %}
+                            <span class="badge">{{ stats.unread_messages }}</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Content -->
+            <div class="content-sections">
+                <div class="content-section">
+                    <h2 class="section-title">Recent Messages</h2>
+                    {% for message in recent_messages %}
+                    <div class="content-item">
+                        <div class="item-content">
+                            <h3 class="item-title">{{ message.subject|truncatechars:40 }}</h3>
+                            <div class="item-meta">
+                                <i class="fas fa-user"></i>
+                                <span>{{ message.name }}</span>
+                                <span>·</span>
+                                <span>{{ message.created_at|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                        {% if not message.read %}
+                        <span class="item-badge badge-danger">New</span>
+                        {% else %}
+                        <span class="item-badge badge-success">Read</span>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <i class="fas fa-envelope"></i>
+                        <h3>No recent messages</h3>
+                        <p>New contact messages will appear here</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="content-section">
+                    <h2 class="section-title">Recent Posts</h2>
+                    {% for post in recent_posts %}
+                    <div class="content-item">
+                        <div class="item-content">
+                            <h3 class="item-title">{{ post.title|truncatechars:40 }}</h3>
+                            <div class="item-meta">
+                                <i class="fas fa-tag"></i>
+                                <span>{{ post.get_post_type_display }}</span>
+                                <span>·</span>
+                                <span>{{ post.created_at|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                        {% if post.status == 'published' %}
+                        <span class="item-badge badge-success">Published</span>
+                        {% elif post.status == 'draft' %}
+                        <span class="item-badge badge-warning">Draft</span>
+                        {% else %}
+                        <span class="item-badge badge-info">{{ post.get_status_display }}</span>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <i class="fas fa-blog"></i>
+                        <h3>No recent posts</h3>
+                        <p>New blog posts will appear here</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Popular Content -->
+            <div class="popular-section">
+                <h2 class="section-title">Analytics Overview</h2>
+                <div class="popular-grid">
+                    <div>
+                        <h3 class="section-title" style="font-size: 18px; margin-bottom: 16px;">Most Visited Pages (30 days)</h3>
+                        {% for page in popular_pages %}
+                        <div class="popular-item">
+                            <div class="popular-content">
+                                <div class="popular-title">{{ page.page_title|default:"Untitled"|truncatechars:50 }}</div>
+                                <div class="popular-url">{{ page.page_url|truncatechars:60 }}</div>
+                            </div>
+                            <div class="visit-count">{{ page.visits }} visits</div>
+                        </div>
+                        {% empty %}
+                        <div class="empty-state">
+                            <i class="fas fa-chart-bar"></i>
+                            <h3>No visit data</h3>
+                            <p>Page visit analytics will appear here</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gráfico de visitas
+    const chartCanvas = document.getElementById('visitsChart');
+    
+    if (!chartCanvas) {
+        console.error('Canvas element not found');
+        return;
+    }
+    
+    const ctx = chartCanvas.getContext('2d');
+    
+    const visitData = {{ visit_chart_data.data|safe }} || [];
+    const visitLabels = {{ visit_chart_data.labels|safe }} || [];
+    
+    // Si no hay datos, mostrar mensaje
+    if (visitData.length === 0) {
+        const chartWrapper = document.querySelector('.chart-wrapper');
+        chartWrapper.innerHTML = '<div class="empty-state"><i class="fas fa-chart-line"></i><h3>No visit data available</h3><p>Visit analytics will appear here once you have traffic</p></div>';
+        return;
+    }
+    
+    // Destruir gráfico existente si existe
+    if (window.visitsChartInstance) {
+        window.visitsChartInstance.destroy();
+    }
+    
+    window.visitsChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: visitLabels,
+            datasets: [{
+                label: 'Visitas por día',
+                data: visitData,
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: 'white',
+                    bodyColor: 'white',
+                    borderColor: '#667eea',
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        color: '#7f8c8d'
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        maxTicksLimit: 10,
+                        color: '#7f8c8d'
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            },
+            elements: {
+                point: {
+                    radius: 4,
+                    hoverRadius: 6
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

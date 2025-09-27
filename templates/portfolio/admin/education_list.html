@@ -1,0 +1,203 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+
+{% block admin_title %}Gestión de Educación{% endblock %}
+{% block admin_subtitle %}Administra tu formación académica, certificaciones y cursos{% endblock %}
+
+{% block admin_actions %}
+<a href="{% url 'portfolio:admin-education-create' %}" class="btn-primary-custom">
+    <i class="fas fa-plus"></i>Nueva Educación
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Filters -->
+<div class="filters-section">
+    <form method="get" class="filters-grid">
+        <div>
+            <label class="form-label-custom">Buscar educación</label>
+            <input type="text" name="search" class="form-control-custom" 
+                   placeholder="Institución, título..." value="{{ current_search }}">
+        </div>
+        <div>
+            <label class="form-label-custom">Tipo</label>
+            <select name="education_type" class="form-control-custom">
+                <option value="">Todos los tipos</option>
+                <option value="formal" {% if current_type == 'formal' %}selected{% endif %}>Educación Formal</option>
+                <option value="online_course" {% if current_type == 'online_course' %}selected{% endif %}>Curso Online</option>
+                <option value="certification" {% if current_type == 'certification' %}selected{% endif %}>Certificación</option>
+                <option value="bootcamp" {% if current_type == 'bootcamp' %}selected{% endif %}>Bootcamp</option>
+                <option value="workshop" {% if current_type == 'workshop' %}selected{% endif %}>Taller/Workshop</option>
+            </select>
+        </div>
+        <div>
+            <label class="form-label-custom">Estado</label>
+            <select name="current" class="form-control-custom">
+                <option value="">Todos los estados</option>
+                <option value="true" {% if current_filter == 'true' %}selected{% endif %}>En curso</option>
+                <option value="false" {% if current_filter == 'false' %}selected{% endif %}>Completado</option>
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="btn-primary-custom">
+                <i class="fas fa-search"></i>Filtrar
+            </button>
+        </div>
+        <div>
+            <a href="{% url 'portfolio:admin-education-list' %}" class="btn-secondary-custom">
+                <i class="fas fa-times"></i>Limpiar
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Education Table -->
+<div class="content-card">
+    <div class="card-header-custom">
+        <div>
+            <h2 class="card-title-custom">Educación y Formación</h2>
+            <p class="card-subtitle-custom">{{ educations|length }} registros mostrados • Total: {{ paginator.count }}</p>
+        </div>
+    </div>
+    
+    {% if educations %}
+    <div style="overflow-x: auto;">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Título/Certificación</th>
+                    <th>Institución</th>
+                    <th>Tipo</th>
+                    <th>Período</th>
+                    <th>Estado</th>
+                    <th width="200">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for education in educations %}
+                <tr>
+                    <td>
+                        <div>
+                            <div style="font-weight: 500; color: #242424; margin-bottom: 4px;">
+                                {{ education.degree }}
+                            </div>
+                            <div style="font-size: 12px; color: #6B6B6B;">{{ education.field_of_study }}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500; color: #242424;">
+                            {{ education.institution }}
+                        </div>
+                    </td>
+                    <td>
+                        {% if education.education_type == 'formal' %}
+                            <span class="badge-custom badge-primary">
+                                <i class="fas fa-university" style="margin-right: 4px;"></i>Formal
+                            </span>
+                        {% elif education.education_type == 'online_course' %}
+                            <span class="badge-custom badge-info">
+                                <i class="fas fa-laptop" style="margin-right: 4px;"></i>Curso Online
+                            </span>
+                        {% elif education.education_type == 'certification' %}
+                            <span class="badge-custom badge-success">
+                                <i class="fas fa-certificate" style="margin-right: 4px;"></i>Certificación
+                            </span>
+                        {% elif education.education_type == 'bootcamp' %}
+                            <span class="badge-custom badge-warning">
+                                <i class="fas fa-code" style="margin-right: 4px;"></i>Bootcamp
+                            </span>
+                        {% elif education.education_type == 'workshop' %}
+                            <span class="badge-custom badge-secondary">
+                                <i class="fas fa-tools" style="margin-right: 4px;"></i>Workshop
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="font-size: 13px; color: #6B6B6B;">
+                            {{ education.start_date|date:"M Y" }}
+                            {% if education.current %}
+                                - Presente
+                            {% elif education.end_date %}
+                                - {{ education.end_date|date:"M Y" }}
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        {% if education.current %}
+                            <span class="badge-custom badge-success">
+                                <i class="fas fa-clock" style="margin-right: 4px;"></i>En curso
+                            </span>
+                        {% else %}
+                            <span class="badge-custom badge-secondary">
+                                <i class="fas fa-check" style="margin-right: 4px;"></i>Completado
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="quick-actions">
+                            {% if education.credential_url %}
+                                <a href="{{ education.credential_url }}" 
+                                   class="btn" target="_blank" title="Ver Certificado">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            {% endif %}
+                            <a href="{% url 'portfolio:admin-education-edit' education.pk %}" 
+                               class="btn" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'portfolio:admin-education-delete' education.pk %}" 
+                               class="btn" title="Eliminar" style="color: #dc3545;">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-graduation-cap"></i>
+        <h3>No hay registros de educación</h3>
+        <p>
+            {% if current_search or current_type or current_filter %}
+                No se encontraron registros con los filtros aplicados.
+            {% else %}
+                Comienza agregando tu primera formación académica.
+            {% endif %}
+        </p>
+        <a href="{% url 'portfolio:admin-education-create' %}" class="btn-primary-custom">
+            <i class="fas fa-plus"></i>Agregar Educación
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="pagination-custom">
+    {% if page_obj.has_previous %}
+        <a class="page-link" href="?page=1{% if current_search %}&search={{ current_search }}{% endif %}{% if current_type %}&education_type={{ current_type }}{% endif %}{% if current_filter %}&current={{ current_filter }}{% endif %}">
+            <i class="fas fa-angle-double-left"></i>
+        </a>
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_type %}&education_type={{ current_type }}{% endif %}{% if current_filter %}&current={{ current_filter }}{% endif %}">
+            <i class="fas fa-angle-left"></i>
+        </a>
+    {% endif %}
+
+    <span class="page-link active">
+        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_type %}&education_type={{ current_type }}{% endif %}{% if current_filter %}&current={{ current_filter }}{% endif %}">
+            <i class="fas fa-angle-right"></i>
+        </a>
+        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_type %}&education_type={{ current_type }}{% endif %}{% if current_filter %}&current={{ current_filter }}{% endif %}">
+            <i class="fas fa-angle-double-right"></i>
+        </a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

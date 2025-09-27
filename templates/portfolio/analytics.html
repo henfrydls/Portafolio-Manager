@@ -1,0 +1,778 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analytics - {{ profile.name|default:"Henfry de los Santos" }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Base Styles - Consistent with dashboard design */
+body {
+    font-family: sohne, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background: #fafafa;
+    color: rgba(41, 41, 41, 1);
+    line-height: 1.58;
+    letter-spacing: -0.004em;
+}
+
+/* Top Navigation - Same as admin */
+.admin-top-nav {
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid #F2F2F2;
+    z-index: 1000;
+    padding: 0 20px;
+}
+
+.nav-container {
+    max-width: 1192px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 57px;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+}
+
+.nav-right {
+    display: flex;
+    gap: 32px;
+}
+
+.nav-link {
+    color: rgba(117, 117, 117, 1);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 400;
+    transition: color 0.15s ease;
+}
+
+.nav-link:hover {
+    color: #242424;
+}
+
+.nav-left .nav-link {
+    font-size: 16px;
+    font-weight: 600;
+    color: #242424;
+}
+
+.nav-left .nav-link:hover {
+    opacity: 0.7;
+}
+
+.nav-link.active {
+    color: #242424 !important;
+    font-weight: 500;
+}
+
+/* Main Content */
+.analytics-main {
+    max-width: 1192px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.analytics-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding-top: 56px;
+    min-height: calc(100vh - 200px);
+}
+
+/* Header */
+.analytics-header {
+    margin-bottom: 48px;
+    text-align: left;
+}
+
+.analytics-title {
+    font-size: 42px;
+    line-height: 52px;
+    letter-spacing: -0.011em;
+    font-weight: 700;
+    color: #242424;
+    margin: 0 0 16px 0;
+}
+
+.analytics-subtitle {
+    font-size: 20px;
+    line-height: 28px;
+    color: #6B6B6B;
+    margin: 0;
+}
+
+/* Stats Grid */
+.stats-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    margin-bottom: 48px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    border: 1px solid #F2F2F2;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.stat-number {
+    font-size: 32px;
+    line-height: 40px;
+    font-weight: 700;
+    color: #242424;
+    margin: 0 0 8px 0;
+}
+
+.stat-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6B6B6B;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 8px 0;
+}
+
+.stat-change {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+.stat-change.positive {
+    background: #E8F5E8;
+    color: #2D7D32;
+}
+
+.stat-change.negative {
+    background: #FFEBEE;
+    color: #D32F2F;
+}
+
+.stat-change.neutral {
+    background: #F2F2F2;
+    color: #6B6B6B;
+}
+
+/* Chart Sections */
+.chart-section {
+    background: white;
+    border-radius: 8px;
+    padding: 32px;
+    border: 1px solid #F2F2F2;
+    margin-bottom: 32px;
+}
+
+.chart-header {
+    margin-bottom: 32px;
+}
+
+.chart-title {
+    font-size: 24px;
+    line-height: 32px;
+    font-weight: 600;
+    color: #242424;
+    margin: 0 0 8px 0;
+}
+
+.chart-subtitle {
+    font-size: 16px;
+    color: #6B6B6B;
+    margin: 0;
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 300px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.chart-wrapper.small {
+    height: 250px;
+}
+
+/* Two Column Layout */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 32px;
+    margin-bottom: 32px;
+}
+
+.charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-bottom: 32px;
+}
+
+/* Content Tables */
+.content-table {
+    background: white;
+    border-radius: 8px;
+    padding: 32px;
+    border: 1px solid #F2F2F2;
+    margin-bottom: 32px;
+}
+
+.table-title {
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 600;
+    color: #242424;
+    margin: 0 0 24px 0;
+}
+
+.analytics-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.analytics-table th {
+    text-align: left;
+    padding: 12px 0;
+    border-bottom: 2px solid #F2F2F2;
+    font-size: 14px;
+    font-weight: 600;
+    color: #6B6B6B;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.analytics-table td {
+    padding: 16px 0;
+    border-bottom: 1px solid #F2F2F2;
+    font-size: 14px;
+    color: #242424;
+}
+
+.analytics-table tr:last-child td {
+    border-bottom: none;
+}
+
+.page-url {
+    color: #6B6B6B;
+    font-size: 12px;
+    word-break: break-all;
+}
+
+.visit-badge {
+    background: #F2F2F2;
+    color: #242424;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 48px 0;
+    color: #6B6B6B;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .charts-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .analytics-main {
+        padding: 0 16px;
+    }
+
+    .analytics-container {
+        padding-top: 32px;
+    }
+
+    .analytics-title {
+        font-size: 32px;
+        line-height: 40px;
+    }
+
+    .stats-overview {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .chart-section,
+    .content-table {
+        padding: 24px;
+    }
+
+    .chart-wrapper {
+        height: 250px;
+    }
+
+    .chart-wrapper.small {
+        height: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-overview {
+        grid-template-columns: 1fr;
+    }
+
+    .nav-container {
+        padding: 0 16px;
+    }
+
+    .analytics-table {
+        font-size: 12px;
+    }
+
+    .analytics-table th,
+    .analytics-table td {
+        padding: 8px 0;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-page">
+    <!-- Top Navigation -->
+    <nav class="admin-top-nav">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="{% url 'portfolio:admin-dashboard' %}" class="nav-link">Dashboard</a>
+            </div>
+            <div class="nav-right">
+                <a href="{% url 'portfolio:admin-project-list' %}" class="nav-link">Proyectos</a>
+                <a href="{% url 'portfolio:admin-blog-list' %}" class="nav-link">Blog</a>
+                <a href="{% url 'portfolio:admin-contact-list' %}" class="nav-link">Mensajes</a>
+                <a href="{% url 'portfolio:admin-cv-hub' %}" class="nav-link">CV</a>
+                <a href="{% url 'portfolio:admin-profile-edit' %}" class="nav-link">Mi Perfil</a>
+                <a href="{% url 'portfolio:admin-analytics' %}" class="nav-link active">Analytics</a>
+                <a href="{% url 'admin:index' %}" class="nav-link">Admin Panel</a>
+                <a href="{% url 'portfolio:home' %}" class="nav-link" target="_blank">Ver Sitio</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="analytics-main">
+        <div class="analytics-container">
+            <!-- Page Header -->
+            <header class="analytics-header">
+                <h1 class="analytics-title">Analytics</h1>
+                <p class="analytics-subtitle">Detailed insights into your portfolio performance and visitor behavior</p>
+            </header>
+
+            <!-- Visit Statistics Overview -->
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-number">{{ visit_stats.total_visits }}</div>
+                    <div class="stat-label">Total Visits</div>
+                    <div class="stat-change neutral">All time</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-number">{{ visit_stats.today_visits }}</div>
+                    <div class="stat-label">Today</div>
+                    <div class="stat-change neutral">{{ visit_stats.yesterday_visits }} yesterday</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-number">{{ visit_stats.week_visits }}</div>
+                    <div class="stat-label">This Week</div>
+                    {% if visit_stats.week_change > 0 %}
+                    <div class="stat-change positive">+{{ visit_stats.week_change }}%</div>
+                    {% elif visit_stats.week_change < 0 %}
+                    <div class="stat-change negative">{{ visit_stats.week_change }}%</div>
+                    {% else %}
+                    <div class="stat-change neutral">No change</div>
+                    {% endif %}
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-number">{{ visit_stats.month_visits }}</div>
+                    <div class="stat-label">Last 30 Days</div>
+                    <div class="stat-change neutral">{{ visit_stats.three_months_visits }} in 90 days</div>
+                </div>
+            </div>
+
+            <!-- Daily Visits Chart -->
+            <div class="chart-section">
+                <div class="chart-header">
+                    <h2 class="chart-title">Daily Visits</h2>
+                    <p class="chart-subtitle">Visit trends over the last 30 days</p>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="dailyVisitsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Two Column Charts -->
+            <div class="charts-grid">
+                <!-- Hourly Distribution -->
+                <div class="chart-section">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Hourly Distribution</h2>
+                        <p class="chart-subtitle">Visits by hour of day (last 7 days)</p>
+                    </div>
+                    <div class="chart-wrapper small">
+                        <canvas id="hourlyVisitsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Browser Distribution -->
+                <div class="chart-section">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Browsers</h2>
+                        <p class="chart-subtitle">Most used browsers (last 30 days)</p>
+                    </div>
+                    <div class="chart-wrapper small">
+                        <canvas id="browserChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Performance Charts -->
+            <div class="charts-row">
+                <!-- Monthly Posts -->
+                <div class="chart-section">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Content Creation</h2>
+                        <p class="chart-subtitle">Blog posts published by month</p>
+                    </div>
+                    <div class="chart-wrapper small">
+                        <canvas id="monthlyPostsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Content Stats -->
+                <div class="chart-section">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Content Overview</h2>
+                        <p class="chart-subtitle">Current content statistics</p>
+                    </div>
+                    <div style="padding: 20px 0;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: center;">
+                            <div>
+                                <div style="font-size: 24px; font-weight: 700; color: #242424;">{{ content_stats.published_posts }}</div>
+                                <div style="font-size: 12px; color: #6B6B6B; text-transform: uppercase;">Published Posts</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 24px; font-weight: 700; color: #242424;">{{ content_stats.public_projects }}</div>
+                                <div style="font-size: 12px; color: #6B6B6B; text-transform: uppercase;">Public Projects</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 24px; font-weight: 700; color: #242424;">{{ content_stats.draft_posts }}</div>
+                                <div style="font-size: 12px; color: #6B6B6B; text-transform: uppercase;">Draft Posts</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 24px; font-weight: 700; color: #242424;">{{ content_stats.unread_messages }}</div>
+                                <div style="font-size: 12px; color: #6B6B6B; text-transform: uppercase;">Unread Messages</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Popular Pages Table -->
+            <div class="content-table">
+                <h2 class="table-title">Most Visited Pages</h2>
+                {% if popular_pages %}
+                <table class="analytics-table">
+                    <thead>
+                        <tr>
+                            <th>Page</th>
+                            <th style="text-align: right;">Visits</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for page in popular_pages %}
+                        <tr>
+                            <td>
+                                <div>{{ page.page_title|default:"Untitled"|truncatechars:60 }}</div>
+                                <div class="page-url">{{ page.page_url|truncatechars:80 }}</div>
+                            </td>
+                            <td style="text-align: right;">
+                                <span class="visit-badge">{{ page.visits }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-chart-bar"></i>
+                    <h3>No visit data available</h3>
+                    <p>Page visit analytics will appear here once you have traffic</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Color palette
+    const colors = {
+        primary: '#667eea',
+        secondary: '#764ba2',
+        success: '#2D7D32',
+        warning: '#F57C00',
+        danger: '#D32F2F',
+        info: '#1976D2',
+        gray: '#6B6B6B'
+    };
+
+    // Daily Visits Chart
+    const dailyCtx = document.getElementById('dailyVisitsChart');
+    if (dailyCtx) {
+        const dailyLabels = {{ daily_visits_chart.labels|safe }};
+        const dailyData = {{ daily_visits_chart.data|safe }};
+
+        new Chart(dailyCtx, {
+            type: 'line',
+            data: {
+                labels: dailyLabels,
+                datasets: [{
+                    label: 'Daily Visits',
+                    data: dailyData,
+                    borderColor: colors.primary,
+                    backgroundColor: colors.primary + '20',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: 'white',
+                        bodyColor: 'white',
+                        borderColor: colors.primary,
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            color: colors.gray
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxTicksLimit: 10,
+                            color: colors.gray
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Hourly Visits Chart
+    const hourlyCtx = document.getElementById('hourlyVisitsChart');
+    if (hourlyCtx) {
+        const hourlyLabels = {{ hourly_visits_chart.labels|safe }};
+        const hourlyData = {{ hourly_visits_chart.data|safe }};
+
+        new Chart(hourlyCtx, {
+            type: 'bar',
+            data: {
+                labels: hourlyLabels,
+                datasets: [{
+                    label: 'Visits by Hour',
+                    data: hourlyData,
+                    backgroundColor: colors.info + '80',
+                    borderColor: colors.info,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            color: colors.gray
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: colors.gray
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Browser Chart
+    const browserCtx = document.getElementById('browserChart');
+    if (browserCtx) {
+        const browserLabels = {{ browser_chart.labels|safe }};
+        const browserData = {{ browser_chart.data|safe }};
+
+        new Chart(browserCtx, {
+            type: 'doughnut',
+            data: {
+                labels: browserLabels,
+                datasets: [{
+                    data: browserData,
+                    backgroundColor: [
+                        colors.primary,
+                        colors.secondary,
+                        colors.success,
+                        colors.warning,
+                        colors.danger,
+                        colors.info,
+                        colors.gray,
+                        '#FF6B35'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Monthly Posts Chart
+    const monthlyCtx = document.getElementById('monthlyPostsChart');
+    if (monthlyCtx) {
+        const monthlyLabels = {{ monthly_posts_chart.labels|safe }};
+        const monthlyData = {{ monthly_posts_chart.data|safe }};
+
+        new Chart(monthlyCtx, {
+            type: 'bar',
+            data: {
+                labels: monthlyLabels,
+                datasets: [{
+                    label: 'Posts Published',
+                    data: monthlyData,
+                    backgroundColor: colors.success + '80',
+                    borderColor: colors.success,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            color: colors.gray
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: colors.gray
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV - {{ profile.name }}</title>
+    <style>
+        /* CSS optimizado para PDF */
+        @page {
+            size: A4;
+            margin: 2cm 1.5cm;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #333;
+            background: white;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #0066cc;
+        }
+        
+        .header h1 {
+            font-size: 24pt;
+            font-weight: bold;
+            color: #0066cc;
+            margin-bottom: 5px;
+        }
+        
+        .header h2 {
+            font-size: 14pt;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .contact-info {
+            font-size: 10pt;
+            color: #666;
+        }
+        
+        .contact-info span {
+            margin: 0 10px;
+        }
+        
+        /* Sections */
+        .section {
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+        
+        .section-title {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #0066cc;
+            margin-bottom: 10px;
+            padding-bottom: 3px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        /* Experience */
+        .experience-item {
+            margin-bottom: 15px;
+            page-break-inside: avoid;
+        }
+        
+        .experience-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 5px;
+        }
+        
+        .job-title {
+            font-weight: bold;
+            font-size: 12pt;
+            color: #333;
+        }
+        
+        .company {
+            color: #0066cc;
+            font-weight: 600;
+        }
+        
+        .date-range {
+            font-size: 10pt;
+            color: #666;
+            white-space: nowrap;
+        }
+        
+        .experience-description {
+            font-size: 10pt;
+            margin-top: 5px;
+            text-align: justify;
+        }
+        
+        /* Education */
+        .education-item {
+            margin-bottom: 12px;
+            page-break-inside: avoid;
+        }
+        
+        .education-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .degree {
+            font-weight: bold;
+            font-size: 11pt;
+        }
+        
+        .institution {
+            color: #0066cc;
+            font-size: 10pt;
+        }
+        
+        .education-date {
+            font-size: 9pt;
+            color: #666;
+        }
+        
+        /* Skills */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .skill-category {
+            margin-bottom: 10px;
+        }
+        
+        .skill-category h4 {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #0066cc;
+            margin-bottom: 5px;
+        }
+        
+        .skill-list {
+            font-size: 10pt;
+            line-height: 1.3;
+        }
+        
+        .skill-item {
+            margin-bottom: 3px;
+        }
+        
+        .skill-name {
+            font-weight: 600;
+        }
+        
+        .skill-level {
+            color: #666;
+            font-size: 9pt;
+        }
+        
+        /* Links */
+        .links-section {
+            text-align: center;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .links-section a {
+            color: #0066cc;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 10pt;
+        }
+        
+        /* Two column layout for main content */
+        .two-column {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .main-content {
+            /* Left column */
+        }
+        
+        .sidebar {
+            /* Right column */
+        }
+        
+        /* Utilities */
+        .text-center {
+            text-align: center;
+        }
+        
+        .mb-small {
+            margin-bottom: 8px;
+        }
+        
+        .mb-medium {
+            margin-bottom: 15px;
+        }
+        
+        /* Print optimizations */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .page-break {
+                page-break-before: always;
+            }
+            
+            .no-break {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>{{ profile.name }}</h1>
+            <h2>{{ profile.title }}</h2>
+            <div class="contact-info">
+                {% if profile.email %}<span>📧 {{ profile.email }}</span>{% endif %}
+                {% if profile.phone %}<span>📱 {{ profile.phone }}</span>{% endif %}
+                {% if profile.location %}<span>📍 {{ profile.location }}</span>{% endif %}
+            </div>
+        </div>
+        
+        <!-- Professional Summary -->
+        {% if profile.bio %}
+        <div class="section">
+            <h3 class="section-title">Resumen Profesional</h3>
+            <p style="text-align: justify; font-size: 10pt;">{{ profile.bio }}</p>
+        </div>
+        {% endif %}
+        
+        <div class="two-column">
+            <!-- Main Content (Left Column) -->
+            <div class="main-content">
+                <!-- Experience -->
+                {% if experiences %}
+                <div class="section">
+                    <h3 class="section-title">Experiencia Profesional</h3>
+                    {% for experience in experiences %}
+                    <div class="experience-item no-break">
+                        <div class="experience-header">
+                            <div>
+                                <div class="job-title">{{ experience.position }}</div>
+                                <div class="company">{{ experience.company }}</div>
+                            </div>
+                            <div class="date-range">
+                                {{ experience.start_date|date:"M Y" }} - 
+                                {% if experience.current %}Presente{% else %}{{ experience.end_date|date:"M Y" }}{% endif %}
+                            </div>
+                        </div>
+                        <div class="experience-description">
+                            {{ experience.description|truncatewords:40 }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Key Projects -->
+                {% if featured_projects %}
+                <div class="section">
+                    <h3 class="section-title">Proyectos Destacados</h3>
+                    {% for project in featured_projects|slice:":3" %}
+                    <div class="experience-item no-break">
+                        <div class="experience-header">
+                            <div>
+                                <div class="job-title">{{ project.title }}</div>
+                                <div style="font-size: 9pt; color: #666;">
+                                    {% for tech in project.technologies.all|slice:":4" %}
+                                        {{ tech.name }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="experience-description">
+                            {{ project.description|truncatewords:25 }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Sidebar (Right Column) -->
+            <div class="sidebar">
+                <!-- Education -->
+                {% if education %}
+                <div class="section">
+                    <h3 class="section-title">Educación</h3>
+                    {% for edu in education|slice:":4" %}
+                    <div class="education-item no-break">
+                        <div class="education-header">
+                            <div>
+                                <div class="degree">{{ edu.degree }}</div>
+                                <div class="institution">{{ edu.institution }}</div>
+                            </div>
+                            <div class="education-date">
+                                {% if edu.end_date %}{{ edu.end_date|date:"Y" }}{% else %}{{ edu.start_date|date:"Y" }}{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Top Skills -->
+                {% if skills %}
+                <div class="section">
+                    <h3 class="section-title">Habilidades Principales</h3>
+                    {% regroup skills by category as skills_by_category %}
+                    {% for category in skills_by_category|slice:":3" %}
+                    <div class="skill-category">
+                        <h4>{{ category.grouper }}</h4>
+                        <div class="skill-list">
+                            {% for skill in category.list|slice:":4" %}
+                            <div class="skill-item">
+                                <span class="skill-name">{{ skill.name }}</span>
+                                <span class="skill-level">({{ skill.get_proficiency_display }})</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Certifications -->
+                {% if certifications %}
+                <div class="section">
+                    <h3 class="section-title">Certificaciones</h3>
+                    {% for cert in certifications|slice:":4" %}
+                    <div class="education-item no-break">
+                        <div class="degree" style="font-size: 10pt;">{{ cert.degree }}</div>
+                        <div class="institution" style="font-size: 9pt;">{{ cert.institution }}</div>
+                        {% if cert.end_date %}
+                        <div class="education-date">{{ cert.end_date|date:"M Y" }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Languages -->
+                <div class="section">
+                    <h3 class="section-title">Idiomas</h3>
+                    <div class="skill-list">
+                        <div class="skill-item">
+                            <span class="skill-name">Español</span>
+                            <span class="skill-level">(Nativo)</span>
+                        </div>
+                        <div class="skill-item">
+                            <span class="skill-name">Inglés</span>
+                            <span class="skill-level">(Avanzado)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Links Section -->
+        <div class="links-section">
+            {% if profile.github_url %}
+            <a href="{{ profile.github_url }}">🔗 GitHub: {{ profile.github_url }}</a>
+            {% endif %}
+            {% if profile.linkedin_url %}
+            <a href="{{ profile.linkedin_url }}">🔗 LinkedIn: {{ profile.linkedin_url }}</a>
+            {% endif %}
+        </div>
+        
+        <!-- Footer -->
+        <div style="text-align: center; margin-top: 20px; font-size: 9pt; color: #999;">
+            <p>CV generado desde henfrydls.com - Versión resumida para reclutadores</p>
+        </div>
+    </div>
+</body>
+</html>

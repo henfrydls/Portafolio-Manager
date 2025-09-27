@@ -1,0 +1,165 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+
+{% block admin_title %}Eliminar Proyecto{% endblock %}
+
+{% block admin_actions %}
+<a href="{% url 'portfolio:admin-project-list' %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-1"></i>Volver a Proyectos
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmar Eliminación
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-warning me-1"></i>¡Atención!</h6>
+                    <p class="mb-0">
+                        Esta acción no se puede deshacer. El proyecto será eliminado permanentemente 
+                        junto con toda su información asociada.
+                    </p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        {% if object.image %}
+                            <img src="{{ object.image.url }}" alt="{{ object.title }}" 
+                                 class="img-fluid rounded">
+                        {% else %}
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                 style="height: 200px;">
+                                <i class="fas fa-folder fa-3x text-muted"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <h4 class="mb-3">
+                            {% if object.emoji %}{{ object.emoji }} {% endif %}{{ object.title }}
+                        </h4>
+                        
+                        <div class="mb-3">
+                            <strong>Descripción:</strong>
+                            <p class="text-muted">{{ object.description }}</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <strong>Tecnologías:</strong>
+                            <div class="mt-1">
+                                {% for tech in object.technologies.all %}
+                                    <span class="badge bg-secondary me-1">{{ tech.name }}</span>
+                                {% empty %}
+                                    <span class="text-muted">Sin tecnologías asignadas</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <strong>Estado:</strong>
+                                <span class="badge badge-{{ object.visibility }}">
+                                    {% if object.visibility == 'public' %}
+                                        <i class="fas fa-eye me-1"></i>Público
+                                    {% else %}
+                                        <i class="fas fa-eye-slash me-1"></i>Privado
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="col-sm-6">
+                                <strong>Destacado:</strong>
+                                {% if object.featured %}
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fas fa-star me-1"></i>Sí
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">No</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <strong>Creado:</strong>
+                                    <small class="text-muted d-block">{{ object.created_at|date:"d/m/Y H:i" }}</small>
+                                </div>
+                                <div class="col-sm-6">
+                                    <strong>Actualizado:</strong>
+                                    <small class="text-muted d-block">{{ object.updated_at|date:"d/m/Y H:i" }}</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if object.github_url or object.demo_url %}
+                        <div class="mt-3">
+                            <strong>Enlaces:</strong>
+                            <div class="mt-1">
+                                {% if object.github_url %}
+                                    <a href="{{ object.github_url }}" target="_blank" class="btn btn-sm btn-outline-dark me-2">
+                                        <i class="fab fa-github me-1"></i>GitHub
+                                    </a>
+                                {% endif %}
+                                {% if object.demo_url %}
+                                    <a href="{{ object.demo_url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-external-link-alt me-1"></i>Demo
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <p class="mb-4">
+                        <strong>¿Estás seguro de que quieres eliminar el proyecto "{{ object.title }}"?</strong>
+                    </p>
+                    
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="{% url 'portfolio:admin-project-list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </a>
+                            <a href="{% url 'portfolio:admin-project-edit' object.pk %}" class="btn btn-outline-primary">
+                                <i class="fas fa-edit me-1"></i>Editar en su lugar
+                            </a>
+                            <button type="submit" class="btn btn-danger" id="confirmDelete">
+                                <i class="fas fa-trash me-1"></i>Sí, Eliminar Proyecto
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+// Add confirmation dialog for extra safety
+document.getElementById('confirmDelete').addEventListener('click', function(e) {
+    if (!confirm('¿Estás completamente seguro? Esta acción no se puede deshacer.')) {
+        e.preventDefault();
+    }
+});
+
+// Auto-focus on cancel button for keyboard navigation
+document.addEventListener('DOMContentLoaded', function() {
+    const cancelButton = document.querySelector('a[href*="admin-project-list"]');
+    if (cancelButton) {
+        cancelButton.focus();
+    }
+});
+</script>
+{% endblock %}

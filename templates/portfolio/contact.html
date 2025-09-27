@@ -1,0 +1,381 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contacto - {{ profile.name }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="display-4 fw-bold text-dark mb-3">Contáctame</h1>
+                <p class="lead text-muted">
+                    ¿Tienes un proyecto en mente? ¡Hablemos sobre cómo puedo ayudarte!
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <!-- Contact Form -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5">
+                        <h2 class="h3 fw-bold mb-4 text-center">Envíame un mensaje</h2>
+                        
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            
+                            <!-- Honeypot field for bot protection -->
+                            {{ form.honeypot }}
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-user text-primary me-2"></i>Nombre completo
+                                    </label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.name.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.email.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-envelope text-primary me-2"></i>Email
+                                    </label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.email.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.subject.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-tag text-primary me-2"></i>Asunto
+                                </label>
+                                {{ form.subject }}
+                                {% if form.subject.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.subject.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="{{ form.message.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-comment text-primary me-2"></i>Mensaje
+                                </label>
+                                {{ form.message }}
+                                {% if form.message.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.message.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-lg px-5">
+                                    <i class="fas fa-paper-plane me-2"></i>Enviar Mensaje
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Information -->
+{% if profile %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <h2 class="h3 fw-bold text-center mb-5">Otras formas de contactarme</h2>
+                
+                <div class="row g-4">
+                    <!-- Email -->
+                    {% if profile.email %}
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card border-0 shadow-sm text-center h-100">
+                            <div class="card-body">
+                                <div class="bg-primary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                                     style="width: 60px; height: 60px;">
+                                    <i class="fas fa-envelope text-white fa-lg"></i>
+                                </div>
+                                <h3 class="h5 fw-bold mb-2">Email</h3>
+                                <p class="text-muted mb-3">Respondo en 24-48 horas</p>
+                                <a href="mailto:{{ profile.email }}" class="btn btn-outline-primary btn-sm">
+                                    {{ profile.email }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- LinkedIn -->
+                    {% if profile.linkedin_url %}
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card border-0 shadow-sm text-center h-100">
+                            <div class="card-body">
+                                <div class="bg-primary rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                                     style="width: 60px; height: 60px;">
+                                    <i class="fab fa-linkedin text-white fa-lg"></i>
+                                </div>
+                                <h3 class="h5 fw-bold mb-2">LinkedIn</h3>
+                                <p class="text-muted mb-3">Conectemos profesionalmente</p>
+                                <a href="{{ profile.linkedin_url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                    Ver Perfil
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- GitHub -->
+                    {% if profile.github_url %}
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card border-0 shadow-sm text-center h-100">
+                            <div class="card-body">
+                                <div class="bg-dark rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                                     style="width: 60px; height: 60px;">
+                                    <i class="fab fa-github text-white fa-lg"></i>
+                                </div>
+                                <h3 class="h5 fw-bold mb-2">GitHub</h3>
+                                <p class="text-muted mb-3">Revisa mi código</p>
+                                <a href="{{ profile.github_url }}" target="_blank" class="btn btn-outline-dark btn-sm">
+                                    Ver Repositorios
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Location -->
+                    {% if profile.location %}
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card border-0 shadow-sm text-center h-100">
+                            <div class="card-body">
+                                <div class="bg-success rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center"
+                                     style="width: 60px; height: 60px;">
+                                    <i class="fas fa-map-marker-alt text-white fa-lg"></i>
+                                </div>
+                                <h3 class="h5 fw-bold mb-2">Ubicación</h3>
+                                <p class="text-muted mb-3">{{ profile.location }}</p>
+                                <span class="badge bg-success">Disponible para remoto</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- FAQ Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h2 class="h3 fw-bold text-center mb-5">Preguntas Frecuentes</h2>
+                
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item border-0 shadow-sm mb-3">
+                        <h3 class="accordion-header" id="faq1">
+                            <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#collapse1" aria-expanded="true" aria-controls="collapse1">
+                                ¿Qué tipo de proyectos desarrollas?
+                            </button>
+                        </h3>
+                        <div id="collapse1" class="accordion-collapse collapse show" aria-labelledby="faq1" 
+                             data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Me especializo en desarrollo web full-stack, aplicaciones móviles y soluciones de software personalizadas. 
+                                Trabajo con tecnologías modernas como Django, React, Python, JavaScript y más.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item border-0 shadow-sm mb-3">
+                        <h3 class="accordion-header" id="faq2">
+                            <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                                ¿Cuánto tiempo toma un proyecto típico?
+                            </button>
+                        </h3>
+                        <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="faq2" 
+                             data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                El tiempo varía según la complejidad del proyecto. Un sitio web simple puede tomar 2-4 semanas, 
+                                mientras que aplicaciones más complejas pueden requerir 2-6 meses. Siempre proporciono estimaciones 
+                                detalladas después de entender los requisitos.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item border-0 shadow-sm mb-3">
+                        <h3 class="accordion-header" id="faq3">
+                            <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
+                                ¿Trabajas con clientes internacionales?
+                            </button>
+                        </h3>
+                        <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="faq3" 
+                             data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                ¡Absolutamente! Trabajo con clientes de todo el mundo. Estoy disponible para reuniones virtuales 
+                                y me adapto a diferentes zonas horarias para facilitar la comunicación.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item border-0 shadow-sm">
+                        <h3 class="accordion-header" id="faq4">
+                            <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
+                                ¿Ofreces soporte post-lanzamiento?
+                            </button>
+                        </h3>
+                        <div id="collapse4" class="accordion-collapse collapse" aria-labelledby="faq4" 
+                             data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Sí, ofrezco diferentes planes de soporte y mantenimiento post-lanzamiento. Esto incluye 
+                                actualizaciones, corrección de errores, optimizaciones y nuevas funcionalidades según sea necesario.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h2 class="h3 fw-bold mb-3">¿Listo para comenzar tu proyecto?</h2>
+                <p class="lead mb-4">
+                    No importa si tienes una idea clara o solo un concepto inicial. 
+                    Estoy aquí para ayudarte a convertir tu visión en realidad.
+                </p>
+                <div class="d-flex flex-wrap gap-3 justify-content-center">
+                    <a href="#" onclick="document.getElementById('name').focus(); return false;" 
+                       class="btn btn-light btn-lg">
+                        <i class="fas fa-envelope me-2"></i>Enviar Mensaje
+                    </a>
+                    <a href="{% url 'portfolio:project-list' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-eye me-2"></i>Ver Mi Trabajo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: #0d6efd;
+}
+
+@media (max-width: 768px) {
+    .d-flex.gap-3 {
+        flex-direction: column;
+        gap: 1rem !important;
+    }
+    
+    .btn-lg {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form validation
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const inputs = form.querySelectorAll('input[required], textarea[required]');
+    
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        inputs.forEach(input => {
+            if (!input.value.trim()) {
+                input.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                input.classList.remove('is-invalid');
+            }
+            
+            // Email validation
+            if (input.type === 'email' && input.value.trim()) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(input.value)) {
+                    input.classList.add('is-invalid');
+                    isValid = false;
+                }
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+    
+    // Remove invalid class on input
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

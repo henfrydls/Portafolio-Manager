@@ -1,0 +1,319 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+
+{% block admin_title %}Gestión del Blog{% endblock %}
+{% block admin_subtitle %}Administra tus posts, borradores y contenido publicado{% endblock %}
+
+{% block admin_actions %}
+<a href="{% url 'portfolio:admin-blog-create' %}" class="btn-primary-custom">
+    <i class="fas fa-plus"></i>Nuevo Post
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Filters -->
+<div class="filters-section">
+    <form method="get" class="filters-grid">
+        <div>
+            <label class="form-label-custom">Buscar posts</label>
+            <input type="text" name="search" class="form-control-custom" 
+                   placeholder="Título, contenido..." value="{{ current_search }}">
+        </div>
+        <div>
+            <label class="form-label-custom">Estado</label>
+            <select name="status" class="form-control-custom">
+                <option value="">Todos los estados</option>
+                <option value="draft" {% if current_status == 'draft' %}selected{% endif %}>Borrador</option>
+                <option value="published" {% if current_status == 'published' %}selected{% endif %}>Publicado</option>
+                <option value="archived" {% if current_status == 'archived' %}selected{% endif %}>Archivado</option>
+            </select>
+        </div>
+        <div>
+            <label class="form-label-custom">Categoría</label>
+            <select name="category" class="form-control-custom">
+                <option value="">Todas las categorías</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if current_category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="btn-primary-custom">
+                <i class="fas fa-search"></i>Filtrar
+            </button>
+        </div>
+        <div>
+            <a href="{% url 'portfolio:admin-blog-list' %}" class="btn-secondary-custom">
+                <i class="fas fa-times"></i>Limpiar
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Blog Posts Table -->
+<div class="content-card">
+    <div class="card-header-custom">
+        <div>
+            <h2 class="card-title-custom">Posts del Blog</h2>
+            <p class="card-subtitle-custom">{{ posts|length }} posts mostrados • Total: {{ paginator.count }}</p>
+        </div>
+    </div>
+    
+    {% if posts %}
+    <div style="overflow-x: auto;">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Post</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Destacado</th>
+                    <th>Fecha</th>
+                    <th width="200">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in posts %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            {% if post.featured_image %}
+                                <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" 
+                                     style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;">
+                            {% else %}
+                                <div style="width: 40px; height: 40px; background: #F2F2F2; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-file-alt" style="color: #6B6B6B;"></i>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <div style="font-weight: 500; color: #242424; margin-bottom: 4px;">{{ post.title }}</div>
+                                <div style="font-size: 12px; color: #6B6B6B;">{{ post.excerpt|default:post.content|truncatewords:8 }}</div>
+                                <div style="font-size: 11px; color: #6B6B6B; margin-top: 2px;">
+                                    <i class="fas fa-clock"></i> {{ post.reading_time }} min lectura
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge-custom badge-info">
+                            {% if post.category %}{{ post.category.name }}{% else %}Sin categoría{% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        {% if post.status == 'published' %}
+                            <span class="badge-custom badge-success">
+                                <i class="fas fa-check" style="margin-right: 4px;"></i>Publicado
+                            </span>
+                        {% elif post.status == 'draft' %}
+                            <span class="badge-custom badge-warning">
+                                <i class="fas fa-edit" style="margin-right: 4px;"></i>Borrador
+                            </span>
+                        {% else %}
+                            <span class="badge-custom badge-secondary">
+                                <i class="fas fa-archive" style="margin-right: 4px;"></i>Archivado
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="btn toggle-blog-featured" 
+                                data-post-id="{{ post.id }}"
+                                data-featured="{{ post.featured|yesno:'true,false' }}"
+                                style="background: none; border: none; padding: 8px; border-radius: 6px; cursor: pointer; transition: background 0.2s ease;">
+                            {% if post.featured %}
+                                <i class="fas fa-star" style="color: #F57C00;"></i>
+                            {% else %}
+                                <i class="far fa-star" style="color: #6B6B6B;"></i>
+                            {% endif %}
+                        </button>
+                    </td>
+                    <td>
+                        <div style="font-size: 13px; color: #6B6B6B;">
+                            {{ post.publish_date|date:"d/m/Y" }}<br>
+                            <span style="font-size: 11px;">{{ post.publish_date|date:"H:i" }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="quick-actions">
+                            {% if post.status == 'published' %}
+                                <a href="{% url 'portfolio:post-detail' post.slug %}" 
+                                   class="btn" target="_blank" title="Ver">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            {% endif %}
+                            <a href="{% url 'portfolio:admin-blog-edit' post.pk %}" 
+                               class="btn" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            {% if post.status == 'draft' %}
+                                <button class="btn quick-publish" 
+                                        data-post-id="{{ post.id }}" title="Publicar">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            {% endif %}
+                            <a href="{% url 'portfolio:admin-blog-delete' post.pk %}" 
+                               class="btn" title="Eliminar" style="color: #dc3545;">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-blog"></i>
+        <h3>No hay posts</h3>
+        <p>
+            {% if current_search or current_status or current_category %}
+                No se encontraron posts con los filtros aplicados.
+            {% else %}
+                Comienza creando tu primer post del blog.
+            {% endif %}
+        </p>
+        <a href="{% url 'portfolio:admin-blog-create' %}" class="btn-primary-custom">
+            <i class="fas fa-plus"></i>Crear Post
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="pagination-custom">
+    {% if page_obj.has_previous %}
+        <a class="page-link" href="?page=1{% if current_search %}&search={{ current_search }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+            <i class="fas fa-angle-double-left"></i>
+        </a>
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+            <i class="fas fa-angle-left"></i>
+        </a>
+    {% endif %}
+
+    <span class="page-link active">
+        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+            <i class="fas fa-angle-right"></i>
+        </a>
+        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+            <i class="fas fa-angle-double-right"></i>
+        </a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// CSRF token for AJAX requests
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+// Quick toggle functions
+function quickToggle(url, data, successCallback) {
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrftoken,
+        },
+        body: new URLSearchParams(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            successCallback(data);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error de conexión');
+    });
+}
+
+// Toggle featured status
+document.querySelectorAll('.toggle-blog-featured').forEach(button => {
+    button.addEventListener('click', function() {
+        const postId = this.dataset.postId;
+        const isFeatured = this.dataset.featured === 'true';
+        
+        quickToggle('{% url "portfolio:ajax-toggle-blog-featured" %}', 
+            { post_id: postId }, 
+            (data) => {
+                // Update button appearance
+                const icon = this.querySelector('i');
+                if (data.featured) {
+                    icon.className = 'fas fa-star';
+                    icon.style.color = '#F57C00';
+                    this.dataset.featured = 'true';
+                } else {
+                    icon.className = 'far fa-star';
+                    icon.style.color = '#6B6B6B';
+                    this.dataset.featured = 'false';
+                }
+                
+                // Show success message
+                showSuccessMessage(data.message);
+            }
+        );
+    });
+});
+
+// Quick publish
+document.querySelectorAll('.quick-publish').forEach(button => {
+    button.addEventListener('click', function() {
+        const postId = this.dataset.postId;
+        
+        if (confirm('¿Estás seguro de que quieres publicar este post?')) {
+            quickToggle('{% url "portfolio:ajax-quick-publish-blog" %}', 
+                { post_id: postId }, 
+                (data) => {
+                    // Reload page to show updated status
+                    location.reload();
+                }
+            );
+        }
+    });
+});
+
+function showSuccessMessage(message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert-custom alert-success';
+    alertDiv.textContent = message;
+    alertDiv.style.position = 'fixed';
+    alertDiv.style.top = '20px';
+    alertDiv.style.right = '20px';
+    alertDiv.style.zIndex = '9999';
+    alertDiv.style.minWidth = '300px';
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}

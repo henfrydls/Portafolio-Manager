@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Proyectos - {{ profile.name }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="display-4 fw-bold text-dark mb-3">Mis Proyectos</h1>
+                <p class="lead text-muted">
+                    Una colección de mis trabajos y experimentos en desarrollo de software
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Filters and Search -->
+<section class="py-4 bg-white border-bottom">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <!-- Technology Filter -->
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span class="text-muted me-2">Filtrar por:</span>
+                    <a href="{% url 'portfolio:project-list' %}" 
+                       class="btn btn-sm {% if not current_tech %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                        Todos
+                    </a>
+                    {% for tech in technologies %}
+                    <a href="?tech={{ tech.name }}" 
+                       class="btn btn-sm {% if current_tech == tech.name %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                        {% if tech.icon %}<i class="{{ tech.icon }} me-1"></i>{% endif %}
+                        {{ tech.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="col-md-4 mt-3 mt-md-0">
+                <!-- Search Form -->
+                <form method="get" class="d-flex">
+                    {% if current_tech %}
+                    <input type="hidden" name="tech" value="{{ current_tech }}">
+                    {% endif %}
+                    <input type="search" name="search" class="form-control me-2" 
+                           placeholder="Buscar proyectos..." value="{{ current_search }}">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Projects Grid -->
+<section class="py-5">
+    <div class="container">
+        {% if projects %}
+        <div class="row g-4">
+            {% for project in projects %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0 hover-card">
+                    {% if project.image %}
+                    <img src="{{ project.image.url }}" class="card-img-top" alt="{{ project.title }}"
+                         style="height: 220px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                         style="height: 220px;">
+                        <i class="fas fa-code text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title fw-bold mb-0">{{ project.title }}</h5>
+                            {% if project.featured %}
+                            <span class="badge bg-warning text-dark">
+                                <i class="fas fa-star me-1"></i>Destacado
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <p class="card-text text-muted flex-grow-1">{{ project.description }}</p>
+                        
+                        <!-- Technologies -->
+                        <div class="mb-3">
+                            {% for tech in project.technologies.all %}
+                            <span class="badge bg-light text-dark me-1 mb-1" 
+                                  style="{% if tech.color %}border-left: 3px solid {{ tech.color }};{% endif %}">
+                                {% if tech.icon %}<i class="{{ tech.icon }} me-1"></i>{% endif %}
+                                {{ tech.name }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'portfolio:project-detail' project.slug %}" 
+                               class="btn btn-primary btn-sm flex-grow-1">
+                                <i class="fas fa-eye me-1"></i>Ver Detalles
+                            </a>
+                            {% if project.github_url %}
+                            <a href="{{ project.github_url }}" target="_blank" 
+                               class="btn btn-outline-dark btn-sm" title="Ver en GitHub">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            {% endif %}
+                            {% if project.demo_url %}
+                            <a href="{{ project.demo_url }}" target="_blank" 
+                               class="btn btn-outline-primary btn-sm" title="Ver Demo">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Project Meta -->
+                        <div class="mt-2 pt-2 border-top">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ project.created_at|date:"M Y" }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <nav aria-label="Paginación de proyectos" class="mt-5">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if current_tech %}&tech={{ current_tech }}{% endif %}{% if current_search %}&search={{ current_search }}{% endif %}">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_tech %}&tech={{ current_tech }}{% endif %}{% if current_search %}&search={{ current_search }}{% endif %}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if current_tech %}&tech={{ current_tech }}{% endif %}{% if current_search %}&search={{ current_search }}{% endif %}">
+                        {{ num }}
+                    </a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_tech %}&tech={{ current_tech }}{% endif %}{% if current_search %}&search={{ current_search }}{% endif %}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_tech %}&tech={{ current_tech }}{% endif %}{% if current_search %}&search={{ current_search }}{% endif %}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <!-- No Projects Found -->
+        <div class="text-center py-5">
+            <i class="fas fa-search text-muted mb-3" style="font-size: 4rem;"></i>
+            <h3 class="text-muted">No se encontraron proyectos</h3>
+            <p class="text-muted">
+                {% if current_search or current_tech %}
+                Intenta ajustar tus filtros de búsqueda.
+                {% else %}
+                Aún no hay proyectos disponibles.
+                {% endif %}
+            </p>
+            {% if current_search or current_tech %}
+            <a href="{% url 'portfolio:project-list' %}" class="btn btn-primary">
+                <i class="fas fa-times me-2"></i>Limpiar Filtros
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.hover-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.pagination .page-link {
+    color: #0d6efd;
+    border-color: #dee2e6;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+</style>
+{% endblock %}

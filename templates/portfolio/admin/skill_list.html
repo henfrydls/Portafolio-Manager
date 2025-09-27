@@ -1,0 +1,186 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+
+{% block admin_title %}Gestión de Habilidades{% endblock %}
+{% block admin_subtitle %}Administra tus habilidades técnicas y competencias{% endblock %}
+
+{% block admin_actions %}
+<a href="{% url 'portfolio:admin-skill-create' %}" class="btn-primary-custom">
+    <i class="fas fa-plus"></i>Nueva Habilidad
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Filters -->
+<div class="filters-section">
+    <form method="get" class="filters-grid">
+        <div>
+            <label class="form-label-custom">Buscar habilidades</label>
+            <input type="text" name="search" class="form-control-custom" 
+                   placeholder="Nombre, categoría..." value="{{ current_search }}">
+        </div>
+        <div>
+            <label class="form-label-custom">Categoría</label>
+            <select name="category" class="form-control-custom">
+                <option value="">Todas las categorías</option>
+                {% for category in categories %}
+                    <option value="{{ category }}" {% if current_category == category %}selected{% endif %}>{{ category }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="form-label-custom">Nivel</label>
+            <select name="proficiency" class="form-control-custom">
+                <option value="">Todos los niveles</option>
+                <option value="1" {% if current_proficiency == '1' %}selected{% endif %}>Básico</option>
+                <option value="2" {% if current_proficiency == '2' %}selected{% endif %}>Intermedio</option>
+                <option value="3" {% if current_proficiency == '3' %}selected{% endif %}>Avanzado</option>
+                <option value="4" {% if current_proficiency == '4' %}selected{% endif %}>Experto</option>
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="btn-primary-custom">
+                <i class="fas fa-search"></i>Filtrar
+            </button>
+        </div>
+        <div>
+            <a href="{% url 'portfolio:admin-skill-list' %}" class="btn-secondary-custom">
+                <i class="fas fa-times"></i>Limpiar
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Skills Table -->
+<div class="content-card">
+    <div class="card-header-custom">
+        <div>
+            <h2 class="card-title-custom">Habilidades Técnicas</h2>
+            <p class="card-subtitle-custom">{{ skills|length }} habilidades mostradas • Total: {{ paginator.count }}</p>
+        </div>
+    </div>
+    
+    {% if skills %}
+    <div style="overflow-x: auto;">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Habilidad</th>
+                    <th>Categoría</th>
+                    <th>Nivel</th>
+                    <th>Experiencia</th>
+                    <th>Progreso</th>
+                    <th width="200">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for skill in skills %}
+                <tr>
+                    <td>
+                        <div style="font-weight: 500; color: #242424;">
+                            {{ skill.name }}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge-custom badge-secondary">{{ skill.category }}</span>
+                    </td>
+                    <td>
+                        {% if skill.proficiency == 1 %}
+                            <span class="badge-custom badge-info">
+                                <i class="fas fa-star" style="margin-right: 4px;"></i>Básico
+                            </span>
+                        {% elif skill.proficiency == 2 %}
+                            <span class="badge-custom badge-primary">
+                                <i class="fas fa-star" style="margin-right: 4px;"></i>Intermedio
+                            </span>
+                        {% elif skill.proficiency == 3 %}
+                            <span class="badge-custom badge-warning">
+                                <i class="fas fa-star" style="margin-right: 4px;"></i>Avanzado
+                            </span>
+                        {% elif skill.proficiency == 4 %}
+                            <span class="badge-custom badge-success">
+                                <i class="fas fa-star" style="margin-right: 4px;"></i>Experto
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="font-size: 13px; color: #6B6B6B;">
+                            {{ skill.years_experience }} año{{ skill.years_experience|pluralize }}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="flex: 1; height: 8px; background: #F2F2F2; border-radius: 4px; overflow: hidden;">
+                                <div style="height: 100%; background: 
+                                    {% if skill.proficiency == 1 %}#17a2b8
+                                    {% elif skill.proficiency == 2 %}#007bff
+                                    {% elif skill.proficiency == 3 %}#ffc107
+                                    {% elif skill.proficiency == 4 %}#28a745
+                                    {% endif %}; 
+                                    width: {{ skill.get_proficiency_percentage }}%; transition: width 0.3s ease;"></div>
+                            </div>
+                            <span style="font-size: 12px; color: #6B6B6B; min-width: 30px;">{{ skill.get_proficiency_percentage|floatformat:0 }}%</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="quick-actions">
+                            <a href="{% url 'portfolio:admin-skill-edit' skill.pk %}" 
+                               class="btn" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'portfolio:admin-skill-delete' skill.pk %}" 
+                               class="btn" title="Eliminar" style="color: #dc3545;">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-cogs"></i>
+        <h3>No hay habilidades registradas</h3>
+        <p>
+            {% if current_search or current_category or current_proficiency %}
+                No se encontraron habilidades con los filtros aplicados.
+            {% else %}
+                Comienza agregando tus primeras habilidades técnicas.
+            {% endif %}
+        </p>
+        <a href="{% url 'portfolio:admin-skill-create' %}" class="btn-primary-custom">
+            <i class="fas fa-plus"></i>Agregar Habilidad
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="pagination-custom">
+    {% if page_obj.has_previous %}
+        <a class="page-link" href="?page=1{% if current_search %}&search={{ current_search }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_proficiency %}&proficiency={{ current_proficiency }}{% endif %}">
+            <i class="fas fa-angle-double-left"></i>
+        </a>
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_proficiency %}&proficiency={{ current_proficiency }}{% endif %}">
+            <i class="fas fa-angle-left"></i>
+        </a>
+    {% endif %}
+
+    <span class="page-link active">
+        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_proficiency %}&proficiency={{ current_proficiency }}{% endif %}">
+            <i class="fas fa-angle-right"></i>
+        </a>
+        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_proficiency %}&proficiency={{ current_proficiency }}{% endif %}">
+            <i class="fas fa-angle-double-right"></i>
+        </a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

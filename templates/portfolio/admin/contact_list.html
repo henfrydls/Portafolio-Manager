@@ -1,0 +1,265 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+
+{% block admin_title %}Mensajes de Contacto{% endblock %}
+{% block admin_subtitle %}Gestiona los mensajes recibidos desde el formulario de contacto{% endblock %}
+
+{% block admin_content %}
+<!-- Filters -->
+<div class="filters-section">
+    <form method="get" class="filters-grid">
+        <div>
+            <label class="form-label-custom">Buscar mensajes</label>
+            <input type="text" name="search" class="form-control-custom" 
+                   placeholder="Nombre, email, asunto..." value="{{ current_search }}">
+        </div>
+        <div>
+            <label class="form-label-custom">Estado</label>
+            <select name="status" class="form-control-custom">
+                <option value="">Todos los mensajes</option>
+                <option value="unread" {% if current_status == 'unread' %}selected{% endif %}>No leídos</option>
+                <option value="read" {% if current_status == 'read' %}selected{% endif %}>Leídos</option>
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="btn-primary-custom">
+                <i class="fas fa-search"></i>Filtrar
+            </button>
+        </div>
+        <div>
+            <a href="{% url 'portfolio:admin-contact-list' %}" class="btn-secondary-custom">
+                <i class="fas fa-times"></i>Limpiar
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Messages Table -->
+<div class="content-card">
+    <div class="card-header-custom">
+        <div>
+            <h2 class="card-title-custom">
+                Mensajes
+                {% if unread_count %}
+                    <span class="badge-custom badge-danger" style="margin-left: 12px;">{{ unread_count }} sin leer</span>
+                {% endif %}
+            </h2>
+            <p class="card-subtitle-custom">{{ contacts|length }} mensajes mostrados • Total: {{ paginator.count }}</p>
+        </div>
+    </div>
+    
+    {% if contacts %}
+    <div style="overflow-x: auto;">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th width="30"></th>
+                    <th>Remitente</th>
+                    <th>Asunto</th>
+                    <th>Mensaje</th>
+                    <th>Fecha</th>
+                    <th width="150">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contact in contacts %}
+                <tr {% if not contact.read %}style="background: #FFF3E0;"{% endif %}>
+                    <td>
+                        <button class="toggle-read" 
+                                data-contact-id="{{ contact.id }}"
+                                data-read="{{ contact.read|yesno:'true,false' }}"
+                                style="background: none; border: none; padding: 8px; border-radius: 6px; cursor: pointer; transition: background 0.2s ease;"
+                                title="{% if contact.read %}Marcar como no leído{% else %}Marcar como leído{% endif %}">
+                            {% if contact.read %}
+                                <i class="fas fa-envelope-open" style="color: #6B6B6B;"></i>
+                            {% else %}
+                                <i class="fas fa-envelope" style="color: #1976D2;"></i>
+                            {% endif %}
+                        </button>
+                    </td>
+                    <td>
+                        <div>
+                            <div style="font-weight: 500; color: #242424; margin-bottom: 4px;">{{ contact.name }}</div>
+                            <div style="font-size: 12px; color: #6B6B6B;">{{ contact.email }}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500; color: #242424;">{{ contact.subject }}</div>
+                    </td>
+                    <td>
+                        <div style="font-size: 13px; color: #6B6B6B; line-height: 1.4;">
+                            {{ contact.message|truncatewords:15 }}
+                            {% if contact.message|wordcount > 15 %}
+                                <span style="color: #6B6B6B;">...</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-size: 13px; color: #6B6B6B;">
+                            {{ contact.created_at|date:"d/m/Y" }}<br>
+                            <span style="font-size: 11px;">{{ contact.created_at|date:"H:i" }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="quick-actions">
+                            <a href="{% url 'portfolio:admin-contact-detail' contact.pk %}" 
+                               class="btn" title="Ver completo">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="mailto:{{ contact.email }}?subject=Re: {{ contact.subject }}" 
+                               class="btn" title="Responder" style="color: #28a745;">
+                                <i class="fas fa-reply"></i>
+                            </a>
+                            <a href="{% url 'portfolio:admin-contact-delete' contact.pk %}" 
+                               class="btn" title="Eliminar" style="color: #dc3545;">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-envelope-open"></i>
+        <h3>No hay mensajes</h3>
+        <p>
+            {% if current_search or current_status %}
+                No se encontraron mensajes con los filtros aplicados.
+            {% else %}
+                Los mensajes de contacto aparecerán aquí cuando los visitantes usen el formulario.
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="pagination-custom">
+    {% if page_obj.has_previous %}
+        <a class="page-link" href="?page=1{% if current_search %}&search={{ current_search }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">
+            <i class="fas fa-angle-double-left"></i>
+        </a>
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">
+            <i class="fas fa-angle-left"></i>
+        </a>
+    {% endif %}
+
+    <span class="page-link active">
+        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">
+            <i class="fas fa-angle-right"></i>
+        </a>
+        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">
+            <i class="fas fa-angle-double-right"></i>
+        </a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// CSRF token for AJAX requests
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+// Quick toggle functions
+function quickToggle(url, data, successCallback) {
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrftoken,
+        },
+        body: new URLSearchParams(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            successCallback(data);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error de conexión');
+    });
+}
+
+// Toggle read status
+document.querySelectorAll('.toggle-read').forEach(button => {
+    button.addEventListener('click', function() {
+        const contactId = this.dataset.contactId;
+        const isRead = this.dataset.read === 'true';
+        
+        quickToggle('{% url "portfolio:ajax-toggle-contact-read" %}', 
+            { contact_id: contactId }, 
+            (data) => {
+                // Update button appearance
+                const icon = this.querySelector('i');
+                const row = this.closest('tr');
+                
+                if (data.read) {
+                    icon.className = 'fas fa-envelope-open';
+                    icon.style.color = '#6B6B6B';
+                    this.dataset.read = 'true';
+                    this.title = 'Marcar como no leído';
+                    row.style.background = '';
+                } else {
+                    icon.className = 'fas fa-envelope';
+                    icon.style.color = '#1976D2';
+                    this.dataset.read = 'false';
+                    this.title = 'Marcar como leído';
+                    row.style.background = '#FFF3E0';
+                }
+                
+                // Show success message
+                showSuccessMessage(data.message);
+            }
+        );
+    });
+});
+
+function showSuccessMessage(message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert-custom alert-success';
+    alertDiv.textContent = message;
+    alertDiv.style.position = 'fixed';
+    alertDiv.style.top = '20px';
+    alertDiv.style.right = '20px';
+    alertDiv.style.zIndex = '9999';
+    alertDiv.style.minWidth = '300px';
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}

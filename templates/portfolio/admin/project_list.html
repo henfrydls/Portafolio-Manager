@@ -1,0 +1,283 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+
+{% block admin_title %}Gestión de Proyectos{% endblock %}
+{% block admin_subtitle %}Administra tu portafolio de proyectos y trabajos{% endblock %}
+
+{% block admin_actions %}
+<a href="{% url 'portfolio:admin-project-create' %}" class="btn-primary-custom">
+    <i class="fas fa-plus"></i>Nuevo Proyecto
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Filters -->
+<div class="filters-section">
+    <form method="get" class="filters-grid">
+        <div>
+            <label class="form-label-custom">Buscar proyectos</label>
+            <input type="text" name="search" class="form-control-custom" 
+                   placeholder="Título, descripción..." value="{{ current_search }}">
+        </div>
+        <div>
+            <label class="form-label-custom">Visibilidad</label>
+            <select name="visibility" class="form-control-custom">
+                <option value="">Todas las visibilidades</option>
+                <option value="public" {% if current_visibility == 'public' %}selected{% endif %}>Público</option>
+                <option value="private" {% if current_visibility == 'private' %}selected{% endif %}>Privado</option>
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="btn-primary-custom">
+                <i class="fas fa-search"></i>Filtrar
+            </button>
+        </div>
+        <div>
+            <a href="{% url 'portfolio:admin-project-list' %}" class="btn-secondary-custom">
+                <i class="fas fa-times"></i>Limpiar
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Projects Table -->
+<div class="content-card">
+    <div class="card-header-custom">
+        <div>
+            <h2 class="card-title-custom">Proyectos</h2>
+            <p class="card-subtitle-custom">{{ projects|length }} proyectos mostrados • Total: {{ paginator.count }}</p>
+        </div>
+    </div>
+    
+    {% if projects %}
+    <div style="overflow-x: auto;">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Proyecto</th>
+                    <th>Tecnologías</th>
+                    <th>Estado</th>
+                    <th>Destacado</th>
+                    <th>Fecha</th>
+                    <th width="200">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            {% if project.image %}
+                                <img src="{{ project.image.url }}" alt="{{ project.title }}" 
+                                     style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;">
+                            {% else %}
+                                <div style="width: 40px; height: 40px; background: #F2F2F2; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-folder" style="color: #6B6B6B;"></i>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <div style="font-weight: 500; color: #242424; margin-bottom: 4px;">
+                                    {% if project.emoji %}{{ project.emoji }} {% endif %}{{ project.title }}
+                                </div>
+                                <div style="font-size: 12px; color: #6B6B6B;">{{ project.description|truncatewords:8 }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                            {% for tech in project.technologies.all|slice:":3" %}
+                                <span class="badge-custom badge-secondary">{{ tech.name }}</span>
+                            {% endfor %}
+                            {% if project.technologies.count > 3 %}
+                                <span style="font-size: 11px; color: #6B6B6B;">+{{ project.technologies.count|add:"-3" }} más</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        {% if project.visibility == 'public' %}
+                            <span class="badge-custom badge-success">
+                                <i class="fas fa-eye" style="margin-right: 4px;"></i>Público
+                            </span>
+                        {% else %}
+                            <span class="badge-custom badge-warning">
+                                <i class="fas fa-eye-slash" style="margin-right: 4px;"></i>Privado
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="btn toggle-featured" 
+                                data-project-id="{{ project.id }}"
+                                data-featured="{{ project.featured|yesno:'true,false' }}"
+                                style="background: none; border: none; padding: 8px; border-radius: 6px; cursor: pointer; transition: background 0.2s ease;">
+                            {% if project.featured %}
+                                <i class="fas fa-star" style="color: #F57C00;"></i>
+                            {% else %}
+                                <i class="far fa-star" style="color: #6B6B6B;"></i>
+                            {% endif %}
+                        </button>
+                    </td>
+                    <td>
+                        <div style="font-size: 13px; color: #6B6B6B;">
+                            {{ project.created_at|date:"d/m/Y" }}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="quick-actions">
+                            <a href="{% url 'portfolio:project-detail' project.slug %}" 
+                               class="btn" target="_blank" title="Ver">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'portfolio:admin-project-edit' project.pk %}" 
+                               class="btn" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'portfolio:admin-project-delete' project.pk %}" 
+                               class="btn" title="Eliminar" style="color: #dc3545;">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-folder-open"></i>
+        <h3>No hay proyectos</h3>
+        <p>
+            {% if current_search or current_visibility %}
+                No se encontraron proyectos con los filtros aplicados.
+            {% else %}
+                Comienza creando tu primer proyecto.
+            {% endif %}
+        </p>
+        <a href="{% url 'portfolio:admin-project-create' %}" class="btn-primary-custom">
+            <i class="fas fa-plus"></i>Crear Proyecto
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="pagination-custom">
+    {% if page_obj.has_previous %}
+        <a class="page-link" href="?page=1{% if current_search %}&search={{ current_search }}{% endif %}{% if current_visibility %}&visibility={{ current_visibility }}{% endif %}">
+            <i class="fas fa-angle-double-left"></i>
+        </a>
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_visibility %}&visibility={{ current_visibility }}{% endif %}">
+            <i class="fas fa-angle-left"></i>
+        </a>
+    {% endif %}
+
+    <span class="page-link active">
+        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_visibility %}&visibility={{ current_visibility }}{% endif %}">
+            <i class="fas fa-angle-right"></i>
+        </a>
+        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_visibility %}&visibility={{ current_visibility }}{% endif %}">
+            <i class="fas fa-angle-double-right"></i>
+        </a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// CSRF token for AJAX requests
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+// Quick toggle functions
+function quickToggle(url, data, successCallback) {
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrftoken,
+        },
+        body: new URLSearchParams(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            successCallback(data);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error de conexión');
+    });
+}
+
+// Toggle featured status
+document.querySelectorAll('.toggle-featured').forEach(button => {
+    button.addEventListener('click', function() {
+        const projectId = this.dataset.projectId;
+        const isFeatured = this.dataset.featured === 'true';
+        
+        quickToggle('{% url "portfolio:ajax-toggle-project-featured" %}', 
+            { project_id: projectId }, 
+            (data) => {
+                // Update button appearance
+                const icon = this.querySelector('i');
+                if (data.featured) {
+                    icon.className = 'fas fa-star';
+                    icon.style.color = '#F57C00';
+                    this.dataset.featured = 'true';
+                } else {
+                    icon.className = 'far fa-star';
+                    icon.style.color = '#6B6B6B';
+                    this.dataset.featured = 'false';
+                }
+                
+                // Show success message
+                showSuccessMessage(data.message);
+            }
+        );
+    });
+});
+
+function showSuccessMessage(message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert-custom alert-success';
+    alertDiv.textContent = message;
+    alertDiv.style.position = 'fixed';
+    alertDiv.style.top = '20px';
+    alertDiv.style.right = '20px';
+    alertDiv.style.zIndex = '9999';
+    alertDiv.style.minWidth = '300px';
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}

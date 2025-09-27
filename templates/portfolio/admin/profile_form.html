@@ -1,0 +1,312 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+
+{% block admin_title %}Mi Perfil{% endblock %}
+{% block admin_subtitle %}Actualiza tu información personal y profesional{% endblock %}
+
+{% block admin_actions %}
+<a href="{% url 'portfolio:admin-dashboard' %}" class="btn-secondary-custom">
+    <i class="fas fa-arrow-left"></i>Volver al Dashboard
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<div style="display: grid; grid-template-columns: 1fr 300px; gap: 32px;">
+    <div class="content-card">
+        <div class="card-header-custom">
+            <div>
+                <h2 class="card-title-custom">Información Personal</h2>
+                <p class="card-subtitle-custom">Actualiza tu información de perfil público</p>
+            </div>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Basic Information -->
+            <div style="margin-bottom: 32px;">
+                <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin-bottom: 16px;">Información Básica</h3>
+                
+                <div style="margin-bottom: 20px;">
+                    <label for="{{ form.name.id_for_label }}" class="form-label-custom">
+                        {{ form.name.label }} <span style="color: #dc3545;">*</span>
+                    </label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">{{ form.name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="{{ form.title.id_for_label }}" class="form-label-custom">
+                        {{ form.title.label }} <span style="color: #dc3545;">*</span>
+                    </label>
+                    {{ form.title }}
+                    <div class="form-text-custom">Tu título profesional (ej: Desarrollador Full Stack)</div>
+                    {% if form.title.errors %}
+                        <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">{{ form.title.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="{{ form.bio.id_for_label }}" class="form-label-custom">
+                        {{ form.bio.label }} <span style="color: #dc3545;">*</span>
+                    </label>
+                    {{ form.bio }}
+                    <div class="form-text-custom">Descripción breve sobre ti y tu trabajo</div>
+                    {% if form.bio.errors %}
+                        <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">{{ form.bio.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="{{ form.profile_image.id_for_label }}" class="form-label-custom">
+                        {{ form.profile_image.label }}
+                    </label>
+                    {{ form.profile_image }}
+                    {% if form.profile_image.errors %}
+                        <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">{{ form.profile_image.errors.0 }}</div>
+                    {% endif %}
+                    {% if object.profile_image %}
+                        <div style="margin-top: 12px;">
+                            <small style="color: #6B6B6B;">Imagen actual:</small><br>
+                            <img src="{{ object.profile_image.url }}" alt="{{ object.name }}" 
+                                 style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%; margin-top: 8px;">
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div style="margin-bottom: 32px;">
+                <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin-bottom: 16px;">Información de Contacto</h3>
+                
+                <div style="margin-bottom: 20px;">
+                    <label for="{{ form.email.id_for_label }}" class="form-label-custom">
+                        {{ form.email.label }} <span style="color: #dc3545;">*</span>
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">{{ form.email.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="{{ form.phone.id_for_label }}" class="form-label-custom">
+                        {{ form.phone.label }}
+                    </label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}
+                        <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">{{ form.phone.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="{{ form.location.id_for_label }}" class="form-label-custom">
+                        {{ form.location.label }}
+                    </label>
+                    {{ form.location }}
+                    <div class="form-text-custom">Tu ubicación (ej: Santo Domingo, República Dominicana)</div>
+                    {% if form.location.errors %}
+                        <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">{{ form.location.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Social Links -->
+            <div style="margin-bottom: 32px;">
+                <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin-bottom: 16px;">Enlaces Sociales</h3>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="{{ form.linkedin_url.id_for_label }}" class="form-label-custom">
+                        {{ form.linkedin_url.label }}
+                    </label>
+                    {{ form.linkedin_url }}
+                    <div class="form-text-custom">Tu perfil de LinkedIn (opcional)</div>
+                    {% if form.linkedin_url.errors %}
+                        <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">{{ form.linkedin_url.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="{{ form.github_url.id_for_label }}" class="form-label-custom">
+                        {{ form.github_url.label }}
+                    </label>
+                    {{ form.github_url }}
+                    <div class="form-text-custom">Tu perfil de GitHub (opcional)</div>
+                    {% if form.github_url.errors %}
+                        <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">{{ form.github_url.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="{{ form.medium_url.id_for_label }}" class="form-label-custom">
+                        {{ form.medium_url.label }}
+                    </label>
+                    {{ form.medium_url }}
+                    <div class="form-text-custom">Tu perfil de Medium (opcional)</div>
+                    {% if form.medium_url.errors %}
+                        <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">{{ form.medium_url.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Resume Settings -->
+            <div style="margin-bottom: 32px;">
+                <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin-bottom: 16px;">Configuración del CV</h3>
+                
+                <div style="margin-bottom: 20px;">
+                    <label for="{{ form.resume_pdf.id_for_label }}" class="form-label-custom">
+                        {{ form.resume_pdf.label }}
+                    </label>
+                    {{ form.resume_pdf }}
+                    <div class="form-text-custom">Archivo PDF de tu currículum para descarga</div>
+                    {% if form.resume_pdf.errors %}
+                        <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">{{ form.resume_pdf.errors.0 }}</div>
+                    {% endif %}
+                    {% if object.resume_pdf %}
+                        <div style="margin-top: 8px; display: flex; align-items: center; gap: 12px;">
+                            <div>
+                                <small style="color: #6B6B6B;">Archivo actual:</small>
+                                <a href="{{ object.resume_pdf.url }}" target="_blank" style="color: #1976D2; text-decoration: none; margin-left: 8px;">
+                                    <i class="fas fa-file-pdf"></i> Ver CV actual
+                                </a>
+                            </div>
+                            <button type="button" id="delete-resume-btn"
+                                    style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                <i class="fas fa-trash"></i> Eliminar CV
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        {{ form.show_web_resume }}
+                        <label for="{{ form.show_web_resume.id_for_label }}" class="form-label-custom" style="margin-bottom: 0;">
+                            {{ form.show_web_resume.label }}
+                        </label>
+                    </div>
+                    <div class="form-text-custom">Mostrar la versión web del currículum en el sitio</div>
+                    {% if form.show_web_resume.errors %}
+                        <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">{{ form.show_web_resume.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 24px; border-top: 1px solid #F2F2F2;">
+                <a href="{% url 'portfolio:admin-dashboard' %}" class="btn-secondary-custom">
+                    <i class="fas fa-times"></i>Cancelar
+                </a>
+                <button type="submit" class="btn-primary-custom">
+                    <i class="fas fa-save"></i>Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div>
+        <div class="content-card">
+            <div class="card-header-custom">
+                <div>
+                    <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin: 0;">Vista Previa</h3>
+                </div>
+            </div>
+            
+            {% if object %}
+            <div style="text-align: center;">
+                {% if object.profile_image %}
+                    <img src="{{ object.profile_image.url }}" alt="{{ object.name }}" 
+                         style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin-bottom: 16px;">
+                {% else %}
+                    <div style="width: 80px; height: 80px; background: #F2F2F2; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-user" style="color: #6B6B6B; font-size: 24px;"></i>
+                    </div>
+                {% endif %}
+                
+                <h4 style="font-size: 16px; font-weight: 600; color: #242424; margin-bottom: 4px;">{{ object.name }}</h4>
+                <p style="font-size: 14px; color: #6B6B6B; margin-bottom: 12px;">{{ object.title }}</p>
+                <p style="font-size: 12px; color: #6B6B6B; line-height: 1.4; margin-bottom: 16px;">{{ object.bio|truncatewords:20 }}</p>
+                
+                <div style="display: flex; justify-content: center; gap: 12px;">
+                    {% if object.linkedin_url %}
+                        <a href="{{ object.linkedin_url }}" target="_blank" style="color: #0077B5; font-size: 18px;">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                    {% endif %}
+                    {% if object.github_url %}
+                        <a href="{{ object.github_url }}" target="_blank" style="color: #333; font-size: 18px;">
+                            <i class="fab fa-github"></i>
+                        </a>
+                    {% endif %}
+                    {% if object.medium_url %}
+                        <a href="{{ object.medium_url }}" target="_blank" style="color: #12100E; font-size: 18px;">
+                            <i class="fab fa-medium"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="content-card" style="margin-top: 24px;">
+            <div class="card-header-custom">
+                <div>
+                    <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin: 0;">Consejos</h3>
+                </div>
+            </div>
+            
+            <div style="background: #E3F2FD; padding: 16px; border-radius: 6px; margin-bottom: 16px;">
+                <h4 style="font-size: 14px; font-weight: 600; color: #1976D2; margin-bottom: 8px;">
+                    <i class="fas fa-lightbulb" style="margin-right: 4px;"></i>Consejos:
+                </h4>
+                <ul style="font-size: 12px; color: #1976D2; margin: 0; padding-left: 16px;">
+                    <li>Usa una foto profesional de alta calidad</li>
+                    <li>Mantén tu bio concisa pero descriptiva</li>
+                    <li>Actualiza tus enlaces sociales regularmente</li>
+                    <li>El CV en PDF debe estar actualizado</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Add form-control-custom class to form fields
+document.addEventListener('DOMContentLoaded', function() {
+    const formFields = document.querySelectorAll('input[type="text"], input[type="email"], input[type="url"], textarea, select');
+    formFields.forEach(field => {
+        if (!field.classList.contains('form-check-input')) {
+            field.classList.add('form-control-custom');
+        }
+    });
+    
+    // File input styling
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+        input.classList.add('form-control-custom');
+    });
+
+    // Handle delete resume button
+    const deleteResumeBtn = document.getElementById('delete-resume-btn');
+    if (deleteResumeBtn) {
+        deleteResumeBtn.addEventListener('click', function() {
+            if (confirm('¿Estás seguro de que quieres eliminar el CV actual? Esta acción no se puede deshacer.')) {
+                // Add a hidden input to mark resume for deletion
+                const form = document.querySelector('form');
+                const deleteInput = document.createElement('input');
+                deleteInput.type = 'hidden';
+                deleteInput.name = 'delete_resume';
+                deleteInput.value = 'true';
+                form.appendChild(deleteInput);
+
+                // Submit the form
+                form.submit();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

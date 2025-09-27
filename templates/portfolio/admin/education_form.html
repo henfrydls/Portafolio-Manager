@@ -1,0 +1,206 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+
+{% block admin_title %}
+    {% if object %}Editar Educación{% else %}Nueva Educación{% endif %}
+{% endblock %}
+{% block admin_subtitle %}
+    {% if object %}Actualiza la información de esta formación{% else %}Agrega una nueva formación a tu CV{% endif %}
+{% endblock %}
+
+{% block admin_actions %}
+<a href="{% url 'portfolio:admin-education-list' %}" class="btn-secondary-custom">
+    <i class="fas fa-arrow-left"></i>Volver a Educación
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<div class="content-card">
+    <div class="card-header-custom">
+        <div>
+            <h2 class="card-title-custom">
+                {% if object %}Editar Educación{% else %}Nueva Educación{% endif %}
+            </h2>
+            <p class="card-subtitle-custom">
+                {% if object %}Actualiza los detalles de esta formación{% else %}Completa la información de tu nueva formación{% endif %}
+            </p>
+        </div>
+    </div>
+
+    <form method="post" class="form-custom">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label class="form-label-custom" for="{{ form.education_type.id_for_label }}">
+                {{ form.education_type.label }}
+                <span class="required">*</span>
+            </label>
+            {{ form.education_type }}
+            <div class="form-help">Selecciona el tipo de formación que mejor describe esta educación</div>
+            {% if form.education_type.errors %}
+                <div class="form-error">{{ form.education_type.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label-custom" for="{{ form.institution.id_for_label }}">
+                    {{ form.institution.label }}
+                    <span class="required">*</span>
+                </label>
+                {{ form.institution }}
+                {% if form.institution.errors %}
+                    <div class="form-error">{{ form.institution.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label-custom" for="{{ form.degree.id_for_label }}">
+                    {{ form.degree.label }}
+                    <span class="required">*</span>
+                </label>
+                {{ form.degree }}
+                {% if form.degree.errors %}
+                    <div class="form-error">{{ form.degree.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label-custom" for="{{ form.field_of_study.id_for_label }}">
+                {{ form.field_of_study.label }}
+                <span class="required">*</span>
+            </label>
+            {{ form.field_of_study }}
+            <div class="form-help">Ej: Ingeniería de Sistemas, Desarrollo Web, Machine Learning, etc.</div>
+            {% if form.field_of_study.errors %}
+                <div class="form-error">{{ form.field_of_study.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label-custom" for="{{ form.description.id_for_label }}">
+                {{ form.description.label }}
+            </label>
+            {{ form.description }}
+            <div class="form-help">Descripción opcional de lo aprendido, proyectos realizados, etc.</div>
+            {% if form.description.errors %}
+                <div class="form-error">{{ form.description.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label-custom" for="{{ form.start_date.id_for_label }}">
+                    {{ form.start_date.label }}
+                    <span class="required">*</span>
+                </label>
+                {{ form.start_date }}
+                {% if form.start_date.errors %}
+                    <div class="form-error">{{ form.start_date.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label-custom" for="{{ form.end_date.id_for_label }}">
+                    {{ form.end_date.label }}
+                </label>
+                {{ form.end_date }}
+                <div class="form-help">Deja vacío si está en curso</div>
+                {% if form.end_date.errors %}
+                    <div class="form-error">{{ form.end_date.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="checkbox-group">
+                {{ form.current }}
+                <label for="{{ form.current.id_for_label }}" class="checkbox-label">
+                    {{ form.current.label }}
+                </label>
+            </div>
+            <div class="form-help">Marca esta casilla si actualmente estás cursando esta formación</div>
+            {% if form.current.errors %}
+                <div class="form-error">{{ form.current.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label-custom" for="{{ form.credential_id.id_for_label }}">
+                    {{ form.credential_id.label }}
+                </label>
+                {{ form.credential_id }}
+                <div class="form-help">ID del certificado o credencial (si aplica)</div>
+                {% if form.credential_id.errors %}
+                    <div class="form-error">{{ form.credential_id.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label-custom" for="{{ form.credential_url.id_for_label }}">
+                    {{ form.credential_url.label }}
+                </label>
+                {{ form.credential_url }}
+                <div class="form-help">URL para verificar el certificado (si aplica)</div>
+                {% if form.credential_url.errors %}
+                    <div class="form-error">{{ form.credential_url.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label-custom" for="{{ form.order.id_for_label }}">
+                {{ form.order.label }}
+            </label>
+            {{ form.order }}
+            <div class="form-help">Orden de visualización (menor número aparece primero)</div>
+            {% if form.order.errors %}
+                <div class="form-error">{{ form.order.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        {% if form.non_field_errors %}
+            <div class="form-error">
+                {{ form.non_field_errors.0 }}
+            </div>
+        {% endif %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary-custom">
+                <i class="fas fa-save"></i>
+                {% if object %}Actualizar Educación{% else %}Crear Educación{% endif %}
+            </button>
+            <a href="{% url 'portfolio:admin-education-list' %}" class="btn-secondary-custom">
+                <i class="fas fa-times"></i>Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-clear end_date when current is checked
+document.getElementById('{{ form.current.id_for_label }}').addEventListener('change', function() {
+    const endDateField = document.getElementById('{{ form.end_date.id_for_label }}');
+    if (this.checked) {
+        endDateField.value = '';
+        endDateField.disabled = true;
+    } else {
+        endDateField.disabled = false;
+    }
+});
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const currentCheckbox = document.getElementById('{{ form.current.id_for_label }}');
+    const endDateField = document.getElementById('{{ form.end_date.id_for_label }}');
+    
+    if (currentCheckbox.checked) {
+        endDateField.disabled = true;
+    }
+});
+</script>
+{% endblock %}

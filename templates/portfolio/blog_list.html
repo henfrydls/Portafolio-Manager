@@ -1,0 +1,1366 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Blog - {{ profile.name }}{% endblock %}
+
+{% block content %}
+<div class="medium-page">
+    <!-- Top Navigation -->
+    <nav class="medium-top-nav">
+        <div class="nav-container">
+            <div class="nav-left">
+                <a href="{% url 'portfolio:home' %}" class="nav-link">Home</a>
+            </div>
+            <div class="nav-right">
+                <a href="{% url 'portfolio:post-list' %}" class="nav-link">All Posts</a>
+                <a href="{% url 'portfolio:home' %}#recent" class="nav-link">Recent</a>
+                <a href="{% url 'portfolio:home' %}#featured" class="nav-link">Featured Work</a>
+                <a href="{% url 'portfolio:home' %}#projects" class="nav-link">Projects</a>
+                <button onclick="openContactModal()" class="nav-link contact-nav-btn">Contact</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="breadcrumb-nav">
+        <div class="breadcrumb-container">
+            <a href="{% url 'portfolio:home' %}" class="breadcrumb-link">Home</a>
+            <span class="breadcrumb-separator">→</span>
+            <span class="breadcrumb-current">Posts</span>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="medium-main">
+        <div class="blog-container">
+            <!-- Page Header -->
+            <header class="blog-header">
+                <h1 class="blog-title">Posts</h1>
+                <p class="blog-subtitle">Thoughts, tutorials, and experiences in development</p>
+            </header>
+
+            <!-- Filters and Search -->
+            <div class="blog-filters">
+                <div class="filter-row">
+                    <div class="filter-section">
+                        <div class="filter-buttons">
+                            <a href="{% url 'portfolio:post-list' %}"
+                               class="filter-btn {% if not current_category %}active{% endif %}">
+                                All
+                            </a>
+                            {% for category in categories %}
+                            <a href="?category={{ category.slug }}"
+                               class="filter-btn {% if current_category == category.slug %}active{% endif %}">
+                                {{ category.name }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="search-section">
+                        <form method="get" class="search-form">
+                            {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}">{% endif %}
+                            {% if current_tag %}<input type="hidden" name="tag" value="{{ current_tag }}">{% endif %}
+                            <input type="search" name="search" class="search-input"
+                                   placeholder="Search posts..." value="{{ current_search }}">
+                            <button type="submit" class="search-btn">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                {% if available_tags %}
+                <div class="tags-row">
+                    {% for tag in available_tags|slice:":8" %}
+                    <a href="?tag={{ tag }}" class="tag-link {% if current_tag == tag %}active{% endif %}">
+                        {{ tag }}
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Blog Posts - Two Column Grid -->
+            <div class="posts-grid-two">
+                {% if posts %}
+                {% for post in posts %}
+                <article class="post-card-grid">
+                    <div class="post-content">
+                        <div class="post-meta">
+                            {% if post.category %}
+                            <span class="post-type">{{ post.category.name }}</span>
+                            {% else %}
+                            <span class="post-type">{{ post.get_post_type_display }}</span>
+                            {% endif %}
+                            <span class="post-date">{{ post.publish_date|date:"M d, Y" }}</span>
+                            {% if post.featured %}
+                            <span class="post-featured">★</span>
+                            {% endif %}
+                        </div>
+
+                        <h2 class="post-title">
+                            <a href="{% url 'portfolio:post-detail' post.slug %}">
+                                {{ post.title }}
+                            </a>
+                        </h2>
+
+                        <p class="post-excerpt">{{ post.excerpt|truncatewords:20 }}</p>
+
+                        <div class="post-footer">
+                            <span class="reading-time">{{ post.reading_time }} min read</span>
+                            {% if post.get_tags_list %}
+                            <div class="post-tags">
+                                {% for tag in post.get_tags_list|slice:":2" %}
+                                <a href="?tag={{ tag }}" class="tag">{{ tag }}</a>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+
+                {% else %}
+                <div class="no-posts">
+                    <h3>No posts found</h3>
+                    <p>
+                        {% if current_search or current_category or current_tag %}
+                        Try adjusting your search filters.
+                        {% else %}
+                        No posts have been published yet.
+                        {% endif %}
+                    </p>
+                    {% if current_search or current_category or current_tag %}
+                    <a href="{% url 'portfolio:post-list' %}" class="clear-filters-btn">
+                        Clear Filters
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <div class="pagination-container">
+                <div class="pagination-nav">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_tag %}&tag={{ current_tag }}{% endif %}{% if current_search %}&search={{ current_search }}{% endif %}" class="pagination-btn">
+                        ← Previous
+                    </a>
+                    {% endif %}
+
+                    <span class="pagination-info">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_tag %}&tag={{ current_tag }}{% endif %}{% if current_search %}&search={{ current_search }}{% endif %}" class="pagination-btn">
+                        Next →
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+<!-- Contact Modal -->
+<div id="contactModal" class="contact-modal">
+    <div class="modal-overlay" onclick="closeContactModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Get In Touch</h2>
+            <button class="modal-close" onclick="closeContactModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="contact-intro">
+                <p class="contact-description">
+                    Ready to collaborate on your next project? Whether you need technical leadership, system
+                    architecture, or digital transformation guidance, I'd love to hear from you.
+                </p>
+            </div>
+
+            <div class="contact-methods">
+                <div class="contact-grid">
+                    <!-- Email Contact -->
+                    {% if profile.email %}
+                    <div class="contact-method primary">
+                        <div class="contact-method-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-method-content">
+                            <h3 class="contact-method-title">Email</h3>
+                            <p class="contact-method-description">Best for detailed project discussions</p>
+                            <a href="mailto:{{ profile.email }}" class="contact-method-action">
+                                Send an Email
+                                <i class="fas fa-paper-plane"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- LinkedIn Contact -->
+                    {% if profile.linkedin_url %}
+                    <div class="contact-method">
+                        <div class="contact-method-icon">
+                            <i class="fab fa-linkedin"></i>
+                        </div>
+                        <div class="contact-method-content">
+                            <h3 class="contact-method-title">LinkedIn</h3>
+                            <p class="contact-method-description">Professional networking & quick messages</p>
+                            <a href="{{ profile.linkedin_url }}" target="_blank" class="contact-method-action">
+                                Connect on LinkedIn
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- GitHub Contact -->
+                    {% if profile.github_url %}
+                    <div class="contact-method">
+                        <div class="contact-method-icon">
+                            <i class="fab fa-github"></i>
+                        </div>
+                        <div class="contact-method-content">
+                            <h3 class="contact-method-title">GitHub</h3>
+                            <p class="contact-method-description">Code collaboration & technical discussions</p>
+                            <a href="{{ profile.github_url }}" target="_blank" class="contact-method-action">
+                                View GitHub Profile
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Contact Form Alternative -->
+                <div class="contact-form-section">
+                    <div class="contact-form-header">
+                        <h3 class="form-title">Send a Message</h3>
+                        <p class="form-description">Prefer a contact form? Fill out the details below.</p>
+                    </div>
+
+                    <form class="contact-form" method="post" action="{% url 'portfolio:home' %}" id="contactForm">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="contact_name">Name *</label>
+                                <input type="text" id="contact_name" name="name" required placeholder="Your full name">
+                            </div>
+                            <div class="form-group">
+                                <label for="contact_email">Email *</label>
+                                <input type="email" id="contact_email" name="email" required
+                                    placeholder="your.email@example.com">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="contact_subject">Subject *</label>
+                            <input type="text" id="contact_subject" name="subject" required
+                                placeholder="What's this about?">
+                        </div>
+                        <div class="form-group">
+                            <label for="contact_message">Message *</label>
+                            <textarea id="contact_message" name="message" rows="5" required
+                                placeholder="Tell me about your project, ideas, or just say hello..."></textarea>
+                        </div>
+                        <button type="submit" class="contact-submit-btn" id="submitBtn">
+                            <span class="btn-text">Send Message</span>
+                            <i class="fas fa-paper-plane btn-icon"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Contact CTA -->
+            <div class="contact-cta-section">
+                <div class="cta-content">
+                    <h3 class="cta-title">Let's Build Something Great Together</h3>
+                    <p class="cta-description">
+                        From concept to deployment, I help organizations leverage technology
+                        to achieve their strategic goals.
+                    </p>
+                    <div class="cta-stats">
+                        <div class="cta-stat">
+                            <span class="stat-number">{{ projects_count|default:"10" }}+</span>
+                            <span class="stat-label">Projects Delivered</span>
+                        </div>
+                        <div class="cta-stat">
+                            <span class="stat-number">{{ experience_years|default:"5" }}+</span>
+                            <span class="stat-label">Years Experience</span>
+                        </div>
+                        <div class="cta-stat">
+                            <span class="stat-number">{{ technologies_count|default:"15" }}+</span>
+                            <span class="stat-label">Technologies</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Base Styles - Consistent with current design */
+.medium-page {
+    font-family: sohne, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background: #fafafa;
+    color: rgba(41, 41, 41, 1);
+    line-height: 1.58;
+    letter-spacing: -0.004em;
+}
+
+/* Navigation - Consistent with post detail */
+.medium-top-nav {
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid #F2F2F2;
+    z-index: 1000;
+    padding: 0 20px;
+}
+
+/* Breadcrumb Navigation */
+.breadcrumb-nav {
+    background: #F8F9FA;
+    padding: 16px 20px;
+    border-bottom: 1px solid #F2F2F2;
+}
+
+.breadcrumb-container {
+    max-width: 1192px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.breadcrumb-link {
+    color: #6B6B6B;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 400;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+    color: #242424;
+    text-decoration: none;
+}
+
+.breadcrumb-separator {
+    color: #6B6B6B;
+    font-size: 14px;
+    margin: 0 4px;
+}
+
+.breadcrumb-current {
+    color: #242424;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.nav-container {
+    max-width: 1192px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 57px;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+}
+
+.nav-right {
+    display: flex;
+    gap: 32px;
+}
+
+.nav-link {
+    color: rgba(117, 117, 117, 1);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 400;
+    transition: color 0.15s ease;
+}
+
+.nav-link:hover {
+    color: #242424;
+}
+
+/* Home link styling - bold like Option 3 */
+.nav-left .nav-link {
+    font-size: 16px;
+    font-weight: 600;
+    color: #242424;
+}
+
+.nav-left .nav-link:hover {
+    opacity: 0.7;
+}
+
+/* Contact button styling */
+.contact-nav-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+/* Main Content */
+.medium-main {
+    max-width: 1192px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.blog-container {
+    max-width: 900px; /* Wider for two columns */
+    margin: 0 auto;
+    padding-top: 40px;
+    padding-bottom: 60px;
+    min-height: calc(100vh - 200px); /* More space to bottom like Option 3 */
+}
+
+/* Header */
+.blog-header {
+    margin-bottom: 48px;
+    text-align: left;
+}
+
+.blog-title {
+    font-size: 42px;
+    line-height: 52px;
+    letter-spacing: -0.011em;
+    font-weight: 700;
+    color: #242424;
+    margin: 0 0 16px 0;
+}
+
+.blog-subtitle {
+    font-size: 20px;
+    line-height: 28px;
+    color: #6B6B6B;
+    margin: 0 0 0 0;
+}
+
+/* Filters */
+.blog-filters {
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid #F2F2F2;
+}
+
+.filter-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    gap: 20px;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    border-radius: 100px;
+    background: #F2F2F2;
+    color: #6B6B6B;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    background: #242424;
+    color: white;
+    text-decoration: none;
+}
+
+.search-form {
+    display: flex;
+    align-items: center;
+    background: #F2F2F2;
+    border-radius: 100px;
+    padding: 4px;
+    min-width: 200px;
+}
+
+.search-input {
+    background: transparent;
+    border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    color: #242424;
+    flex: 1;
+    outline: none;
+}
+
+.search-input::placeholder {
+    color: #6B6B6B;
+}
+
+.search-btn {
+    background: #242424;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.search-btn:hover {
+    background: #1a1a1a;
+    transform: scale(1.05);
+}
+
+/* Tags row - inspired by Option 3 cloud style */
+.tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    opacity: 0.8;
+    margin-top: 8px;
+}
+
+.tag-link {
+    color: #6B6B6B;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 2px 0;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s ease;
+    font-weight: 400;
+}
+
+.tag-link:hover,
+.tag-link.active {
+    color: #242424;
+    text-decoration: underline;
+    border-bottom: none;
+}
+
+/* Two Column Posts Grid */
+.posts-grid-two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-bottom: 48px;
+    padding-bottom: 32px; /* Extra bottom padding like Option 3 */
+}
+
+.post-card-grid {
+    background: white;
+    border-radius: 8px;
+    padding: 28px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #F2F2F2;
+    height: fit-content; /* Let cards be different heights */
+}
+
+.post-card-grid:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border-color: rgba(36, 36, 36, 0.2);
+}
+
+.post-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.post-type {
+    font-size: 11px;
+    color: #6B6B6B;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.post-date {
+    font-size: 13px;
+    color: #6B6B6B;
+}
+
+.post-featured {
+    color: #FF6B35;
+    font-size: 14px;
+}
+
+.post-title {
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 700;
+    margin: 0 0 14px 0;
+}
+
+.post-title a {
+    color: #242424;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.post-title a:hover {
+    color: #242424;
+}
+
+.post-excerpt {
+    color: #6B6B6B;
+    font-size: 15px;
+    line-height: 22px;
+    margin: 0 0 20px 0;
+}
+
+.post-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.reading-time {
+    font-size: 13px;
+    color: #6B6B6B;
+}
+
+.post-tags {
+    display: flex;
+    gap: 6px;
+}
+
+.tag {
+    color: #999;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 400;
+    transition: color 0.2s ease;
+}
+
+.tag:hover {
+    color: #242424;
+    text-decoration: none;
+}
+
+/* No Posts */
+.no-posts {
+    grid-column: 1 / -1; /* Span full width */
+    text-align: center;
+    padding: 64px 0;
+    color: #6B6B6B;
+}
+
+.no-posts h3 {
+    font-size: 24px;
+    margin-bottom: 16px;
+}
+
+.clear-filters-btn {
+    display: inline-block;
+    margin-top: 24px;
+    padding: 12px 24px;
+    background: #242424;
+    color: white;
+    text-decoration: none;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.clear-filters-btn:hover {
+    background: #1a1a1a;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(36, 36, 36, 0.3);
+}
+
+/* Pagination - minimal style from Option 3 */
+.pagination-container {
+    margin-top: 80px;
+    padding-top: 48px;
+    border-top: 1px solid #F2F2F2;
+    margin-bottom: 80px;
+}
+
+.pagination-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+}
+
+.pagination-btn {
+    color: #6B6B6B;
+    text-decoration: none;
+    font-size: 15px;
+    padding: 0;
+    transition: all 0.2s ease;
+    font-weight: 400;
+}
+
+.pagination-btn:hover {
+    color: #242424;
+    text-decoration: none;
+    opacity: 0.8;
+}
+
+.pagination-info {
+    color: #999;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nav-container {
+        padding: 0 16px;
+    }
+
+    .medium-main {
+        padding: 0 16px;
+    }
+
+    .blog-container {
+        padding-top: 32px;
+    }
+
+    .blog-title {
+        font-size: 32px;
+        line-height: 40px;
+    }
+
+    .filter-row {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+
+    .filter-buttons {
+        justify-content: center;
+    }
+
+    .search-form {
+        min-width: auto;
+    }
+
+    /* Single column on mobile */
+    .posts-grid-two {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .post-card-grid {
+        padding: 24px;
+    }
+
+    .post-footer {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+}
+
+/* Contact Modal Styles */
+.contact-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.contact-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    position: relative;
+    background: white;
+    border-radius: 16px;
+    max-width: 900px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    transform: scale(0.9) translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.contact-modal.active .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px 40px 0 40px;
+    border-bottom: 1px solid #F2F2F2;
+    margin-bottom: 32px;
+}
+
+.modal-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #242424;
+    margin: 0;
+}
+
+.modal-close {
+    background: #F8F9FA;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #6B6B6B;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: #E9ECEF;
+    color: #242424;
+    transform: scale(1.1);
+}
+
+.modal-body {
+    padding: 0 40px 40px 40px;
+}
+
+.contact-intro {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.contact-description {
+    font-size: 18px;
+    color: #6B6B6B;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.contact-methods {
+    margin-bottom: 0;
+}
+
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.contact-method {
+    background: #F8F9FA;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.contact-method.primary {
+    background: linear-gradient(135deg, #242424 0%, #1a1a1a 100%);
+    color: white;
+}
+
+.contact-method:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: #242424;
+}
+
+.contact-method.primary:hover {
+    box-shadow: 0 8px 25px rgba(36, 36, 36, 0.3);
+}
+
+.contact-method-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(36, 36, 36, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 20px;
+    color: #242424;
+    transition: all 0.3s ease;
+}
+
+.contact-method.primary .contact-method-icon {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.contact-method:hover .contact-method-icon {
+    transform: scale(1.1);
+}
+
+.contact-method-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #242424;
+    margin: 0 0 6px 0;
+}
+
+.contact-method.primary .contact-method-title {
+    color: white;
+}
+
+.contact-method-description {
+    font-size: 13px;
+    color: #6B6B6B;
+    margin: 0 0 16px 0;
+    line-height: 1.4;
+}
+
+.contact-method.primary .contact-method-description {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.contact-method-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #242424;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: rgba(36, 36, 36, 0.05);
+}
+
+.contact-method.primary .contact-method-action {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.contact-method-action:hover {
+    text-decoration: none;
+    transform: translateY(-1px);
+    background: rgba(36, 36, 36, 0.1);
+}
+
+.contact-method.primary .contact-method-action:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Contact Form Section */
+.contact-form-section {
+    background: #F8F9FA;
+    border-radius: 12px;
+    padding: 32px;
+    margin-top: 32px;
+}
+
+.contact-form-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.form-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #242424;
+    margin: 0 0 6px 0;
+}
+
+.form-description {
+    font-size: 14px;
+    color: #6B6B6B;
+    margin: 0;
+}
+
+.contact-form {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #242424;
+    margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid #E9ECEF;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #242424;
+    box-shadow: 0 0 0 3px rgba(36, 36, 36, 0.1);
+    transform: translateY(-1px);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+.form-group.valid input,
+.form-group.valid textarea {
+    border-color: #28a745;
+    background: #f8fff9;
+}
+
+.form-group.invalid input,
+.form-group.invalid textarea {
+    border-color: #dc3545;
+    background: #fff8f8;
+}
+
+.contact-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #242424;
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    justify-content: center;
+}
+
+.contact-submit-btn:hover {
+    background: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(36, 36, 36, 0.2);
+}
+
+.contact-submit-btn:disabled,
+.contact-submit-btn.loading {
+    background: #6B6B6B;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.contact-submit-btn .btn-icon {
+    transition: transform 0.3s ease;
+}
+
+.contact-submit-btn:hover .btn-icon {
+    transform: translateX(3px);
+}
+
+.contact-submit-btn.loading .btn-icon {
+    transform: none;
+}
+
+/* Contact CTA Section */
+.contact-cta-section {
+    background: linear-gradient(135deg, #242424 0%, #1a1a1a 100%);
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    color: white;
+    margin-top: 32px;
+}
+
+.cta-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: white;
+    margin: 0 0 8px 0;
+}
+
+.cta-description {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.5;
+    margin: 0 0 24px 0;
+    font-size: 14px;
+}
+
+.cta-stats {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+
+.cta-stat {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Modal Responsive */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 20px;
+    }
+
+    .modal-header {
+        padding: 24px 24px 0 24px;
+    }
+
+    .modal-body {
+        padding: 0 24px 24px 24px;
+    }
+
+    .modal-title {
+        font-size: 24px;
+    }
+
+    .contact-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .contact-form-section {
+        padding: 24px;
+    }
+
+    .contact-cta-section {
+        padding: 24px;
+    }
+
+    .cta-stats {
+        gap: 24px;
+    }
+
+    .stat-number {
+        font-size: 20px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Contact Modal Functions
+function openContactModal() {
+    const modal = document.getElementById('contactModal');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Focus on first input
+    setTimeout(() => {
+        const firstInput = modal.querySelector('input');
+        if (firstInput) firstInput.focus();
+    }, 300);
+}
+
+function closeContactModal() {
+    const modal = document.getElementById('contactModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+
+    // Reset form if it exists
+    const form = document.getElementById('contactForm');
+    if (form) {
+        form.reset();
+
+        // Reset button state
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = submitBtn?.querySelector('.btn-text');
+        const btnIcon = submitBtn?.querySelector('.btn-icon');
+
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+        }
+        if (btnText) btnText.textContent = 'Send Message';
+        if (btnIcon) btnIcon.className = 'fas fa-paper-plane btn-icon';
+
+        // Clear validation states
+        const formGroups = form.querySelectorAll('.form-group');
+        formGroups.forEach(group => {
+            group.classList.remove('valid', 'invalid', 'focused');
+        });
+    }
+}
+
+// Contact Form Enhancement
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('contactForm');
+
+    if (form) {
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const btnIcon = submitBtn.querySelector('.btn-icon');
+
+        // Form validation and enhancement
+        const inputs = form.querySelectorAll('input, textarea');
+
+        inputs.forEach(input => {
+            // Add floating label effect
+            input.addEventListener('focus', function () {
+                this.parentElement.classList.add('focused');
+            });
+
+            input.addEventListener('blur', function () {
+                if (!this.value) {
+                    this.parentElement.classList.remove('focused');
+                }
+            });
+
+            // Real-time validation
+            input.addEventListener('input', function () {
+                validateField(this);
+            });
+        });
+
+        function validateField(field) {
+            const value = field.value.trim();
+            const fieldGroup = field.parentElement;
+
+            // Remove existing validation classes
+            fieldGroup.classList.remove('valid', 'invalid');
+
+            if (field.hasAttribute('required') && value === '') {
+                fieldGroup.classList.add('invalid');
+                return false;
+            }
+
+            if (field.type === 'email' && value !== '') {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(value)) {
+                    fieldGroup.classList.add('invalid');
+                    return false;
+                }
+            }
+
+            if (value !== '') {
+                fieldGroup.classList.add('valid');
+            }
+
+            return true;
+        }
+
+        // Form submission with loading state
+        form.addEventListener('submit', function (e) {
+            let isValid = true;
+
+            inputs.forEach(input => {
+                if (!validateField(input)) {
+                    isValid = false;
+                }
+            });
+
+            if (isValid) {
+                // Show loading state
+                submitBtn.disabled = true;
+                submitBtn.classList.add('loading');
+                btnText.textContent = 'Sending...';
+                btnIcon.className = 'fas fa-spinner fa-spin btn-icon';
+            } else {
+                e.preventDefault();
+                // Focus on first invalid field
+                const firstInvalid = form.querySelector('.invalid input, .invalid textarea');
+                if (firstInvalid) {
+                    firstInvalid.focus();
+                }
+            }
+        });
+    }
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeContactModal();
+        }
+    });
+});
+</script>
+{% endblock %}

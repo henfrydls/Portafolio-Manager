@@ -1,0 +1,6 @@
+Django==5.2
+Pillow==10.0.0
+whitenoise==6.5.0
+python-decouple==3.8
+python-magic-bin==0.4.14
+weasyprint==60.0

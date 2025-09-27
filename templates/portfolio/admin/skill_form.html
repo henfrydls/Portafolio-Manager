@@ -1,0 +1,190 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+
+{% block admin_title %}
+    {% if object %}Editar Habilidad{% else %}Nueva Habilidad{% endif %}
+{% endblock %}
+{% block admin_subtitle %}
+    {% if object %}Actualiza la información de esta habilidad{% else %}Agrega una nueva habilidad a tu CV{% endif %}
+{% endblock %}
+
+{% block admin_actions %}
+<a href="{% url 'portfolio:admin-skill-list' %}" class="btn-secondary-custom">
+    <i class="fas fa-arrow-left"></i>Volver a Habilidades
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<div class="content-card">
+    <div class="card-header-custom">
+        <div>
+            <h2 class="card-title-custom">
+                {% if object %}Editar Habilidad{% else %}Nueva Habilidad{% endif %}
+            </h2>
+            <p class="card-subtitle-custom">
+                {% if object %}Actualiza los detalles de esta habilidad{% else %}Completa la información de tu nueva habilidad{% endif %}
+            </p>
+        </div>
+    </div>
+
+    <form method="post" class="form-custom">
+        {% csrf_token %}
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label-custom" for="{{ form.name.id_for_label }}">
+                    {{ form.name.label }}
+                    <span class="required">*</span>
+                </label>
+                {{ form.name }}
+                <div class="form-help">Ej: Python, JavaScript, React, Docker, etc.</div>
+                {% if form.name.errors %}
+                    <div class="form-error">{{ form.name.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label-custom" for="{{ form.category.id_for_label }}">
+                    {{ form.category.label }}
+                    <span class="required">*</span>
+                </label>
+                {{ form.category }}
+                <div class="form-help">Ej: Frontend, Backend, Database, DevOps, etc.</div>
+                {% if form.category.errors %}
+                    <div class="form-error">{{ form.category.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label-custom" for="{{ form.proficiency.id_for_label }}">
+                    {{ form.proficiency.label }}
+                    <span class="required">*</span>
+                </label>
+                {{ form.proficiency }}
+                <div class="form-help">
+                    <strong>Básico:</strong> Conocimiento inicial<br>
+                    <strong>Intermedio:</strong> Uso regular y confianza<br>
+                    <strong>Avanzado:</strong> Dominio sólido y experiencia<br>
+                    <strong>Experto:</strong> Maestría completa
+                </div>
+                {% if form.proficiency.errors %}
+                    <div class="form-error">{{ form.proficiency.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label-custom" for="{{ form.years_experience.id_for_label }}">
+                    {{ form.years_experience.label }}
+                    <span class="required">*</span>
+                </label>
+                {{ form.years_experience }}
+                <div class="form-help">Años de experiencia práctica con esta habilidad</div>
+                {% if form.years_experience.errors %}
+                    <div class="form-error">{{ form.years_experience.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Preview de la barra de progreso -->
+        <div class="form-group">
+            <label class="form-label-custom">Vista Previa del Nivel</label>
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #F8F9FA; border-radius: 8px;">
+                <div style="flex: 1; height: 12px; background: #E9ECEF; border-radius: 6px; overflow: hidden;">
+                    <div id="progress-preview" style="height: 100%; background: #007bff; width: 50%; transition: all 0.3s ease; border-radius: 6px;"></div>
+                </div>
+                <span id="percentage-preview" style="font-size: 14px; color: #495057; min-width: 40px; font-weight: 500;">50%</span>
+            </div>
+            <div class="form-help">Esta barra muestra cómo se verá tu nivel de competencia en el CV</div>
+        </div>
+
+        {% if form.non_field_errors %}
+            <div class="form-error">
+                {{ form.non_field_errors.0 }}
+            </div>
+        {% endif %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary-custom">
+                <i class="fas fa-save"></i>
+                {% if object %}Actualizar Habilidad{% else %}Crear Habilidad{% endif %}
+            </button>
+            <a href="{% url 'portfolio:admin-skill-list' %}" class="btn-secondary-custom">
+                <i class="fas fa-times"></i>Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Update progress bar preview based on proficiency level
+function updateProgressPreview() {
+    const proficiencySelect = document.getElementById('{{ form.proficiency.id_for_label }}');
+    const progressBar = document.getElementById('progress-preview');
+    const percentageText = document.getElementById('percentage-preview');
+    
+    const proficiency = parseInt(proficiencySelect.value) || 1;
+    const percentage = (proficiency / 4) * 100;
+    
+    // Update progress bar width
+    progressBar.style.width = percentage + '%';
+    percentageText.textContent = Math.round(percentage) + '%';
+    
+    // Update color based on level
+    const colors = {
+        1: '#17a2b8', // info - básico
+        2: '#007bff', // primary - intermedio  
+        3: '#ffc107', // warning - avanzado
+        4: '#28a745'  // success - experto
+    };
+    
+    progressBar.style.background = colors[proficiency] || colors[1];
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateProgressPreview();
+    
+    // Update on proficiency change
+    document.getElementById('{{ form.proficiency.id_for_label }}').addEventListener('change', updateProgressPreview);
+});
+
+// Common categories suggestions
+const commonCategories = [
+    'Frontend',
+    'Backend', 
+    'Database',
+    'DevOps',
+    'Mobile',
+    'Cloud',
+    'Tools',
+    'Languages',
+    'Frameworks',
+    'Testing'
+];
+
+// Add autocomplete to category field
+const categoryField = document.getElementById('{{ form.category.id_for_label }}');
+if (categoryField) {
+    categoryField.addEventListener('input', function() {
+        // Simple autocomplete logic could be added here
+        // For now, we'll just add the common categories as a datalist
+    });
+    
+    // Create datalist for common categories
+    const datalist = document.createElement('datalist');
+    datalist.id = 'category-suggestions';
+    commonCategories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        datalist.appendChild(option);
+    });
+    
+    categoryField.setAttribute('list', 'category-suggestions');
+    categoryField.parentNode.appendChild(datalist);
+}
+</script>
+{% endblock %}

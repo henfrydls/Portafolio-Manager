@@ -1,0 +1,70 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+
+{% block admin_title %}Eliminar Habilidad{% endblock %}
+{% block admin_subtitle %}Confirma la eliminación de esta habilidad técnica{% endblock %}
+
+{% block admin_actions %}
+<a href="{% url 'portfolio:admin-skill-list' %}" class="btn-secondary-custom">
+    <i class="fas fa-arrow-left"></i>Volver a Habilidades
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<div class="content-card">
+    <div class="card-header-custom">
+        <div>
+            <h2 class="card-title-custom">Confirmar Eliminación</h2>
+            <p class="card-subtitle-custom">Esta acción no se puede deshacer</p>
+        </div>
+    </div>
+
+    <div class="delete-confirmation">
+        <div class="delete-item-info">
+            <div class="delete-icon">
+                <i class="fas fa-cogs"></i>
+            </div>
+            <div class="delete-details">
+                <h3>{{ object.name }}</h3>
+                <p><strong>Categoría:</strong> {{ object.category }}</p>
+                <p><strong>Nivel:</strong> {{ object.get_proficiency_display }}</p>
+                <p><strong>Experiencia:</strong> {{ object.years_experience }} año{{ object.years_experience|pluralize }}</p>
+                
+                <!-- Progress bar preview -->
+                <div style="margin-top: 12px;">
+                    <p><strong>Progreso:</strong></p>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="flex: 1; height: 8px; background: #F2F2F2; border-radius: 4px; overflow: hidden;">
+                            <div style="height: 100%; background: 
+                                {% if object.proficiency == 1 %}#17a2b8
+                                {% elif object.proficiency == 2 %}#007bff
+                                {% elif object.proficiency == 3 %}#ffc107
+                                {% elif object.proficiency == 4 %}#28a745
+                                {% endif %}; 
+                                width: {{ object.get_proficiency_percentage }}%; transition: width 0.3s ease;"></div>
+                        </div>
+                        <span style="font-size: 12px; color: #6B6B6B; min-width: 30px;">{{ object.get_proficiency_percentage|floatformat:0 }}%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="delete-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>¿Estás seguro de que quieres eliminar esta habilidad? Esta acción no se puede deshacer.</p>
+        </div>
+
+        <form method="post" class="delete-form">
+            {% csrf_token %}
+            <div class="form-actions">
+                <button type="submit" class="btn-danger-custom">
+                    <i class="fas fa-trash"></i>Sí, Eliminar Habilidad
+                </button>
+                <a href="{% url 'portfolio:admin-skill-list' %}" class="btn-secondary-custom">
+                    <i class="fas fa-times"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

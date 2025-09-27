@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ project.title }} - {{ profile.name }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px; min-width: 1000px;">
+    <!-- Back Navigation -->
+    <div class="row mt-4 mb-3">
+        <div class="col-12">
+            <a href="{% url 'portfolio:home' %}" class="text-decoration-none text-muted">
+                <i class="fas fa-arrow-left me-2"></i>Volver al inicio
+            </a>
+        </div>
+    </div>
+
+    <!-- Project Header -->
+    <div class="row mb-4">
+        <div class="col-3">
+            {% if project.image %}
+            <img src="{{ project.image.url }}" alt="{{ project.title }}" class="img-fluid rounded"
+                style="width: 200px; height: 150px; object-fit: cover;">
+            {% else %}
+            <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                style="width: 200px; height: 150px;">
+                <i class="fas fa-code text-muted" style="font-size: 3rem;"></i>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-9">
+            <h1 class="h3 fw-bold mb-2">{{ project.title }}</h1>
+            <p class="text-muted mb-3">{{ project.description }}</p>
+
+            <!-- Technologies -->
+            <div class="mb-3">
+                {% for tech in project.technologies.all %}
+                <span class="badge bg-light text-dark me-1 mb-1">
+                    {% if tech.icon %}<i class="{{ tech.icon }} me-1"></i>{% endif %}
+                    {{ tech.name }}
+                </span>
+                {% endfor %}
+            </div>
+
+            <!-- Links -->
+            <div class="d-flex gap-2">
+                {% if project.github_url %}
+                <a href="{{ project.github_url }}" target="_blank" class="btn btn-outline-dark btn-sm">
+                    <i class="fab fa-github me-1"></i>GitHub
+                </a>
+                {% endif %}
+                {% if project.demo_url %}
+                <a href="{{ project.demo_url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-external-link-alt me-1"></i>Demo
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Details -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="h5 fw-bold mb-3">Descripción del Proyecto</h2>
+            <div class="text-muted" style="text-align: justify; line-height: 1.6;">
+                {{ project.detailed_description|linebreaks }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Meta -->
+    <div class="row mb-4">
+        <div class="col-6">
+            <h3 class="h6 fw-bold mb-2">Información del Proyecto</h3>
+            <div class="small text-muted">
+                <div class="mb-1">
+                    <strong>Fecha de creación:</strong> {{ project.created_at|date:"F Y" }}
+                </div>
+                <div class="mb-1">
+                    <strong>Estado:</strong>
+                    <span class="badge bg-success">Completado</span>
+                </div>
+                {% if project.featured %}
+                <div class="mb-1">
+                    <span class="badge bg-warning text-dark">
+                        <i class="fas fa-star me-1"></i>Proyecto Destacado
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-6">
+            <h3 class="h6 fw-bold mb-2">Tecnologías Utilizadas</h3>
+            <div class="row">
+                {% for tech in project.technologies.all %}
+                <div class="col-6 mb-2">
+                    <div class="d-flex align-items-center">
+                        {% if tech.icon %}
+                        <i class="{{ tech.icon }} me-2"
+                            style="{% if tech.color %}color: {{ tech.color }};{% endif %}"></i>
+                        {% else %}
+                        <i class="fas fa-code me-2 text-muted"></i>
+                        {% endif %}
+                        <small>{{ tech.name }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Projects -->
+    {% if related_projects %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="h5 fw-bold mb-3">Proyectos Relacionados</h2>
+            <div class="row">
+                {% for related_project in related_projects|slice:":3" %}
+                <div class="col-4">
+                    <div class="card border-0 bg-light h-100">
+                        <div class="card-body p-3">
+                            <h6 class="card-title mb-2">
+                                <a href="{% url 'portfolio:project-detail' related_project.slug %}"
+                                    class="text-decoration-none text-dark">
+                                    {{ related_project.title }}
+                                </a>
+                            </h6>
+                            <p class="card-text small text-muted">
+                                {{ related_project.description|truncatewords:10 }}
+                            </p>
+                            <div>
+                                {% for tech in related_project.technologies.all|slice:":2" %}
+                                <span class="badge bg-secondary me-1" style="font-size: 0.7rem;">
+                                    {{ tech.name }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="row mt-5 pt-4 border-top">
+        <div class="col-12 text-center">
+            <p class="text-muted small mb-0">
+                ¿Te interesa este proyecto?
+                <a href="{% url 'portfolio:contact' %}" class="text-decoration-none">Contáctame</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background-color: #fafafa !important;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    }
+
+    .container {
+        background-color: white;
+        padding: 0 40px 40px 40px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .card {
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+    }
+
+    a {
+        color: #0085ff;
+    }
+
+    a:hover {
+        color: #0066cc;
+    }
+
+    @media (max-width: 1000px) {
+        .container {
+            min-width: auto !important;
+            max-width: 100% !important;
+            margin: 0;
+            padding: 20px;
+        }
+
+        body {
+            background-color: white !important;
+        }
+    }
+</style>
+{% endblock %}
