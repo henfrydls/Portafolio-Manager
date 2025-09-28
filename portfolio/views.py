@@ -3,9 +3,12 @@ from django.views.generic import TemplateView, ListView, DetailView, CreateView,
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from django.core.files.storage import default_storage
 from django.urls import reverse_lazy, reverse
 from django.db.models import Q
 from django.http import JsonResponse
+import os
+import uuid
 from .models import Profile, Project, BlogPost, Technology, Experience, Education, Skill, Contact, PageVisit, Category
 from .decorators import AdminRequiredMixin, SuperuserRequiredMixin
 from .forms import SecureProfileForm, SecureProjectForm, SecureBlogPostForm, SecureExperienceForm, SecureEducationForm, SecureSkillForm
@@ -993,11 +996,27 @@ class BlogPostCreateView(AdminRequiredMixin, CreateView):
     form_class = SecureBlogPostForm
     template_name = 'portfolio/admin/blogpost_form.html'
     success_url = reverse_lazy('portfolio:admin-blog-list')
-    
+
+    def post(self, request, *args, **kwargs):
+        """Handle POST request with multiple submit buttons"""
+        self.object = None
+        form = self.get_form()
+
+        if form.is_valid():
+            # Determine action based on button clicked
+            if 'save_draft' in request.POST:
+                form.instance.status = 'draft'
+            elif 'publish' in request.POST:
+                form.instance.status = 'published'
+
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
     def form_valid(self, form):
         messages.success(self.request, f'Post "{form.instance.title}" creado exitosamente.')
         return super().form_valid(form)
-    
+
     def form_invalid(self, form):
         messages.error(self.request, 'Error al crear el post. Revisa los campos.')
         return super().form_invalid(form)
@@ -1009,11 +1028,27 @@ class BlogPostUpdateView(AdminRequiredMixin, UpdateView):
     form_class = SecureBlogPostForm
     template_name = 'portfolio/admin/blogpost_form.html'
     success_url = reverse_lazy('portfolio:admin-blog-list')
-    
+
+    def post(self, request, *args, **kwargs):
+        """Handle POST request with multiple submit buttons"""
+        self.object = self.get_object()
+        form = self.get_form()
+
+        if form.is_valid():
+            # Determine action based on button clicked
+            if 'save_draft' in request.POST:
+                form.instance.status = 'draft'
+            elif 'publish' in request.POST:
+                form.instance.status = 'published'
+
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
     def form_valid(self, form):
         messages.success(self.request, f'Post "{form.instance.title}" actualizado exitosamente.')
         return super().form_valid(form)
-    
+
     def form_invalid(self, form):
         messages.error(self.request, 'Error al actualizar el post. Revisa los campos.')
         return super().form_invalid(form)
@@ -1449,3 +1484,58 @@ class SkillDeleteView(AdminRequiredMixin, DeleteView):
         skill = self.get_object()
         messages.success(request, f'Habilidad "{skill.name}" eliminada exitosamente.')
         return super().delete(request, *args, **kwargs)
+
+class BlogImageUploadView(AdminRequiredMixin, View):
+    """Vista AJAX para subir imágenes del blog"""
+    
+    def post(self, request, *args, **kwargs):
+        try:
+            if 'image' not in request.FILES:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'No se encontró ninguna imagen'
+                })
+            
+            image = request.FILES['image']
+            
+            # Validar tipo de archivo
+            allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+            if image.content_type not in allowed_types:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Tipo de archivo no permitido. Use JPG, PNG, GIF o WebP'
+                })
+            
+            # Validar tamaño (máximo 5MB) 
+            MAX_IMAGE_SIZE = int(os.environ.get('MAX_IMAGE_SIZE', '5'))
+            if image.size > MAX_IMAGE_SIZE * 1024 * 1024:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'La imagen es demasiado grande. Máximo {MAX_IMAGE_SIZE}MB'
+                })
+            
+            # Generar nombre único para el archivo
+            ext = os.path.splitext(image.name)[1]
+            filename = f"blog/content/{uuid.uuid4()}{ext}"
+            
+            # Guardar la imagen
+            saved_path = default_storage.save(filename, image)
+            
+            # Obtener la URL completa
+            image_url = request.build_absolute_uri(default_storage.url(saved_path))
+            
+            return JsonResponse({
+                'success': True,
+                'url': image_url,
+                'filename': os.path.basename(saved_path)
+            })
+            
+        except Exception as e:
+            import logging
+            logger = logging.getLogger('portfolio')
+            logger.error(f'Error uploading blog image: {e}')
+            
+            return JsonResponse({
+                'success': False,
+                'message': 'Error al procesar la imagen'
+            })

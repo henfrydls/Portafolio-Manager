@@ -79,6 +79,7 @@ urlpatterns = [
     path('manage/cv/skills/<int:pk>/delete/', views.SkillDeleteView.as_view(), name='admin-skill-delete'),
     
     # AJAX Quick Actions
+    path('manage/ajax/upload-blog-image/', views.BlogImageUploadView.as_view(), name='ajax-upload-blog-image'),
     path('manage/ajax/toggle-contact-read/', views.ToggleContactReadView.as_view(), name='ajax-toggle-contact-read'),
     path('manage/ajax/toggle-project-featured/', views.ToggleProjectFeaturedView.as_view(), name='ajax-toggle-project-featured'),
     path('manage/ajax/toggle-blog-featured/', views.ToggleBlogPostFeaturedView.as_view(), name='ajax-toggle-blog-featured'),

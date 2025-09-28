@@ -1,34 +1,35 @@
 {% extends "portfolio/admin/base_admin.html" %}
 {% load static %}
+{% load simple_i18n %}
 
-{% block admin_title %}Mensajes de Contacto{% endblock %}
-{% block admin_subtitle %}Gestiona los mensajes recibidos desde el formulario de contacto{% endblock %}
+{% block admin_title %}{% trans "Contact Messages" %}{% endblock %}
+{% block admin_subtitle %}{% trans "Manage messages received from the contact form" %}{% endblock %}
 
 {% block admin_content %}
 <!-- Filters -->
 <div class="filters-section">
     <form method="get" class="filters-grid">
         <div>
-            <label class="form-label-custom">Buscar mensajes</label>
+            <label class="form-label-custom">{% trans "Search messages" %}</label>
             <input type="text" name="search" class="form-control-custom" 
-                   placeholder="Nombre, email, asunto..." value="{{ current_search }}">
+                   placeholder="{% trans "Name, email, subject..." %}" value="{{ current_search }}">
         </div>
         <div>
-            <label class="form-label-custom">Estado</label>
+            <label class="form-label-custom">{% trans "Status" %}</label>
             <select name="status" class="form-control-custom">
-                <option value="">Todos los mensajes</option>
-                <option value="unread" {% if current_status == 'unread' %}selected{% endif %}>No leídos</option>
-                <option value="read" {% if current_status == 'read' %}selected{% endif %}>Leídos</option>
+                <option value="">{% trans "All messages" %}</option>
+                <option value="unread" {% if current_status == 'unread' %}selected{% endif %}>{% trans "Unread" %}</option>
+                <option value="read" {% if current_status == 'read' %}selected{% endif %}>{% trans "Read" %}</option>
             </select>
         </div>
         <div>
             <button type="submit" class="btn-primary-custom">
-                <i class="fas fa-search"></i>Filtrar
+                <i class="fas fa-search"></i>{% trans "Filter" %}
             </button>
         </div>
         <div>
             <a href="{% url 'portfolio:admin-contact-list' %}" class="btn-secondary-custom">
-                <i class="fas fa-times"></i>Limpiar
+                <i class="fas fa-times"></i>{% trans "Clear" %}
             </a>
         </div>
     </form>
@@ -39,12 +40,12 @@
     <div class="card-header-custom">
         <div>
             <h2 class="card-title-custom">
-                Mensajes
+                {% trans "Messages" %}
                 {% if unread_count %}
-                    <span class="badge-custom badge-danger" style="margin-left: 12px;">{{ unread_count }} sin leer</span>
+                    <span class="badge-custom badge-danger" style="margin-left: 12px;">{{ unread_count }} {% trans "unread" %}</span>
                 {% endif %}
             </h2>
-            <p class="card-subtitle-custom">{{ contacts|length }} mensajes mostrados • Total: {{ paginator.count }}</p>
+            <p class="card-subtitle-custom">{{ contacts|length }} {% trans "messages shown" %} • {% trans "Total:" %} {{ paginator.count }}</p>
         </div>
     </div>
     
@@ -54,11 +55,11 @@
             <thead>
                 <tr>
                     <th width="30"></th>
-                    <th>Remitente</th>
-                    <th>Asunto</th>
-                    <th>Mensaje</th>
-                    <th>Fecha</th>
-                    <th width="150">Acciones</th>
+                    <th>{% trans "Sender" %}</th>
+                    <th>{% trans "Subject" %}</th>
+                    <th>{% trans "Message" %}</th>
+                    <th>{% trans "Date" %}</th>
+                    <th width="150">{% trans "Actions" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -69,7 +70,7 @@
                                 data-contact-id="{{ contact.id }}"
                                 data-read="{{ contact.read|yesno:'true,false' }}"
                                 style="background: none; border: none; padding: 8px; border-radius: 6px; cursor: pointer; transition: background 0.2s ease;"
-                                title="{% if contact.read %}Marcar como no leído{% else %}Marcar como leído{% endif %}">
+                                title="{% if contact.read %}{% trans "Mark as unread" %}{% else %}{% trans "Mark as read" %}{% endif %}">
                             {% if contact.read %}
                                 <i class="fas fa-envelope-open" style="color: #6B6B6B;"></i>
                             {% else %}
@@ -103,15 +104,15 @@
                     <td>
                         <div class="quick-actions">
                             <a href="{% url 'portfolio:admin-contact-detail' contact.pk %}" 
-                               class="btn" title="Ver completo">
+                               class="btn" title="{% trans "View full" %}">
                                 <i class="fas fa-eye"></i>
                             </a>
                             <a href="mailto:{{ contact.email }}?subject=Re: {{ contact.subject }}" 
-                               class="btn" title="Responder" style="color: #28a745;">
+                               class="btn" title="{% trans "Reply" %}" style="color: #28a745;">
                                 <i class="fas fa-reply"></i>
                             </a>
                             <a href="{% url 'portfolio:admin-contact-delete' contact.pk %}" 
-                               class="btn" title="Eliminar" style="color: #dc3545;">
+                               class="btn" title="{% trans "Delete" %}" style="color: #dc3545;">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </div>
@@ -124,12 +125,12 @@
     {% else %}
     <div class="empty-state">
         <i class="fas fa-envelope-open"></i>
-        <h3>No hay mensajes</h3>
+        <h3>{% trans "No messages" %}</h3>
         <p>
             {% if current_search or current_status %}
-                No se encontraron mensajes con los filtros aplicados.
+                {% trans "No messages found with the applied filters." %}
             {% else %}
-                Los mensajes de contacto aparecerán aquí cuando los visitantes usen el formulario.
+                {% trans "Contact messages will appear here when visitors use the form." %}
             {% endif %}
         </p>
     </div>
@@ -149,7 +150,7 @@
     {% endif %}
 
     <span class="page-link active">
-        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        {% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}
     </span>
 
     {% if page_obj.has_next %}
@@ -204,7 +205,7 @@ function quickToggle(url, data, successCallback) {
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error de conexión');
+        alert('{% trans "Connection error" %}');
     });
 }
 
@@ -225,13 +226,13 @@ document.querySelectorAll('.toggle-read').forEach(button => {
                     icon.className = 'fas fa-envelope-open';
                     icon.style.color = '#6B6B6B';
                     this.dataset.read = 'true';
-                    this.title = 'Marcar como no leído';
+                    this.title = '{% trans "Mark as unread" %}';
                     row.style.background = '';
                 } else {
                     icon.className = 'fas fa-envelope';
                     icon.style.color = '#1976D2';
                     this.dataset.read = 'false';
-                    this.title = 'Marcar como leído';
+                    this.title = '{% trans "Mark as read" %}';
                     row.style.background = '#FFF3E0';
                 }
                 

@@ -6,391 +6,425 @@
 {% if object %}{% trans "Edit Post" %}{% else %}{% trans "New Post" %}{% endif %}
 {% endblock %}
 
+{% block extra_css %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+<style>
+  /* Toolbar en una sola línea (con scroll oculto) */
+  .editor-toolbar{
+    display:flex; flex-wrap:nowrap; align-items:center; gap:.35rem;
+    overflow-x:auto; overflow-y:hidden; white-space:nowrap;
+    scrollbar-width:none; -ms-overflow-style:none;
+  }
+  .editor-toolbar::-webkit-scrollbar{ display:none; }
+  .editor-toolbar > *{ flex:0 0 auto; }
+  /* Evitar conflicto de Bootstrap .table con el botón "Insert Table" */
+  .editor-toolbar button.table{ display:inline-block!important; width:auto!important; margin:0!important; padding:0 6px; }
+
+  /* Apariencia del editor */
+  .CodeMirror{ border:1px solid #E9ECEF; border-radius:0 0 8px 8px; font-family:'SF Mono',Monaco,'Cascadia Code','Roboto Mono',monospace; min-height:500px; }
+  .editor-preview{ padding:20px; background:#fff; }
+  .editor-preview-side{ border-left:1px solid #E9ECEF; }
+
+  /* Progreso / error de subida */
+  .image-upload-progress{ background:#E3F2FD; border:1px solid #90CAF9; border-radius:4px; padding:10px; margin:10px 0; display:none; }
+  .image-upload-error{ background:#FFEBEE; border:1px solid #EF9A9A; border-radius:4px; padding:10px; margin:10px 0; display:none; color:#C62828; }
+
+  /* Layout compacto */
+  .compact-row{ display:flex; gap:20px; flex-wrap:wrap; }
+  .compact-row>div{ flex:1; min-width:200px; }
+
+  /* Quick help */
+  .quick-help{ background:#F8F9FA; border:1px solid #E9ECEF; border-radius:8px; padding:12px 20px; margin-bottom:20px; font-size:13px; color:#6c757d; }
+  .quick-help span{ margin-right:20px; white-space:nowrap; }
+  .quick-help code{ background:#fff; padding:2px 4px; border-radius:3px; color:#495057; font-size:12px; }
+
+  /* Ocultar scroll horizontal de CodeMirror */
+  .EasyMDEContainer .CodeMirror-hscrollbar{ display:none!important; }
+  .EasyMDEContainer .CodeMirror-scroll{ overflow-x:hidden!important; }
+
+  /* Estilo para imágenes en el preview del editor */
+  .editor-preview img, .editor-preview-side img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin: 16px 0;
+    display: block;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+</style>
+{% endblock %}
+
 {% block admin_actions %}
 <a href="{% url 'portfolio:admin-blog-list' %}" class="btn btn-outline-secondary">
-    <i class="fas fa-arrow-left me-1"></i>{% trans "Back to Blog" %}
+  <i class="fas fa-arrow-left me-1"></i>{% trans "Back to Blog" %}
 </a>
+{% if object and object.status == 'published' %}
+  <a href="{% url 'portfolio:post-detail' object.slug %}" class="btn btn-outline-primary" target="_blank">
+    <i class="fas fa-external-link-alt me-1"></i>{% trans "View Post" %}
+  </a>
+{% endif %}
 {% endblock %}
 
 {% block admin_content %}
 <div class="row">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-blog me-2"></i>
-                    {% if object %}{% trans "Edit Post" %}{% else %}{% trans "New Post" %}{% endif %}
-                </h5>
-            </div>
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    <!-- Basic Information -->
-                    <div class="mb-4">
-                        <h6 class="text-muted mb-3">{% trans "Basic Information" %}</h6>
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.title.id_for_label }}" class="form-label">
-                                {{ form.title.label }} <span class="text-danger">*</span>
-                            </label>
-                            {{ form.title }}
-                            {% if form.title.errors %}
-                                <div class="text-danger small">{{ form.title.errors.0 }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.excerpt.id_for_label }}" class="form-label">
-                                {{ form.excerpt.label }}
-                            </label>
-                            {{ form.excerpt }}
-                            <div class="form-text">{% trans "Brief summary that will appear in post lists" %}</div>
-                            {% if form.excerpt.errors %}
-                                <div class="text-danger small">{{ form.excerpt.errors.0 }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.content.id_for_label }}" class="form-label">
-                                {{ form.content.label }} <span class="text-danger">*</span>
-                            </label>
-                            {{ form.content }}
-                            <div class="form-text">{% trans "Full post content (supports Markdown)" %}</div>
-                            {% if form.content.errors %}
-                                <div class="text-danger small">{{ form.content.errors.0 }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.featured_image.id_for_label }}" class="form-label">
-                                {{ form.featured_image.label }}
-                            </label>
-                            {{ form.featured_image }}
-                            {% if form.featured_image.errors %}
-                                <div class="text-danger small">{{ form.featured_image.errors.0 }}</div>
-                            {% endif %}
-                            {% if object.featured_image %}
-                                <div class="mt-2">
-                                    <small class="text-muted">Imagen actual:</small><br>
-                                    <img src="{{ object.featured_image.url }}" alt="{{ object.title }}" 
-                                         class="img-thumbnail" style="max-width: 200px;">
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Post Details -->
-                    <div class="mb-4">
-                        <h6 class="text-muted mb-3">{% trans "Post Details" %}</h6>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.post_type.id_for_label }}" class="form-label">
-                                        {{ form.post_type.label }}
-                                    </label>
-                                    {{ form.post_type }}
-                                    {% if form.post_type.errors %}
-                                        <div class="text-danger small">{{ form.post_type.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.reading_time.id_for_label }}" class="form-label">
-                                        {{ form.reading_time.label }}
-                                    </label>
-                                    {{ form.reading_time }}
-                                    <div class="form-text">{% trans "Estimated reading time in minutes" %}</div>
-                                    {% if form.reading_time.errors %}
-                                        <div class="text-danger small">{{ form.reading_time.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ form.tags.id_for_label }}" class="form-label">
-                                {{ form.tags.label }}
-                            </label>
-                            {{ form.tags }}
-                            <div class="form-text">{% trans "Tags separated by commas (e.g: django, python, web)" %}</div>
-                            {% if form.tags.errors %}
-                                <div class="text-danger small">{{ form.tags.errors.0 }}</div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Reference Links -->
-                    <div class="mb-4">
-                        <h6 class="text-muted mb-3">{% trans "Reference Links" %}</h6>
-                        
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="{{ form.github_url.id_for_label }}" class="form-label">
-                                        {{ form.github_url.label }}
-                                    </label>
-                                    {{ form.github_url }}
-                                    <div class="form-text">{% trans "Related repository" %}</div>
-                                    {% if form.github_url.errors %}
-                                        <div class="text-danger small">{{ form.github_url.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="{{ form.medium_url.id_for_label }}" class="form-label">
-                                        {{ form.medium_url.label }}
-                                    </label>
-                                    {{ form.medium_url }}
-                                    <div class="form-text">{% trans "Medium article" %}</div>
-                                    {% if form.medium_url.errors %}
-                                        <div class="text-danger small">{{ form.medium_url.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="{{ form.linkedin_url.id_for_label }}" class="form-label">
-                                        {{ form.linkedin_url.label }}
-                                    </label>
-                                    {{ form.linkedin_url }}
-                                    <div class="form-text">{% trans "LinkedIn post" %}</div>
-                                    {% if form.linkedin_url.errors %}
-                                        <div class="text-danger small">{{ form.linkedin_url.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Publishing -->
-                    <div class="mb-4">
-                        <h6 class="text-muted mb-3">{% trans "Publishing" %}</h6>
-                        
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="{{ form.status.id_for_label }}" class="form-label">
-                                        {{ form.status.label }}
-                                    </label>
-                                    {{ form.status }}
-                                    {% if form.status.errors %}
-                                        <div class="text-danger small">{{ form.status.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="{{ form.publish_date.id_for_label }}" class="form-label">
-                                        {{ form.publish_date.label }}
-                                    </label>
-                                    {{ form.publish_date }}
-                                    {% if form.publish_date.errors %}
-                                        <div class="text-danger small">{{ form.publish_date.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <div class="form-check mt-4">
-                                        {{ form.featured }}
-                                        <label class="form-check-label" for="{{ form.featured.id_for_label }}">
-                                            {{ form.featured.label }}
-                                        </label>
-                                    </div>
-                                    {% if form.featured.errors %}
-                                        <div class="text-danger small">{{ form.featured.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-between">
-                        <a href="{% url 'portfolio:admin-blog-list' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-times me-1"></i>{% trans "Cancel" %}
-                        </a>
-                        <div>
-                            {% if object %}
-                                <button type="submit" name="save_draft" class="btn btn-outline-primary me-2">
-                                    <i class="fas fa-save me-1"></i>{% trans "Save Draft" %}
-                                </button>
-                                <button type="submit" name="publish" class="btn btn-success">
-                                    <i class="fas fa-paper-plane me-1"></i>
-                                    {% if object.status == 'published' %}{% trans "Update" %}{% else %}{% trans "Publish" %}{% endif %}
-                                </button>
-                            {% else %}
-                                <button type="submit" name="save_draft" class="btn btn-outline-primary me-2">
-                                    <i class="fas fa-save me-1"></i>{% trans "Save Draft" %}
-                                </button>
-                                <button type="submit" name="publish" class="btn btn-success">
-                                    <i class="fas fa-paper-plane me-1"></i>{% trans "Create and Publish" %}
-                                </button>
-                            {% endif %}
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
+  <div class="col-12">
+    <!-- Quick Help -->
+    <div class="quick-help">
+      <span><strong>{% trans "Markdown:" %}</strong></span>
+      <span><code>**bold**</code></span>
+      <span><code>*italic*</code></span>
+      <span><code># Heading</code></span>
+      <span><code>[link](url)</code></span>
+      <span><code>`code`</code></span>
+      <span><i class="fas fa-keyboard"></i> Ctrl+B = Bold</span>
+      <span><i class="fas fa-keyboard"></i> Ctrl+I = Italic</span>
     </div>
 
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="card-title mb-0">
-                    <i class="fas fa-info-circle me-2"></i>{% trans "Help" %}
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-info">
-                    <h6><i class="fas fa-lightbulb me-1"></i>{% trans "Tips:" %}</h6>
-                    <ul class="mb-0 small">
-                        <li>{% trans "Use descriptive and engaging titles" %}</li>
-                        <li>{% trans "The excerpt should summarize the main content" %}</li>
-                        <li>{% trans "You can use Markdown in the content" %}</li>
-                        <li>{% trans "Featured posts appear on the main page" %}</li>
-                        <li>{% trans "Schedule the publication date for future posts" %}</li>
-                    </ul>
-                </div>
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0"><i class="fas fa-blog me-2"></i> {% if object %}{% trans "Edit Post" %}{% else %}{% trans "New Post" %}{% endif %}</h5>
+      </div>
+      <div class="card-body">
+        <form id="blog-post-form" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
 
-                <div class="mt-3">
-                    <h6>{% trans "Post Types:" %}</h6>
-                    <ul class="small mb-0">
-                        <li><strong>{% trans "News:" %}</strong> {% trans "Professional updates" %}</li>
-                        <li><strong>{% trans "Tutorial:" %}</strong> {% trans "Technical guides" %}</li>
-                        <li><strong>{% trans "Opinion:" %}</strong> {% trans "Personal reflections" %}</li>
-                        <li><strong>{% trans "Project:" %}</strong> {% trans "Project details" %}</li>
-                        <li><strong>{% trans "Career:" %}</strong> {% trans "Professional experiences" %}</li>
-                    </ul>
-                </div>
+          <!-- Basic Information -->
+          <div class="mb-4">
+            <h6 class="text-muted mb-3">{% trans "Basic Information" %}</h6>
 
-                {% if object %}
-                <div class="mt-3">
-                    <h6>{% trans "Statistics:" %}</h6>
-                    <ul class="small mb-0">
-                        <li>{% trans "Created:" %} {{ object.created_at|date:"d/m/Y H:i" }}</li>
-                        <li>{% trans "Updated:" %} {{ object.updated_at|date:"d/m/Y H:i" }}</li>
-                        {% if object.status == 'published' %}
-                            <li>{% trans "Published:" %} {{ object.publish_date|date:"d/m/Y H:i" }}</li>
-                        {% endif %}
-                    </ul>
-                </div>
-                {% endif %}
+            <div class="mb-3">
+              <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }} <span class="text-danger">*</span></label>
+              {{ form.title }}
+              {% if form.title.errors %}<div class="text-danger small">{{ form.title.errors.0 }}</div>{% endif %}
             </div>
-        </div>
 
-        {% if object and object.status == 'published' %}
-        <div class="card mt-3">
-            <div class="card-header">
-                <h6 class="card-title mb-0">
-                    <i class="fas fa-eye me-2"></i>{% trans "Preview" %}
-                </h6>
+            <div class="mb-3">
+              <label for="{{ form.excerpt.id_for_label }}" class="form-label">{{ form.excerpt.label }}<span class="text-danger">*</span></label>
+              {{ form.excerpt }}
+              <div class="form-text">{% trans "Brief summary that will appear in post lists" %}</div>
+              {% if form.excerpt.errors %}<div class="text-danger small">{{ form.excerpt.errors.0 }}</div>{% endif %}
             </div>
-            <div class="card-body">
-                <div class="card">
-                    <div class="card-body p-3">
-                        {% if object.featured_image %}
-                            <img src="{{ object.featured_image.url }}" alt="{{ object.title }}" 
-                                 class="img-fluid rounded mb-2">
-                        {% endif %}
-                        <h6 class="mb-1">{{ object.title }}</h6>
-                        <p class="small text-muted mb-2">{{ object.excerpt|default:object.content|truncatewords:15 }}</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted">
-                                <i class="fas fa-clock me-1"></i>{{ object.reading_time }} min
-                            </small>
-                            <span class="badge bg-info">{{ object.get_post_type_display }}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-2">
-                    <a href="{% url 'portfolio:post-detail' object.slug %}" 
-                       class="btn btn-sm btn-outline-primary" target="_blank">
-                        <i class="fas fa-external-link-alt me-1"></i>{% trans "View Post" %}
-                    </a>
-                </div>
+
+            <div class="mb-3">
+              <label for="{{ form.content.id_for_label }}" class="form-label">{{ form.content.label }} <span class="text-danger">*</span></label>
+              {{ form.content }}
+              <div class="form-text">{% trans "Full post content (supports Markdown)" %}</div>
+              {% if form.content.errors %}<div class="text-danger small">{{ form.content.errors.0 }}</div>{% endif %}
             </div>
-        </div>
-        {% endif %}
+
+            <div class="mb-3">
+              <label for="{{ form.featured_image.id_for_label }}" class="form-label">{{ form.featured_image.label }}</label>
+              {{ form.featured_image }}
+              {% if form.featured_image.errors %}<div class="text-danger small">{{ form.featured_image.errors.0 }}</div>{% endif %}
+              {% if object.featured_image %}
+                <div class="mt-2"><small class="text-muted">Imagen actual:</small><br><img src="{{ object.featured_image.url }}" alt="{{ object.title }}" class="img-thumbnail" style="max-width:200px; height:auto;"></div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Post Details -->
+          <div class="mb-4">
+            <h6 class="text-muted mb-3">{% trans "Post Details" %}</h6>
+            <div class="compact-row mb-3">
+              <div>
+                <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
+                {{ form.category }}
+                {% if form.category.errors %}<div class="text-danger small">{{ form.category.errors.0 }}</div>{% endif %}
+              </div>
+              <div>
+                <label for="{{ form.reading_time.id_for_label }}" class="form-label">{{ form.reading_time.label }}</label>
+                {{ form.reading_time }}
+                {% if form.reading_time.errors %}<div class="text-danger small">{{ form.reading_time.errors.0 }}</div>{% endif %}
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="{{ form.tags.id_for_label }}" class="form-label">{{ form.tags.label }}</label>
+              {{ form.tags }}
+              <div class="form-text">{% trans "Tags separated by commas (e.g: django, python, web)" %}</div>
+              {% if form.tags.errors %}<div class="text-danger small">{{ form.tags.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <!-- Reference Links -->
+          <div class="mb-4">
+            <h6 class="text-muted mb-3">{% trans "Reference Links" %}</h6>
+            <div class="compact-row">
+              <div>
+                <label for="{{ form.github_url.id_for_label }}" class="form-label">{{ form.github_url.label }}</label>
+                {{ form.github_url }}
+                {% if form.github_url.errors %}<div class="text-danger small">{{ form.github_url.errors.0 }}</div>{% endif %}
+              </div>
+              <div>
+                <label for="{{ form.medium_url.id_for_label }}" class="form-label">{{ form.medium_url.label }}</label>
+                {{ form.medium_url }}
+                {% if form.medium_url.errors %}<div class="text-danger small">{{ form.medium_url.errors.0 }}</div>{% endif %}
+              </div>
+              <div>
+                <label for="{{ form.linkedin_url.id_for_label }}" class="form-label">{{ form.linkedin_url.label }}</label>
+                {{ form.linkedin_url }}
+                {% if form.linkedin_url.errors %}<div class="text-danger small">{{ form.linkedin_url.errors.0 }}</div>{% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Publishing -->
+          <div class="mb-4">
+            <h6 class="text-muted mb-3">{% trans "Publishing" %}</h6>
+            <div class="compact-row align-items-end">
+              <div>
+                <label for="{{ form.status.id_for_label }}" class="form-label">{{ form.status.label }}</label>
+                {{ form.status }}
+                {% if form.status.errors %}<div class="text-danger small">{{ form.status.errors.0 }}</div>{% endif %}
+              </div>
+              <div>
+                <label for="{{ form.publish_date.id_for_label }}" class="form-label">{{ form.publish_date.label }}</label>
+                {{ form.publish_date }}
+                {% if form.publish_date.errors %}<div class="text-danger small">{{ form.publish_date.errors.0 }}</div>{% endif %}
+              </div>
+              <div>
+                <div class="form-check mt-4">{{ form.featured }}
+                  <label class="form-check-label" for="{{ form.featured.id_for_label }}">{{ form.featured.label }}</label>
+                </div>
+                {% if form.featured.errors %}<div class="text-danger small">{{ form.featured.errors.0 }}</div>{% endif %}
+              </div>
+            </div>
+          </div>
+
+          {% if object %}
+          <div class="alert alert-info">
+            <small>
+              <i class="fas fa-info-circle"></i>
+              <strong>{% trans "Created:" %}</strong> {{ object.created_at|date:"d/m/Y H:i" }} |
+              <strong>{% trans "Updated:" %}</strong> {{ object.updated_at|date:"d/m/Y H:i" }}
+              {% if object.status == 'published' %}| <strong>{% trans "Published:" %}</strong> {{ object.publish_date|date:"d/m/Y H:i" }}{% endif %}
+            </small>
+          </div>
+          {% endif %}
+
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'portfolio:admin-blog-list' %}" class="btn btn-outline-secondary"><i class="fas fa-times me-1"></i>{% trans "Cancel" %}</a>
+            <div>
+              {% if object %}
+                <button type="submit" name="save_draft" class="btn btn-outline-primary me-2"><i class="fas fa-save me-1"></i>{% trans "Save Draft" %}</button>
+                <button type="submit" name="publish" class="btn btn-success"><i class="fas fa-paper-plane me-1"></i>{% trans "Update" %}</button>
+              {% else %}
+                <button type="submit" name="save_draft" class="btn btn-outline-primary me-2"><i class="fas fa-save me-1"></i>{% trans "Save Draft" %}</button>
+                <button type="submit" name="publish" class="btn btn-success"><i class="fas fa-paper-plane me-1"></i>{% trans "Create and Publish" %}</button>
+              {% endif %}
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 {{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
 <script>
-// Add form-control class to form fields
-document.addEventListener('DOMContentLoaded', function() {
-    const formFields = document.querySelectorAll('input[type="text"], input[type="number"], input[type="datetime-local"], textarea, select');
-    formFields.forEach(field => {
-        if (!field.classList.contains('form-check-input')) {
-            field.classList.add('form-control');
-        }
+document.addEventListener('DOMContentLoaded', function(){
+  // Estilizar campos
+  document.querySelectorAll('input[type="text"], input[type="number"], input[type="datetime-local"], textarea:not(#id_content), select')
+    .forEach(el=>{ if(!el.classList.contains('form-check-input')) el.classList.add('form-control'); });
+  document.querySelectorAll('input[type="file"]').forEach(el=> el.classList.add('form-control'));
+
+  // Editor - Variable global para acceso desde botones
+  let easyMDE = null;
+  const contentField = document.querySelector('#id_content');
+  if(contentField){
+    const statusDiv = document.createElement('div');
+    statusDiv.className = 'image-upload-progress';
+    statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo imagen...';
+    contentField.parentNode.insertBefore(statusDiv, contentField);
+
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'image-upload-error';
+    contentField.parentNode.insertBefore(errorDiv, contentField);
+
+    // Clear autosave data if this is a new post
+    {% if not object.id %}
+    const autosaveKey = "smde_blog_post_content_new";
+    localStorage.removeItem(autosaveKey);
+    {% endif %}
+
+    easyMDE = new EasyMDE({
+      element: contentField,
+      lineWrapping: true,
+      spellChecker: false,
+      autofocus: false,
+      autosave: { enabled:true, uniqueId:"blog_post_content_{{ object.id|default:'new' }}", delay:1000, text:"Guardado automático: " },
+      toolbar: [
+        'bold','italic','heading','|','quote','unordered-list','ordered-list','|',
+        'link',{
+          name:'image',
+          action:function customImageUpload(editor){
+            const i=document.createElement('input'); i.type='file'; i.accept='image/*';
+            i.onchange=()=>{ if(i.files&&i.files[0]) uploadImage(i.files[0], editor); };
+            i.click();
+          },
+          className:'fas fa-image',
+          title:'Insertar Imagen'
+        },'|',
+        'code','table','horizontal-rule','|','preview','side-by-side','fullscreen','|','guide'
+      ],
+      placeholder:'Escribe el contenido del post aquí...\n\nPuedes usar Markdown para formatear el texto.',
+      renderingConfig:{ singleLineBreaks:false, codeSyntaxHighlighting:true },
+      status:['autosave','lines','words','cursor'],
+      previewRender:function(plainText, preview){ setTimeout(function(){ preview.innerHTML = marked.parse(plainText); }, 250); return 'Cargando preview...'; }
     });
-    
-    // File input styling
-    const fileInputs = document.querySelectorAll('input[type="file"]');
-    fileInputs.forEach(input => {
-        input.classList.add('form-control');
+
+    // Sincronizar editor -> textarea antes de enviar (evita bloqueo por required)
+    const formEl = document.querySelector('#blog-post-form');
+    if(formEl){
+      formEl.addEventListener('submit', function(e){
+        // Asegurar que el contenido del editor se sincroniza con el textarea
+        try {
+          easyMDE.codemirror.save();
+          const contentField = document.querySelector('#id_content');
+          if(contentField) {
+            contentField.value = easyMDE.value();
+          }
+        } catch(error) {
+          // Error syncing editor content
+        }
+
+        // Verificar campos requeridos
+        const titleField = document.querySelector('#id_title');
+        const contentField = document.querySelector('#id_content');
+
+        if(!titleField || !titleField.value.trim()) {
+          alert('El título es requerido');
+          e.preventDefault();
+          return false;
+        }
+
+        if(!contentField || !contentField.value.trim()) {
+          alert('El contenido es requerido');
+          e.preventDefault();
+          return false;
+        }
+      });
+    }
+
+    function uploadImage(file, editor){
+      statusDiv.style.display = 'block';
+      const formData = new FormData(); formData.append('image', file);
+      const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+      fetch('{% url "portfolio:ajax-upload-blog-image" %}', {
+        method:'POST', body:formData,
+        headers:{ 'X-CSRFToken': csrfToken, 'X-Requested-With':'XMLHttpRequest' },
+        credentials:'same-origin'
+      })
+      .then(r=>r.json())
+      .then(({success, url, message})=>{
+        statusDiv.style.display='none';
+        if(success){ const cm = editor.codemirror; cm.replaceRange(`![${file.name}](${url})`, cm.getCursor()); }
+        else{ errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + (message||'Error al subir la imagen'); errorDiv.style.display='block'; setTimeout(()=> errorDiv.style.display='none', 5000); }
+      })
+      .catch(()=>{ statusDiv.style.display='none'; errorDiv.innerHTML='<i class="fas fa-exclamation-circle"></i> Error de conexión al subir la imagen'; errorDiv.style.display='block'; setTimeout(()=> errorDiv.style.display='none', 5000); });
+    }
+
+    // Tiempo de lectura automático
+    easyMDE.codemirror.on('change', function(){
+      const content = easyMDE.value();
+      const words = content.trim()? content.trim().split(/\s+/).length : 0;
+      const minutes = Math.max(1, Math.ceil(words/200));
+      const readingTimeField = document.querySelector('#id_reading_time');
+      if(readingTimeField && (!readingTimeField.value || readingTimeField.value==5)) readingTimeField.value = minutes;
     });
+  }
 
-    // Auto-calculate reading time based on content
-    const contentField = document.querySelector('#id_content');
-    const readingTimeField = document.querySelector('#id_reading_time');
-    
-    if (contentField && readingTimeField) {
-        function calculateReadingTime() {
-            const text = contentField.value;
-            const wordsPerMinute = 200; // Average reading speed
-            const wordCount = text.trim().split(/\s+/).length;
-            const readingTime = Math.max(1, Math.ceil(wordCount / wordsPerMinute));
-            
-            if (!readingTimeField.value || readingTimeField.value == 5) {
-                readingTimeField.value = readingTime;
-            }
-        }
-        
-        contentField.addEventListener('input', calculateReadingTime);
-        
-        // Calculate on page load if content exists
-        if (contentField.value) {
-            calculateReadingTime();
-        }
-    }
+  // Fecha de publicación por defecto (ahora)
+  const publishDateField = document.querySelector('#id_publish_date');
+  if(publishDateField && !publishDateField.value){
+    const now=new Date();
+    const local=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,16);
+    publishDateField.value = local;
+  }
 
-    // Set default publish date to now if creating new post
-    const publishDateField = document.querySelector('#id_publish_date');
-    if (publishDateField && !publishDateField.value) {
-        const now = new Date();
-        const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-        publishDateField.value = localDateTime;
-    }
+  // Función auxiliar para sincronizar contenido
+  function syncEditorContent() {
+    try {
+      const contentField = document.querySelector('#id_content');
+      if(easyMDE && contentField) {
+        // Obtener contenido del editor
+        const editorContent = easyMDE.value();
 
-    // Handle form submission based on button clicked
-    const form = document.querySelector('form');
-    const saveDraftBtn = document.querySelector('button[name="save_draft"]');
-    const publishBtn = document.querySelector('button[name="publish"]');
-    
-    if (saveDraftBtn) {
-        saveDraftBtn.addEventListener('click', function() {
-            const statusField = document.querySelector('#id_status');
-            if (statusField) {
-                statusField.value = 'draft';
-            }
-        });
+        // Sincronizar al textarea
+        easyMDE.codemirror.save();
+        contentField.value = editorContent;
+
+        return true;
+      } else if(contentField) {
+        return contentField.value.trim().length > 0;
+      }
+      return false;
+    } catch(error) {
+      return false;
     }
-    
-    if (publishBtn) {
-        publishBtn.addEventListener('click', function() {
-            const statusField = document.querySelector('#id_status');
-            if (statusField) {
-                statusField.value = 'published';
-            }
-        });
-    }
+  }
+
+  // Botones de estado - Mejorado para sincronizar antes del envío
+  const saveDraftBtn = document.querySelector('button[name="save_draft"]');
+  const publishBtn = document.querySelector('button[name="publish"]');
+
+  if(saveDraftBtn){
+    saveDraftBtn.addEventListener('click', function(e){
+      e.preventDefault(); // Prevenir envío inmediato
+
+      // Sincronizar contenido primero
+      syncEditorContent();
+
+      const statusField = document.querySelector('#id_status');
+      if(statusField) {
+        statusField.value = 'draft';
+      }
+
+      // Ahora enviar el formulario
+      const form = document.querySelector('#blog-post-form');
+      const correctForm = form || document.querySelector('form[enctype="multipart/form-data"]');
+
+      if(correctForm) {
+        // Clear autosave data after successful submission
+        {% if not object.id %}
+        localStorage.removeItem("smde_blog_post_content_new");
+        {% endif %}
+        correctForm.submit();
+      }
+    });
+  }
+
+  if(publishBtn){
+    publishBtn.addEventListener('click', function(e){
+      e.preventDefault();
+
+      // Sincronizar contenido primero
+      const syncSuccess = syncEditorContent();
+      if(!syncSuccess) {
+        return;
+      }
+
+      const statusField = document.querySelector('#id_status');
+      if(statusField) {
+        statusField.value = 'published';
+      }
+
+      // Usar el formulario correcto
+      const correctForm = document.querySelector('#blog-post-form') || document.querySelector('form[enctype="multipart/form-data"]');
+
+      if(correctForm && correctForm.checkValidity()) {
+        // Clear autosave data after successful submission
+        {% if not object.id %}
+        localStorage.removeItem("smde_blog_post_content_new");
+        {% endif %}
+        correctForm.submit();
+      }
+    });
+  }
 });
 </script>
 {% endblock %}
