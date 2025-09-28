@@ -1,114 +1,16 @@
-{% extends 'base.html' %}
+{% extends "portfolio/admin/base_admin.html" %}
 {% load static %}
 {% load simple_i18n %}
 
 {% block title %}{% trans "Dashboard" %} - {{ profile.name|default:"Your Name" }}{% endblock %}
 
+{% block admin_title %}{% trans "Dashboard" %}{% endblock %}
+{% block admin_subtitle %}{% trans "Overview of your portfolio performance and content" %}{% endblock %}
+
 {% block extra_css %}
+{{ block.super }}
 <style>
-/* Base Styles - Consistent with blog design */
-body {
-    font-family: sohne, "Helvetica Neue", Helvetica, Arial, sans-serif;
-    background: #fafafa;
-    color: rgba(41, 41, 41, 1);
-    line-height: 1.58;
-    letter-spacing: -0.004em;
-}
-
-/* Top Navigation - Same as admin */
-.admin-top-nav {
-    position: sticky;
-    top: 0;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid #F2F2F2;
-    z-index: 1000;
-    padding: 0 20px;
-}
-
-.nav-container {
-    max-width: 1192px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 57px;
-}
-
-.nav-left {
-    display: flex;
-    align-items: center;
-}
-
-.nav-right {
-    display: flex;
-    gap: 32px;
-}
-
-.nav-link {
-    color: rgba(117, 117, 117, 1);
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 400;
-    transition: color 0.15s ease;
-}
-
-.nav-link:hover {
-    color: #242424;
-}
-
-.nav-left .nav-link {
-    font-size: 16px;
-    font-weight: 600;
-    color: #242424;
-}
-
-.nav-left .nav-link:hover {
-    opacity: 0.7;
-}
-
-.nav-link.active {
-    color: #242424 !important;
-    font-weight: 500;
-}
-
-/* Main Content */
-.dashboard-main {
-    max-width: 1192px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-.dashboard-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding-top: 56px;
-    min-height: calc(100vh - 200px);
-}
-
-/* Header - Blog style */
-.dashboard-header {
-    margin-bottom: 48px;
-    text-align: left;
-}
-
-.dashboard-title {
-    font-size: 42px;
-    line-height: 52px;
-    letter-spacing: -0.011em;
-    font-weight: 700;
-    color: #242424;
-    margin: 0 0 16px 0;
-}
-
-.dashboard-subtitle {
-    font-size: 20px;
-    line-height: 28px;
-    color: #6B6B6B;
-    margin: 0;
-}
-
-/* Stats Grid - Clean cards */
+/* Dashboard-specific styles */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -538,35 +440,7 @@ body {
 </style>
 {% endblock %}
 
-{% block content %}
-<div class="dashboard-page">
-    <!-- Top Navigation -->
-    <nav class="admin-top-nav">
-        <div class="nav-container">
-            <div class="nav-left">
-                <a href="{% url 'portfolio:admin-dashboard' %}" class="nav-link">{% trans "Dashboard" %}</a>
-            </div>
-            <div class="nav-right">
-                <a href="{% url 'portfolio:admin-project-list' %}" class="nav-link">{% trans "Projects" %}</a>
-                <a href="{% url 'portfolio:admin-blog-list' %}" class="nav-link">{% trans "Blog" %}</a>
-                <a href="{% url 'portfolio:admin-contact-list' %}" class="nav-link">{% trans "Messages" %}</a>
-                <a href="{% url 'portfolio:admin-cv-hub' %}" class="nav-link">{% trans "CV" %}</a>
-                <a href="{% url 'portfolio:admin-profile-edit' %}" class="nav-link">{% trans "My Profile" %}</a>
-                <a href="{% url 'portfolio:admin-analytics' %}" class="nav-link">{% trans "Analytics" %}</a>
-                <a href="{% url 'admin:index' %}" class="nav-link">{% trans "Admin Panel" %}</a>
-                <a href="{% url 'portfolio:home' %}" class="nav-link" target="_blank">{% trans "View Site" %}</a>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="dashboard-main">
-        <div class="dashboard-container">
-            <!-- Page Header -->
-            <header class="dashboard-header">
-                <h1 class="dashboard-title">{% trans "Dashboard" %}</h1>
-                <p class="dashboard-subtitle">{% trans "Overview of your portfolio performance and content" %}</p>
-            </header>
+{% block admin_content %}
 
             <!-- Statistics Grid -->
             <div class="stats-grid">
@@ -847,9 +721,6 @@ body {
                     </div>
                 </div>
             </div>
-        </div>
-    </main>
-</div>
 {% endblock %}
 
 {% block extra_js %}

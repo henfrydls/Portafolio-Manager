@@ -1,12 +1,13 @@
 {% extends "portfolio/admin/base_admin.html" %}
 {% load static %}
+{% load simple_i18n %}
 
-{% block admin_title %}Gestión de Proyectos{% endblock %}
-{% block admin_subtitle %}Administra tu portafolio de proyectos y trabajos{% endblock %}
+{% block admin_title %}{% trans "Project Management" %}{% endblock %}
+{% block admin_subtitle %}{% trans "Manage your project portfolio and work" %}{% endblock %}
 
 {% block admin_actions %}
 <a href="{% url 'portfolio:admin-project-create' %}" class="btn-primary-custom">
-    <i class="fas fa-plus"></i>Nuevo Proyecto
+    <i class="fas fa-plus"></i>{% trans "New Project" %}
 </a>
 {% endblock %}
 
@@ -15,26 +16,26 @@
 <div class="filters-section">
     <form method="get" class="filters-grid">
         <div>
-            <label class="form-label-custom">Buscar proyectos</label>
+            <label class="form-label-custom">{% trans "Search projects" %}</label>
             <input type="text" name="search" class="form-control-custom" 
-                   placeholder="Título, descripción..." value="{{ current_search }}">
+                   placeholder="{% trans "Title, description..." %}" value="{{ current_search }}">
         </div>
         <div>
-            <label class="form-label-custom">Visibilidad</label>
+            <label class="form-label-custom">{% trans "Visibility" %}</label>
             <select name="visibility" class="form-control-custom">
-                <option value="">Todas las visibilidades</option>
-                <option value="public" {% if current_visibility == 'public' %}selected{% endif %}>Público</option>
-                <option value="private" {% if current_visibility == 'private' %}selected{% endif %}>Privado</option>
+                <option value="">{% trans "All visibilities" %}</option>
+                <option value="public" {% if current_visibility == 'public' %}selected{% endif %}>{% trans "Public" %}</option>
+                <option value="private" {% if current_visibility == 'private' %}selected{% endif %}>{% trans "Private" %}</option>
             </select>
         </div>
         <div>
             <button type="submit" class="btn-primary-custom">
-                <i class="fas fa-search"></i>Filtrar
+                <i class="fas fa-search"></i>{% trans "Filter" %}
             </button>
         </div>
         <div>
             <a href="{% url 'portfolio:admin-project-list' %}" class="btn-secondary-custom">
-                <i class="fas fa-times"></i>Limpiar
+                <i class="fas fa-times"></i>{% trans "Clear" %}
             </a>
         </div>
     </form>
@@ -44,8 +45,8 @@
 <div class="content-card">
     <div class="card-header-custom">
         <div>
-            <h2 class="card-title-custom">Proyectos</h2>
-            <p class="card-subtitle-custom">{{ projects|length }} proyectos mostrados • Total: {{ paginator.count }}</p>
+            <h2 class="card-title-custom">{% trans "Projects" %}</h2>
+            <p class="card-subtitle-custom">{{ projects|length }} {% trans "projects shown" %} • {% trans "Total:" %} {{ paginator.count }}</p>
         </div>
     </div>
     
@@ -54,12 +55,12 @@
         <table class="table-custom">
             <thead>
                 <tr>
-                    <th>Proyecto</th>
-                    <th>Tecnologías</th>
-                    <th>Estado</th>
-                    <th>Destacado</th>
-                    <th>Fecha</th>
-                    <th width="200">Acciones</th>
+                    <th>{% trans "Project" %}</th>
+                    <th>{% trans "Technologies" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Featured" %}</th>
+                    <th>{% trans "Date" %}</th>
+                    <th width="200">{% trans "Actions" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -89,18 +90,18 @@
                                 <span class="badge-custom badge-secondary">{{ tech.name }}</span>
                             {% endfor %}
                             {% if project.technologies.count > 3 %}
-                                <span style="font-size: 11px; color: #6B6B6B;">+{{ project.technologies.count|add:"-3" }} más</span>
+                                <span style="font-size: 11px; color: #6B6B6B;">+{{ project.technologies.count|add:"-3" }} {% trans "more" %}</span>
                             {% endif %}
                         </div>
                     </td>
                     <td>
                         {% if project.visibility == 'public' %}
                             <span class="badge-custom badge-success">
-                                <i class="fas fa-eye" style="margin-right: 4px;"></i>Público
+                                <i class="fas fa-eye" style="margin-right: 4px;"></i>{% trans "Public" %}
                             </span>
                         {% else %}
                             <span class="badge-custom badge-warning">
-                                <i class="fas fa-eye-slash" style="margin-right: 4px;"></i>Privado
+                                <i class="fas fa-eye-slash" style="margin-right: 4px;"></i>{% trans "Private" %}
                             </span>
                         {% endif %}
                     </td>
@@ -124,15 +125,15 @@
                     <td>
                         <div class="quick-actions">
                             <a href="{% url 'portfolio:project-detail' project.slug %}" 
-                               class="btn" target="_blank" title="Ver">
+                               class="btn" target="_blank" title="{% trans "View" %}">
                                 <i class="fas fa-eye"></i>
                             </a>
                             <a href="{% url 'portfolio:admin-project-edit' project.pk %}" 
-                               class="btn" title="Editar">
+                               class="btn" title="{% trans "Edit" %}">
                                 <i class="fas fa-edit"></i>
                             </a>
                             <a href="{% url 'portfolio:admin-project-delete' project.pk %}" 
-                               class="btn" title="Eliminar" style="color: #dc3545;">
+                               class="btn" title="{% trans "Delete" %}" style="color: #dc3545;">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </div>
@@ -145,16 +146,16 @@
     {% else %}
     <div class="empty-state">
         <i class="fas fa-folder-open"></i>
-        <h3>No hay proyectos</h3>
+        <h3>{% trans "No projects" %}</h3>
         <p>
             {% if current_search or current_visibility %}
-                No se encontraron proyectos con los filtros aplicados.
+                {% trans "No projects found with the applied filters." %}
             {% else %}
-                Comienza creando tu primer proyecto.
+                {% trans "Start by creating your first project." %}
             {% endif %}
         </p>
         <a href="{% url 'portfolio:admin-project-create' %}" class="btn-primary-custom">
-            <i class="fas fa-plus"></i>Crear Proyecto
+            <i class="fas fa-plus"></i>{% trans "Create Project" %}
         </a>
     </div>
     {% endif %}
@@ -173,7 +174,7 @@
     {% endif %}
 
     <span class="page-link active">
-        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        {% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}
     </span>
 
     {% if page_obj.has_next %}
@@ -228,7 +229,7 @@ function quickToggle(url, data, successCallback) {
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error de conexión');
+        alert('{% trans "Connection error" %}');
     });
 }
 

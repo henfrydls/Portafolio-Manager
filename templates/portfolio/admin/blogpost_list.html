@@ -1,12 +1,13 @@
 {% extends "portfolio/admin/base_admin.html" %}
 {% load static %}
+{% load simple_i18n %}
 
-{% block admin_title %}Gestión del Blog{% endblock %}
-{% block admin_subtitle %}Administra tus posts, borradores y contenido publicado{% endblock %}
+{% block admin_title %}{% trans "Blog Management" %}{% endblock %}
+{% block admin_subtitle %}{% trans "Manage your posts, drafts and published content" %}{% endblock %}
 
 {% block admin_actions %}
 <a href="{% url 'portfolio:admin-blog-create' %}" class="btn-primary-custom">
-    <i class="fas fa-plus"></i>Nuevo Post
+    <i class="fas fa-plus"></i>{% trans "New Post" %}
 </a>
 {% endblock %}
 
@@ -15,23 +16,23 @@
 <div class="filters-section">
     <form method="get" class="filters-grid">
         <div>
-            <label class="form-label-custom">Search posts</label>
+            <label class="form-label-custom">{% trans "Search posts" %}</label>
             <input type="text" name="search" class="form-control-custom" 
-                   placeholder="Título, contenido..." value="{{ current_search }}">
+                   placeholder="{% trans "Title, content..." %}" value="{{ current_search }}">
         </div>
         <div>
-            <label class="form-label-custom">Status</label>
+            <label class="form-label-custom">{% trans "Status" %}</label>
             <select name="status" class="form-control-custom">
-                <option value="">Todos los estados</option>
-                <option value="draft" {% if current_status == 'draft' %}selected{% endif %}>Draft</option>
-                <option value="published" {% if current_status == 'published' %}selected{% endif %}>Published</option>
-                <option value="archived" {% if current_status == 'archived' %}selected{% endif %}>Archivado</option>
+                <option value="">{% trans "All statuses" %}</option>
+                <option value="draft" {% if current_status == 'draft' %}selected{% endif %}>{% trans "Draft" %}</option>
+                <option value="published" {% if current_status == 'published' %}selected{% endif %}>{% trans "Published" %}</option>
+                <option value="archived" {% if current_status == 'archived' %}selected{% endif %}>{% trans "Archived" %}</option>
             </select>
         </div>
         <div>
-            <label class="form-label-custom">Categoría</label>
+            <label class="form-label-custom">{% trans "Category" %}</label>
             <select name="category" class="form-control-custom">
-                <option value="">Todas las categorías</option>
+                <option value="">{% trans "All categories" %}</option>
                 {% for category in categories %}
                     <option value="{{ category.id }}" {% if current_category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
                 {% endfor %}
@@ -39,12 +40,12 @@
         </div>
         <div>
             <button type="submit" class="btn-primary-custom">
-                <i class="fas fa-search"></i>Filtrar
+                <i class="fas fa-search"></i>{% trans "Filter" %}
             </button>
         </div>
         <div>
             <a href="{% url 'portfolio:admin-blog-list' %}" class="btn-secondary-custom">
-                <i class="fas fa-times"></i>Limpiar
+                <i class="fas fa-times"></i>{% trans "Clear" %}
             </a>
         </div>
     </form>
@@ -54,8 +55,8 @@
 <div class="content-card">
     <div class="card-header-custom">
         <div>
-            <h2 class="card-title-custom">Posts del Blog</h2>
-            <p class="card-subtitle-custom">{{ posts|length }} posts mostrados • Total: {{ paginator.count }}</p>
+            <h2 class="card-title-custom">{% trans "Blog Posts" %}</h2>
+            <p class="card-subtitle-custom">{{ posts|length }} {% trans "posts shown" %} • {% trans "Total:" %} {{ paginator.count }}</p>
         </div>
     </div>
     
@@ -64,12 +65,12 @@
         <table class="table-custom">
             <thead>
                 <tr>
-                    <th>Post</th>
-                    <th>Tipo</th>
-                    <th>Status</th>
-                    <th>Destacado</th>
-                    <th>Fecha</th>
-                    <th width="200">Acciones</th>
+                    <th>{% trans "Post" %}</th>
+                    <th>{% trans "Type" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Featured" %}</th>
+                    <th>{% trans "Date" %}</th>
+                    <th width="200">{% trans "Actions" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -89,28 +90,28 @@
                                 <div style="font-weight: 500; color: #242424; margin-bottom: 4px;">{{ post.title }}</div>
                                 <div style="font-size: 12px; color: #6B6B6B;">{{ post.excerpt|default:post.content|truncatewords:8 }}</div>
                                 <div style="font-size: 11px; color: #6B6B6B; margin-top: 2px;">
-                                    <i class="fas fa-clock"></i> {{ post.reading_time }} min lectura
+                                    <i class="fas fa-clock"></i> {{ post.reading_time }} {% trans "min read" %}
                                 </div>
                             </div>
                         </div>
                     </td>
                     <td>
                         <span class="badge-custom badge-info">
-                            {% if post.category %}{{ post.category.name }}{% else %}Sin categoría{% endif %}
+                            {% if post.category %}{{ post.category.name }}{% else %}{% trans "No category" %}{% endif %}
                         </span>
                     </td>
                     <td>
                         {% if post.status == 'published' %}
                             <span class="badge-custom badge-success">
-                                <i class="fas fa-check" style="margin-right: 4px;"></i>Published
+                                <i class="fas fa-check" style="margin-right: 4px;"></i>{% trans "Published" %}
                             </span>
                         {% elif post.status == 'draft' %}
                             <span class="badge-custom badge-warning">
-                                <i class="fas fa-edit" style="margin-right: 4px;"></i>Draft
+                                <i class="fas fa-edit" style="margin-right: 4px;"></i>{% trans "Draft" %}
                             </span>
                         {% else %}
                             <span class="badge-custom badge-secondary">
-                                <i class="fas fa-archive" style="margin-right: 4px;"></i>Archivado
+                                <i class="fas fa-archive" style="margin-right: 4px;"></i>{% trans "Archived" %}
                             </span>
                         {% endif %}
                     </td>
@@ -136,22 +137,22 @@
                         <div class="quick-actions">
                             {% if post.status == 'published' %}
                                 <a href="{% url 'portfolio:post-detail' post.slug %}" 
-                                   class="btn" target="_blank" title="Ver">
+                                   class="btn" target="_blank" title="{% trans "View" %}">
                                     <i class="fas fa-eye"></i>
                                 </a>
                             {% endif %}
                             <a href="{% url 'portfolio:admin-blog-edit' post.pk %}" 
-                               class="btn" title="Edit">
+                               class="btn" title="{% trans "Edit" %}">
                                 <i class="fas fa-edit"></i>
                             </a>
                             {% if post.status == 'draft' %}
                                 <button class="btn quick-publish" 
-                                        data-post-id="{{ post.id }}" title="Publicar">
+                                        data-post-id="{{ post.id }}" title="{% trans "Publish" %}">
                                     <i class="fas fa-paper-plane"></i>
                                 </button>
                             {% endif %}
                             <a href="{% url 'portfolio:admin-blog-delete' post.pk %}" 
-                               class="btn" title="Delete" style="color: #dc3545;">
+                               class="btn" title="{% trans "Delete" %}" style="color: #dc3545;">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </div>
@@ -164,16 +165,16 @@
     {% else %}
     <div class="empty-state">
         <i class="fas fa-blog"></i>
-        <h3>No hay posts</h3>
+        <h3>{% trans "No posts" %}</h3>
         <p>
             {% if current_search or current_status or current_category %}
-                No se encontraron posts con los filtros aplicados.
+                {% trans "No posts found with the applied filters." %}
             {% else %}
-                Comienza creando tu primer post del blog.
+                {% trans "Start by creating your first blog post." %}
             {% endif %}
         </p>
         <a href="{% url 'portfolio:admin-blog-create' %}" class="btn-primary-custom">
-            <i class="fas fa-plus"></i>Crear Post
+            <i class="fas fa-plus"></i>{% trans "Create Post" %}
         </a>
     </div>
     {% endif %}
@@ -192,7 +193,7 @@
     {% endif %}
 
     <span class="page-link active">
-        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        {% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}
     </span>
 
     {% if page_obj.has_next %}
@@ -247,7 +248,7 @@ function quickToggle(url, data, successCallback) {
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error de conexión');
+        alert('{% trans "Connection error" %}');
     });
 }
 
@@ -284,7 +285,7 @@ document.querySelectorAll('.quick-publish').forEach(button => {
     button.addEventListener('click', function() {
         const postId = this.dataset.postId;
         
-        if (confirm('¿Estás seguro de que quieres publicar este post?')) {
+        if (confirm('{% trans "Are you sure you want to publish this post?" %}')) {
             quickToggle('{% url "portfolio:ajax-quick-publish-blog" %}', 
                 { post_id: postId }, 
                 (data) => {
