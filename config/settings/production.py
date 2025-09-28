@@ -1,14 +1,29 @@
 """
-Production settings for henfrydls_portfolio project.
+Production settings for portfolio_managment project.
 """
 
 from .base import *
 import os
+import sys
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['henfrydls.com', 'www.henfrydls.com']
+# Environment indicator
+ENVIRONMENT = 'PRODUCTION'
+
+# Print environment on startup
+if 'runserver' in sys.argv or 'gunicorn' in sys.argv:
+    print("\n" + "="*50)
+    print(f"RUNNING IN {ENVIRONMENT} ENVIRONMENT")
+    print("="*50 + "\n")
+
+# Get allowed hosts from environment or use defaults
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS_PROD', 'yourdomain.com,www.yourdomain.com').split(',')
+
+# Production session settings - configurable from environment
+SESSION_COOKIE_AGE = int(os.environ.get('SESSION_COOKIE_AGE_PROD', 86400))  # Default 24 hours
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Allow session persistence
 
 # Database
 DATABASES = {
@@ -25,7 +40,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
+# Set DEFAULT_FROM_EMAIL based on environment or domain
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', f'noreply@{os.environ.get("PRODUCTION_DOMAIN", "yourdomain.com")}')
 
 # Static files configuration for production
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -53,10 +69,15 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_REFERRER_POLICY = 'same-origin'
 
 # CSRF trusted origins for production
+production_domain = os.environ.get('PRODUCTION_DOMAIN', 'yourdomain.com')
 CSRF_TRUSTED_ORIGINS = [
-    'https://henfrydls.com',
-    'https://www.henfrydls.com',
+    f'https://{production_domain}',
+    f'https://www.{production_domain}',
 ]
+# Add custom origins from environment
+csrf_origins_env = os.environ.get('CSRF_TRUSTED_ORIGINS_PROD', '')
+if csrf_origins_env:
+    CSRF_TRUSTED_ORIGINS.extend(csrf_origins_env.split(','))
 
 # Cache configuration for production (using database cache)
 CACHES = {

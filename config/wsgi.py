@@ -1,5 +1,5 @@
 """
-WSGI config for henfrydls_portfolio project.
+WSGI config for portfolio_managment project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

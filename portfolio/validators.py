@@ -20,30 +20,38 @@ class FileValidator:
         self.allowed_mimetypes = allowed_mimetypes or []
     
     def __call__(self, file):
+        # Skip validation if file is None or empty
+        if not file:
+            return
+
+        # Check if this is an existing file that doesn't need validation
+        if hasattr(file, 'url') and not hasattr(file, 'content_type'):
+            return
+
         # Check file size
-        if file.size > self.max_size:
+        if hasattr(file, 'size') and file.size > self.max_size:
             raise ValidationError(
                 f'El archivo es demasiado grande. Tamaño máximo permitido: {self.max_size // (1024*1024)}MB'
             )
-        
+
         # Check file extension
-        if self.allowed_extensions:
+        if self.allowed_extensions and hasattr(file, 'name'):
             ext = os.path.splitext(file.name)[1].lower()
             if ext not in self.allowed_extensions:
                 raise ValidationError(
                     f'Tipo de archivo no permitido. Extensiones permitidas: {", ".join(self.allowed_extensions)}'
                 )
-        
-        # Check MIME type using python-magic for security
-        if self.allowed_mimetypes:
+
+        # Check MIME type using python-magic for security (only for new uploads)
+        if self.allowed_mimetypes and hasattr(file, 'seek') and hasattr(file, 'read'):
             try:
                 # Read first 1024 bytes to determine MIME type
                 file.seek(0)
                 file_header = file.read(1024)
                 file.seek(0)
-                
+
                 mime_type = magic.from_buffer(file_header, mime=True)
-                
+
                 if mime_type not in self.allowed_mimetypes:
                     raise ValidationError(
                         f'Tipo de archivo no válido. Tipos permitidos: {", ".join(self.allowed_mimetypes)}'
@@ -81,33 +89,49 @@ class ImageValidator(FileValidator):
         self.min_height = min_height
     
     def __call__(self, file):
+        # Skip validation if file is None or empty (for editing existing objects)
+        if not file:
+            return
+
+        # Check if this is an existing file that doesn't need validation
+        # (e.g., during form editing without file change)
+        if hasattr(file, 'url') and not hasattr(file, 'content_type'):
+            # This is likely an existing file, skip validation
+            return
+
         # Run base validation first
         super().__call__(file)
-        
+
         # Additional image validation
         try:
-            # Verify it's actually an image by opening it
-            file.seek(0)
+            # Only seek if the file supports it (new uploads)
+            if hasattr(file, 'seek'):
+                file.seek(0)
+
             with Image.open(file) as img:
                 width, height = img.size
-                
+
                 # Check dimensions
                 if self.max_width and width > self.max_width:
                     raise ValidationError(f'Ancho máximo permitido: {self.max_width}px')
-                
+
                 if self.max_height and height > self.max_height:
                     raise ValidationError(f'Alto máximo permitido: {self.max_height}px')
-                
+
                 if self.min_width and width < self.min_width:
                     raise ValidationError(f'Ancho mínimo requerido: {self.min_width}px')
-                
+
                 if self.min_height and height < self.min_height:
                     raise ValidationError(f'Alto mínimo requerido: {self.min_height}px')
-                
-            file.seek(0)
-            
+
+            # Only seek back if the file supports it
+            if hasattr(file, 'seek'):
+                file.seek(0)
+
         except Exception as e:
-            raise ValidationError('El archivo no es una imagen válida')
+            # Only raise validation error for new uploads
+            if hasattr(file, 'content_type') or hasattr(file, 'seek'):
+                raise ValidationError('El archivo no es una imagen válida')
 
 
 @deconstructible

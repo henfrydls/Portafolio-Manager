@@ -470,7 +470,7 @@ class BlogPostAdmin(admin.ModelAdmin):
             'fields': ('featured_image', 'image_preview')
         }),
         ('Clasificación', {
-            'fields': ('category', 'post_type', 'tags', 'reading_time')
+            'fields': ('category', 'tags', 'reading_time')
         }),
         ('Publicación', {
             'fields': ('status', 'publish_date', 'featured')
@@ -486,8 +486,6 @@ class BlogPostAdmin(admin.ModelAdmin):
         """Muestra la categoría"""
         if obj.category:
             return obj.category.name
-        elif obj.post_type:
-            return obj.get_post_type_display()
         return "Sin categoría"
     category_display.short_description = 'Categoría'
 
@@ -608,6 +606,6 @@ class PageVisitAdmin(admin.ModelAdmin):
 
 
 # Personalización del sitio de administración
-admin.site.site_header = "Administración henfrydls.com"
-admin.site.site_title = "Admin henfrydls"
+admin.site.site_header = "Administración"
+admin.site.site_title = "Admin"
 admin.site.index_title = "Panel de Administración del Portafolio"

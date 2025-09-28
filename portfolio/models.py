@@ -646,21 +646,6 @@ class BlogPost(models.Model):
         help_text="Categoría principal del post"
     )
 
-    # Mantener post_type temporalmente para migración
-    post_type = models.CharField(
-        max_length=20,
-        choices=[
-            ('news', 'Noticia'),
-            ('tutorial', 'Tutorial'),
-            ('opinion', 'Opinión'),
-            ('project', 'Proyecto'),
-            ('career', 'Carrera'),
-        ],
-        blank=True,
-        null=True,
-        verbose_name="Tipo de post (DEPRECATED)",
-        help_text="Campo deprecated - usar categoría"
-    )
     tags = models.CharField(max_length=200, blank=True, verbose_name="Tags", 
                            help_text="Tags separados por comas")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft', verbose_name="Estado")
@@ -702,11 +687,9 @@ class BlogPost(models.Model):
         return []
 
     def get_post_type_display(self):
-        """Compatibilidad hacia atrás - retorna el nombre de la categoría"""
-        if hasattr(self, 'category') and self.category:
+        """Retorna el nombre de la categoría (compatibilidad hacia atrás)"""
+        if self.category:
             return self.category.name
-        elif self.post_type:
-            return dict(self._meta.get_field('post_type').choices).get(self.post_type, self.post_type)
         return "Sin categoría"
 
     def get_category_color(self):

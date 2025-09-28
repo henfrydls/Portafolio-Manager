@@ -98,7 +98,7 @@ class HomeView(TemplateView):
                 'external_url': None,
                 'date': post.publish_date,
                 'order': 999,  # Posts van después de proyectos por defecto
-                'post_type': post.post_type,
+                'category': post.category,
                 'reading_time': post.reading_time,
                 'is_external': False
             })
@@ -270,15 +270,10 @@ class BlogListView(ListView):
     def get_queryset(self):
         queryset = BlogPost.objects.filter(status='published').order_by('-publish_date')
 
-        # Filtro por categoría (nuevo sistema)
+        # Filtro por categoría
         category_slug = self.request.GET.get('category')
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)
-
-        # Filtro por tipo de post (legacy para compatibilidad)
-        post_type = self.request.GET.get('type')
-        if post_type:
-            queryset = queryset.filter(post_type=post_type)
 
         # Filtro por tag
         tag = self.request.GET.get('tag')
@@ -308,15 +303,6 @@ class BlogListView(ListView):
         # Obtener categorías activas para el filtro
         context['categories'] = Category.objects.filter(is_active=True).order_by('order')
 
-        # Obtener tipos de posts para el filtro (legacy)
-        context['post_types'] = [
-            ('news', 'Noticia'),
-            ('tutorial', 'Tutorial'),
-            ('opinion', 'Opinión'),
-            ('project', 'Proyecto'),
-            ('career', 'Carrera'),
-        ]
-
         # Obtener todos los tags únicos
         all_posts = BlogPost.objects.filter(status='published')
         all_tags = []
@@ -326,7 +312,6 @@ class BlogListView(ListView):
 
         # Mantener filtros en el contexto
         context['current_category'] = self.request.GET.get('category', '')
-        context['current_type'] = self.request.GET.get('type', '')
         context['current_tag'] = self.request.GET.get('tag', '')
         context['current_search'] = self.request.GET.get('search', '')
 
@@ -361,12 +346,13 @@ class BlogDetailView(DetailView):
         post = self.get_object()
         related_posts = []
         
-        # 1. Primero buscar posts del mismo tipo
-        same_type_posts = BlogPost.objects.filter(
-            status='published',
-            post_type=post.post_type
-        ).exclude(id=post.id).order_by('-publish_date')[:2]
-        related_posts.extend(same_type_posts)
+        # 1. Primero buscar posts de la misma categoría
+        if post.category:
+            same_category_posts = BlogPost.objects.filter(
+                status='published',
+                category=post.category
+            ).exclude(id=post.id).order_by('-publish_date')[:2]
+            related_posts.extend(same_category_posts)
         
         # 2. Si hay tags, buscar posts con tags similares
         if post.tags and len(related_posts) < 3:
@@ -477,7 +463,7 @@ class ContactView(TemplateView):
                     if profile and profile.email:
                         email_subject = f"Nuevo mensaje de contacto: {contact.subject}"
                         email_message = f"""
-Nuevo mensaje recibido desde henfrydls.com:
+Nuevo mensaje recibido:
 
 Nombre: {contact.name}
 Email: {contact.email}
@@ -487,7 +473,7 @@ Mensaje:
 {contact.message}
 
 ---
-Este mensaje fue enviado desde el formulario de contacto de henfrydls.com
+Este mensaje fue enviado desde el formulario de contacto
 IP: {self.get_client_ip(request)}
 Fecha: {contact.created_at}
                         """
@@ -605,12 +591,14 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
         
         # Últimos posts del blog
         context['recent_posts'] = BlogPost.objects.order_by('-created_at')[:5]
-        
-        # Estadísticas de posts por tipo
-        post_type_stats = BlogPost.objects.values('post_type').annotate(
+
+        # Estadísticas de posts por categoría
+        category_stats = BlogPost.objects.filter(
+            category__isnull=False
+        ).values('category__name').annotate(
             count=Count('id')
         ).order_by('-count')
-        context['post_type_stats'] = post_type_stats
+        context['category_stats'] = category_stats
         
         # Visitas de hoy
         today = timezone.now().date()
@@ -834,14 +822,24 @@ class ProfileUpdateView(AdminRequiredMixin, UpdateView):
     
     def get_object(self, queryset=None):
         """Obtener o crear el perfil único"""
+        from django.conf import settings
+        import os
+
+        # Get default values from environment or use template defaults
+        default_name = os.environ.get('PROFILE_NAME', 'Your Name')
+        default_title = os.environ.get('PROFILE_TITLE', 'Developer')
+        default_bio = os.environ.get('PROFILE_BIO', 'Passionate developer creating innovative technology solutions.')
+        default_email = os.environ.get('PROFILE_EMAIL', 'contact@yourdomain.com')
+        default_location = os.environ.get('PROFILE_LOCATION', 'Your Location')
+
         profile, created = Profile.objects.get_or_create(
             pk=1,
             defaults={
-                'name': 'Henfry de los Santos',
-                'title': 'Desarrollador Full Stack',
-                'bio': 'Desarrollador apasionado por crear soluciones tecnológicas innovadoras.',
-                'email': 'contact@henfrydls.com',
-                'location': 'República Dominicana'
+                'name': default_name,
+                'professional_title': default_title,
+                'bio': default_bio,
+                'email': default_email,
+                'location': default_location
             }
         )
         return profile

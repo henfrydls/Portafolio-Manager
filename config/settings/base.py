@@ -1,9 +1,13 @@
 """
-Base settings for henfrydls_portfolio project.
+Base settings for portfolio_managment project.
 """
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -82,10 +86,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Session configuration
-SESSION_COOKIE_AGE = 1800  # 30 minutes
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_SAVE_EVERY_REQUEST = True  # Update session on every request
+# Session configuration (will be overridden in environment-specific settings)
+SESSION_COOKIE_AGE = 3600  # 1 hour (default, overridden per environment)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Default, overridden per environment
+SESSION_SAVE_EVERY_REQUEST = False  # Only save when session data changes
 SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
 SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
 SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
@@ -126,7 +130,7 @@ CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_USE_SESSIONS = False
-CSRF_TRUSTED_ORIGINS = []  # Add your domain in production
+CSRF_TRUSTED_ORIGINS = []  # Will be set per environment
 
 # File upload security
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
@@ -145,8 +149,7 @@ BLOCKED_EXTENSIONS = [
     '.sh', '.py', '.php', '.asp', '.aspx', '.jsp', '.pl', '.cgi'
 ]
 
-# Email configuration
-DEFAULT_FROM_EMAIL = 'noreply@henfrydls.com'
+# Email configuration will be set per environment
 
 # Page Visit Tracking Configuration
 PAGE_VISIT_CLEANUP_FREQUENCY = 1000  # Ejecutar limpieza cada 1000 requests

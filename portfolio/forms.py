@@ -256,7 +256,7 @@ class SecureBlogPostForm(forms.ModelForm):
     class Meta:
         model = BlogPost
         fields = [
-            'title', 'excerpt', 'content', 'featured_image', 'post_type', 
+            'title', 'excerpt', 'content', 'featured_image', 'category',
             'reading_time', 'tags', 'status', 'publish_date', 'featured',
             'github_url', 'medium_url', 'linkedin_url'
         ]

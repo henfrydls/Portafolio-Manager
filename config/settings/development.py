@@ -1,13 +1,29 @@
 """
-Development settings for henfrydls_portfolio project.
+Development settings for portfolio_managment project.
 """
 
 from .base import *
+import sys
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'testserver']
+# Environment indicator
+ENVIRONMENT = 'DEVELOPMENT'
+
+# Print environment on startup
+if 'runserver' in sys.argv:
+    print("\n" + "="*50)
+    print(f"RUNNING IN {ENVIRONMENT} ENVIRONMENT")
+    print("="*50 + "\n")
+
+# Get allowed hosts from environment or use defaults
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS_DEV', 'localhost,127.0.0.1,0.0.0.0,testserver').split(',')
+
+# Development session settings - configurable from environment
+SESSION_COOKIE_AGE = int(os.environ.get('SESSION_COOKIE_AGE_DEV', 604800))  # Default 1 week
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Persist across browser sessions
+SESSION_COOKIE_SECURE = False  # HTTP allowed in development
 
 # Database
 DATABASES = {
@@ -19,6 +35,18 @@ DATABASES = {
 
 # Email backend for development
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@localhost')
+
+# CSRF trusted origins for development
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://0.0.0.0:8000',
+]
+# Add custom origins from environment
+csrf_origins_env = os.environ.get('CSRF_TRUSTED_ORIGINS_DEV', '')
+if csrf_origins_env:
+    CSRF_TRUSTED_ORIGINS.extend(csrf_origins_env.split(','))
 
 # Static files configuration for development
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'

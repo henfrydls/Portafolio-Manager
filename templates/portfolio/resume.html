@@ -28,7 +28,7 @@
     <section class="hero-section">
         <div class="hero-container">
             <div class="hero-content">
-                <h1 class="hero-title">{{ profile.name|default:"Henfry de los Santos" }}</h1>
+                <h1 class="hero-title">{{ profile.name|default:"Your Name" }}</h1>
                 <p class="hero-subtitle">{{ profile.title|default:"Software Engineer" }}</p>
 
                 {% if profile.bio %}
@@ -290,7 +290,7 @@
             <div class="footer-content">
                 <div class="footer-text">
                     <p>Last updated: {{ last_updated|date:"F Y" }}</p>
-                    <p>{{ profile.name|default:"Henfry de los Santos" }} • Professional Resume</p>
+                    <p>{{ profile.name|default:"Your Name" }} • Professional Resume</p>
                 </div>
             </div>
         </div>

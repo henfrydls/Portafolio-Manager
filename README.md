@@ -250,7 +250,7 @@ Portafolio web personal de Henfry de los Santos desarrollado con Django.
 ### Estructura del Proyecto
 
 ```
-henfrydls_portfolio/
+portfolio_managment/
 ├── .venv/                      # Entorno virtual
 ├── config/                     # Configuración Django
 │   ├── settings/              # Settings modulares

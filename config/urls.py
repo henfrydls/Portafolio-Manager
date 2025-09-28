@@ -1,5 +1,5 @@
 """
-URL configuration for henfrydls_portfolio project.
+URL configuration for portfolio_managment project.
 """
 from django.contrib import admin
 from django.urls import path, include

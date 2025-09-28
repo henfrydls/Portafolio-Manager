@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ profile.name|default:"Henfry de los Santos" }}{% endblock %}</title>
+    <title>{% block title %}{{ profile.name|default:"Your Name" }}{% endblock %}</title>
     {% load static %}
 
     <!-- Google Fonts - Montserrat for clean typography -->
@@ -162,7 +162,11 @@
     <nav class="top-nav">
         <div class="nav-container">
             <a href="/" class="nav-brand">
-                henfrydls.com
+                {% if profile.website_url %}
+                    {{ profile.website_url|cut:"https://"|cut:"http://"|cut:"www." }}
+                {% else %}
+                    {{ profile.name|default:"Your Portfolio" }}
+                {% endif %}
             </a>
 
             <div class="nav-links">
@@ -209,7 +213,7 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p>&copy; {% now "Y" %} {{ profile.name|default:"Henfry de los Santos" }}. All rights reserved.</p>
+        <p>&copy; {% now "Y" %} {{ profile.name|default:"Your Name" }}. All rights reserved.</p>
     </footer>
 
     <!-- Bootstrap JS -->

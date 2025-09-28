@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ profile.name|default:"Henfry de los Santos" }}{% if profile %} - {{ profile.title }}{% endif %}{%
+{% block title %}{{ profile.name|default:"Your Name" }}{% if profile %} - {{ profile.title }}{% endif %}{%
 endblock %}
 
 {% block content %}
@@ -20,7 +20,7 @@ endblock %}
 
         <div class="profile-info">
             <h1 class="profile-name">
-                {{ profile.name|default:"Henfry de los Santos" }}
+                {{ profile.name|default:"Your Name" }}
             </h1>
             <p class="profile-title">
                 {{ profile.title|default:"Innovation & Digital Transformation Manager" }}

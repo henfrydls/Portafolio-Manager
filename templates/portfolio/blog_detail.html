@@ -2,7 +2,7 @@
 {% load static %}
 {% load markdown_extras %}
 
-{% block title %}{{ post.title }} - {{ profile.name|default:"Henfry de los Santos" }}{% endblock %}
+{% block title %}{{ post.title }} - {{ profile.name|default:"Your Name" }}{% endblock %}
 
 {% block content %}
 <div class="medium-page">
@@ -46,20 +46,9 @@
                 <header class="article-header">
                     <!-- Post Type Badge -->
                     <div class="post-badges">
-                        {% if post.category %}
-                        <span class="post-type-badge post-type-{{ post.category.slug }}">
-                            {{ post.category.name }}
+                        <span class="post-type-badge{% if post.category %} post-type-{{ post.category.slug }}{% endif %}">
+                            {% if post.category %}{{ post.category.name }}{% else %}Article{% endif %}
                         </span>
-                        {% else %}
-                        <span class="post-type-badge post-type-{{ post.post_type }}">
-                            {% if post.post_type == 'tutorial' %}Tutorial
-                            {% elif post.post_type == 'opinion' %}Opinion
-                            {% elif post.post_type == 'project' %}Project
-                            {% elif post.post_type == 'career' %}Career
-                            {% else %}Article
-                            {% endif %}
-                        </span>
-                        {% endif %}
                         {% if post.featured %}
                         <span class="featured-badge">Featured</span>
                         {% endif %}
@@ -71,7 +60,7 @@
                         <div class="author-info">
                             {% if profile.profile_image %}
                             <img src="{{ profile.profile_image.url }}"
-                                alt="{{ profile.name|default:'Henfry de los Santos' }}" class="author-avatar">
+                                alt="{{ profile.name|default:'Your Name' }}" class="author-avatar">
                             {% else %}
                             <div class="author-avatar-placeholder">
                                 <i class="fas fa-user"></i>
@@ -79,7 +68,7 @@
                             {% endif %}
                             <div class="author-details">
                                 <div class="author-line">
-                                    <span class="author-name">{{ profile.name|default:"Henfry de los Santos" }}</span>
+                                    <span class="author-name">{{ profile.name|default:"Your Name" }}</span>
                                 </div>
                                 <div class="meta-info">
                                     <time class="publish-date" datetime="{{ post.publish_date|date:'Y-m-d' }}">
@@ -100,11 +89,11 @@
                                 <i class="fas fa-share-alt"></i>
                             </button>
                             <div class="share-dropdown" id="shareDropdown">
-                                <a href="#" onclick="shareTwitter()" class="share-option twitter">
-                                    <i class="fab fa-twitter"></i> Twitter
-                                </a>
                                 <a href="#" onclick="shareLinkedIn()" class="share-option linkedin">
                                     <i class="fab fa-linkedin"></i> LinkedIn
+                                </a>
+                                <a href="#" onclick="shareEmail()" class="share-option email">
+                                    <i class="fas fa-envelope"></i> Email
                                 </a>
                                 <a href="#" onclick="copyLink()" class="share-option copy">
                                     <i class="fas fa-link"></i> Copy Link
@@ -192,15 +181,15 @@
                     <div class="author-bio">
                         {% if profile.profile_image %}
                         <img src="{{ profile.profile_image.url }}"
-                            alt="{{ profile.name|default:'Henfry de los Santos' }}" class="bio-avatar">
+                            alt="{{ profile.name|default:'Your Name' }}" class="bio-avatar">
                         {% else %}
                         <div class="bio-avatar-placeholder">
                             <i class="fas fa-user"></i>
                         </div>
                         {% endif %}
                         <div class="bio-content">
-                            <h3 class="bio-name">{{ profile.name|default:"Henfry de los Santos" }}</h3>
-                            <p class="bio-text">{{ profile.bio|truncatewords:30|default:"Innovation & Digital Transformation Manager focused on building scalable systems and leading high-performing teams." }}</p>
+                            <h3 class="bio-name">{{ profile.name|default:"Your Name" }}</h3>
+                            <p class="bio-text">{{ profile.bio|truncatewords:30|default:"Your bio" }}</p>
                             <div class="bio-actions">
                                 {% if profile.github_url %}
                                 <a href="{{ profile.github_url }}" target="_blank" class="social-link">
@@ -247,12 +236,7 @@
                                 <div class="related-horizontal-content">
                                     <div class="related-horizontal-meta">
                                         <span class="related-type-simple">
-                                            {% if related_post.post_type == 'tutorial' %}Tutorial
-                                            {% elif related_post.post_type == 'opinion' %}Opinion
-                                            {% elif related_post.post_type == 'project' %}Project
-                                            {% elif related_post.post_type == 'career' %}Career
-                                            {% else %}Article
-                                            {% endif %}
+                                            {% if related_post.category %}{{ related_post.category.name }}{% else %}Article{% endif %}
                                         </span>
                                         <span class="meta-separator">·</span>
                                         <span class="related-date">{{ related_post.publish_date|date:"M d" }}</span>
@@ -506,17 +490,23 @@
         dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
     }
 
-    function shareTwitter() {
-        const url = encodeURIComponent(window.location.href);
-        const text = encodeURIComponent(document.title);
-        window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
-        document.getElementById('shareDropdown').style.display = 'none';
-    }
-
     function shareLinkedIn() {
         const url = encodeURIComponent(window.location.href);
         window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
-        document.getElementById('shareDropdown').style.display = 'none';
+        setTimeout(() => {
+            document.getElementById('shareDropdown').style.display = 'none';
+        }, 1000);
+    }
+
+    function shareEmail() {
+        const url = window.location.href;
+        const title = document.title;
+        const subject = encodeURIComponent(`Check out this post: ${title}`);
+        const body = encodeURIComponent(`Hi,\n\nI thought you might be interested in this post:\n\n${title}\n\n${url}\n\nBest regards`);
+        window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        setTimeout(() => {
+            document.getElementById('shareDropdown').style.display = 'none';
+        }, 1000);
     }
 
     function copyLink() {
@@ -528,7 +518,9 @@
                 copyBtn.innerHTML = originalText;
             }, 2000);
         });
-        document.getElementById('shareDropdown').style.display = 'none';
+        setTimeout(() => {
+            document.getElementById('shareDropdown').style.display = 'none';
+        }, 1000);
     }
 
     // Scroll Functions
@@ -1149,14 +1141,14 @@
         color: #242424;
     }
 
-    .share-option.twitter:hover {
-        background: #E3F2FD;
-        color: #1DA1F2;
-    }
-
     .share-option.linkedin:hover {
         background: #E3F2FD;
         color: #0077B5;
+    }
+
+    .share-option.email:hover {
+        background: #FFF3E0;
+        color: #F57C00;
     }
 
     .share-option.copy:hover {
@@ -1642,10 +1634,18 @@
         margin: 0 0 8px 0;
     }
 
+    .post-contact-cta .cta-title {
+        color: #242424 !important;
+    }
+
     .cta-text {
         color: #6B6B6B;
         font-size: 16px;
         margin: 0 0 24px 0;
+    }
+
+    .post-contact-cta .cta-text {
+        color: #6B6B6B !important;
     }
 
     .cta-button {
