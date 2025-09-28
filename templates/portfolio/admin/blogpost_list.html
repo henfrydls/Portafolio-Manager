@@ -15,16 +15,16 @@
 <div class="filters-section">
     <form method="get" class="filters-grid">
         <div>
-            <label class="form-label-custom">Buscar posts</label>
+            <label class="form-label-custom">Search posts</label>
             <input type="text" name="search" class="form-control-custom" 
                    placeholder="Título, contenido..." value="{{ current_search }}">
         </div>
         <div>
-            <label class="form-label-custom">Estado</label>
+            <label class="form-label-custom">Status</label>
             <select name="status" class="form-control-custom">
                 <option value="">Todos los estados</option>
-                <option value="draft" {% if current_status == 'draft' %}selected{% endif %}>Borrador</option>
-                <option value="published" {% if current_status == 'published' %}selected{% endif %}>Publicado</option>
+                <option value="draft" {% if current_status == 'draft' %}selected{% endif %}>Draft</option>
+                <option value="published" {% if current_status == 'published' %}selected{% endif %}>Published</option>
                 <option value="archived" {% if current_status == 'archived' %}selected{% endif %}>Archivado</option>
             </select>
         </div>
@@ -66,7 +66,7 @@
                 <tr>
                     <th>Post</th>
                     <th>Tipo</th>
-                    <th>Estado</th>
+                    <th>Status</th>
                     <th>Destacado</th>
                     <th>Fecha</th>
                     <th width="200">Acciones</th>
@@ -102,11 +102,11 @@
                     <td>
                         {% if post.status == 'published' %}
                             <span class="badge-custom badge-success">
-                                <i class="fas fa-check" style="margin-right: 4px;"></i>Publicado
+                                <i class="fas fa-check" style="margin-right: 4px;"></i>Published
                             </span>
                         {% elif post.status == 'draft' %}
                             <span class="badge-custom badge-warning">
-                                <i class="fas fa-edit" style="margin-right: 4px;"></i>Borrador
+                                <i class="fas fa-edit" style="margin-right: 4px;"></i>Draft
                             </span>
                         {% else %}
                             <span class="badge-custom badge-secondary">
@@ -141,7 +141,7 @@
                                 </a>
                             {% endif %}
                             <a href="{% url 'portfolio:admin-blog-edit' post.pk %}" 
-                               class="btn" title="Editar">
+                               class="btn" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </a>
                             {% if post.status == 'draft' %}
@@ -151,7 +151,7 @@
                                 </button>
                             {% endif %}
                             <a href="{% url 'portfolio:admin-blog-delete' post.pk %}" 
-                               class="btn" title="Eliminar" style="color: #dc3545;">
+                               class="btn" title="Delete" style="color: #dc3545;">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </div>

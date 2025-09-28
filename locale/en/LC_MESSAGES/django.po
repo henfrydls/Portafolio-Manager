@@ -1,0 +1,154 @@
+# English translation for Portfolio
+# Copyright (C) 2024
+# This file is distributed under the same license as the Portfolio package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Portfolio\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-09-27 00:00+0000\n"
+"PO-Revision-Date: 2024-09-27 00:00+0000\n"
+"Last-Translator: Portfolio Team\n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# Common UI strings
+msgid "Dashboard"
+msgstr "Dashboard"
+
+msgid "Projects"
+msgstr "Projects"
+
+msgid "Blog"
+msgstr "Blog"
+
+msgid "Contact"
+msgstr "Contact"
+
+msgid "Experience"
+msgstr "Experience"
+
+msgid "Education"
+msgstr "Education"
+
+msgid "Skills"
+msgstr "Skills"
+
+msgid "Home"
+msgstr "Home"
+
+msgid "About"
+msgstr "About"
+
+msgid "Resume"
+msgstr "Resume"
+
+msgid "Portfolio"
+msgstr "Portfolio"
+
+# Actions
+msgid "Create"
+msgstr "Create"
+
+msgid "Edit"
+msgstr "Edit"
+
+msgid "Delete"
+msgstr "Delete"
+
+msgid "Save"
+msgstr "Save"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Update"
+msgstr "Update"
+
+msgid "Add"
+msgstr "Add"
+
+msgid "Remove"
+msgstr "Remove"
+
+msgid "Back"
+msgstr "Back"
+
+msgid "Next"
+msgstr "Next"
+
+msgid "Previous"
+msgstr "Previous"
+
+msgid "Submit"
+msgstr "Submit"
+
+msgid "Search"
+msgstr "Search"
+
+msgid "Filter"
+msgstr "Filter"
+
+# Messages
+msgid "Welcome"
+msgstr "Welcome"
+
+msgid "Loading..."
+msgstr "Loading..."
+
+msgid "No results found"
+msgstr "No results found"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "Success"
+msgstr "Success"
+
+msgid "Warning"
+msgstr "Warning"
+
+msgid "Information"
+msgstr "Information"
+
+# Common labels
+msgid "Name"
+msgstr "Name"
+
+msgid "Title"
+msgstr "Title"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Date"
+msgstr "Date"
+
+msgid "Category"
+msgstr "Category"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Published"
+msgstr "Published"
+
+msgid "Draft"
+msgstr "Draft"
+
+msgid "Featured"
+msgstr "Featured"
+
+# Navigation
+msgid "Switch to"
+msgstr "Switch to"
+
+msgid "Language"
+msgstr "Language"

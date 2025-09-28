@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load simple_i18n %}
 
 {% block title %}Admin - {{ block.super }}{% endblock %}
 
@@ -465,17 +466,17 @@ body {
     <nav class="admin-top-nav">
         <div class="nav-container">
             <div class="nav-left">
-                <a href="{% url 'portfolio:admin-dashboard' %}" class="nav-link">Dashboard</a>
+                <a href="{% url 'portfolio:admin-dashboard' %}" class="nav-link">{% trans "Dashboard" %}</a>
             </div>
             <div class="nav-right">
-                <a href="{% url 'portfolio:admin-project-list' %}" class="nav-link {% if 'project' in request.resolver_match.url_name %}active{% endif %}">Proyectos</a>
-                <a href="{% url 'portfolio:admin-blog-list' %}" class="nav-link {% if 'blog' in request.resolver_match.url_name %}active{% endif %}">Blog</a>
-                <a href="{% url 'portfolio:admin-contact-list' %}" class="nav-link {% if 'contact' in request.resolver_match.url_name %}active{% endif %}">Mensajes</a>
-                <a href="{% url 'portfolio:admin-cv-hub' %}" class="nav-link {% if 'cv' in request.resolver_match.url_name or 'experience' in request.resolver_match.url_name or 'education' in request.resolver_match.url_name or 'skill' in request.resolver_match.url_name %}active{% endif %}">CV</a>
-                <a href="{% url 'portfolio:admin-profile-edit' %}" class="nav-link {% if request.resolver_match.url_name == 'admin-profile-edit' %}active{% endif %}">Mi Perfil</a>
-                <a href="{% url 'portfolio:admin-analytics' %}" class="nav-link">Analytics</a>
-                <a href="{% url 'admin:index' %}" class="nav-link">Admin Panel</a>
-                <a href="{% url 'portfolio:home' %}" class="nav-link" target="_blank">Ver Sitio</a>
+                <a href="{% url 'portfolio:admin-project-list' %}" class="nav-link {% if 'project' in request.resolver_match.url_name %}active{% endif %}">{% trans "Projects" %}</a>
+                <a href="{% url 'portfolio:admin-blog-list' %}" class="nav-link {% if 'blog' in request.resolver_match.url_name %}active{% endif %}">{% trans "Blog" %}</a>
+                <a href="{% url 'portfolio:admin-contact-list' %}" class="nav-link {% if 'contact' in request.resolver_match.url_name %}active{% endif %}">{% trans "Messages" %}</a>
+                <a href="{% url 'portfolio:admin-cv-hub' %}" class="nav-link {% if 'cv' in request.resolver_match.url_name or 'experience' in request.resolver_match.url_name or 'education' in request.resolver_match.url_name or 'skill' in request.resolver_match.url_name %}active{% endif %}">{% trans "CV" %}</a>
+                <a href="{% url 'portfolio:admin-profile-edit' %}" class="nav-link {% if request.resolver_match.url_name == 'admin-profile-edit' %}active{% endif %}">{% trans "My Profile" %}</a>
+                <a href="{% url 'portfolio:admin-analytics' %}" class="nav-link">{% trans "Analytics" %}</a>
+                <a href="{% url 'admin:index' %}" class="nav-link">{% trans "Admin Panel" %}</a>
+                <a href="{% url 'portfolio:home' %}" class="nav-link" target="_blank">{% trans "View Site" %}</a>
             </div>
         </div>
     </nav>
@@ -485,8 +486,8 @@ body {
         <div class="admin-container">
             <!-- Page Header -->
             <header class="admin-header">
-                <h1 class="admin-title">{% block admin_title %}Administración{% endblock %}</h1>
-                <p class="admin-subtitle">{% block admin_subtitle %}Gestiona tu contenido{% endblock %}</p>
+                <h1 class="admin-title">{% block admin_title %}{% trans "Administration" %}{% endblock %}</h1>
+                <p class="admin-subtitle">{% block admin_subtitle %}{% trans "Manage your content" %}{% endblock %}</p>
                 <div style="margin-top: 24px;">
                     {% block admin_actions %}{% endblock %}
                 </div>
@@ -547,7 +548,7 @@ function quickToggle(url, data, successCallback) {
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error de conexión');
+        alert('{% trans "Connection error" %}');
     });
 }
 

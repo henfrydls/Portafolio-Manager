@@ -33,6 +33,7 @@ MIDDLEWARE = [
     #'portfolio.security_middleware.RateLimitMiddleware',  # Rate limiting
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',  # Language detection and setting
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'portfolio.security_middleware.CSRFFailureLoggingMiddleware',  # CSRF logging
@@ -54,6 +55,7 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
+                'django.template.context_processors.i18n',  # Internationalization context
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'portfolio.context_processors.profile_context',
@@ -67,10 +69,24 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Internationalization
-LANGUAGE_CODE = 'es-es'
+LANGUAGE_CODE = 'en'  # Default language is English
 TIME_ZONE = 'America/Santo_Domingo'
 USE_I18N = True
+USE_L10N = True  # Enable localization
 USE_TZ = True
+
+# Available languages
+LANGUAGES = [
+    ('en', 'English'),
+    ('es', 'Español'),
+]
+
+# Locale paths for translation files
+LOCALE_PATHS = [
+    BASE_DIR / 'locale',
+]
+
+# For now, we'll use a simpler approach with template tags
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'

@@ -1,12 +1,12 @@
 {% extends "portfolio/admin/base_admin.html" %}
 {% load static %}
 
-{% block admin_title %}Gestión de Habilidades{% endblock %}
-{% block admin_subtitle %}Administra tus habilidades técnicas y competencias{% endblock %}
+{% block admin_title %}Skills Management{% endblock %}
+{% block admin_subtitle %}Manage your technical skills and competencies{% endblock %}
 
 {% block admin_actions %}
 <a href="{% url 'portfolio:admin-skill-create' %}" class="btn-primary-custom">
-    <i class="fas fa-plus"></i>Nueva Habilidad
+    <i class="fas fa-plus"></i>New Skill
 </a>
 {% endblock %}
 
@@ -15,12 +15,12 @@
 <div class="filters-section">
     <form method="get" class="filters-grid">
         <div>
-            <label class="form-label-custom">Buscar habilidades</label>
+            <label class="form-label-custom">Search skills</label>
             <input type="text" name="search" class="form-control-custom" 
-                   placeholder="Nombre, categoría..." value="{{ current_search }}">
+                   placeholder="Name, category..." value="{{ current_search }}">
         </div>
         <div>
-            <label class="form-label-custom">Categoría</label>
+            <label class="form-label-custom">Category</label>
             <select name="category" class="form-control-custom">
                 <option value="">Todas las categorías</option>
                 {% for category in categories %}
@@ -55,7 +55,7 @@
 <div class="content-card">
     <div class="card-header-custom">
         <div>
-            <h2 class="card-title-custom">Habilidades Técnicas</h2>
+            <h2 class="card-title-custom">Technical Skills</h2>
             <p class="card-subtitle-custom">{{ skills|length }} habilidades mostradas • Total: {{ paginator.count }}</p>
         </div>
     </div>
@@ -66,9 +66,9 @@
             <thead>
                 <tr>
                     <th>Habilidad</th>
-                    <th>Categoría</th>
+                    <th>Category</th>
                     <th>Nivel</th>
-                    <th>Experiencia</th>
+                    <th>Experience</th>
                     <th>Progreso</th>
                     <th width="200">Acciones</th>
                 </tr>
@@ -151,7 +151,7 @@
             {% endif %}
         </p>
         <a href="{% url 'portfolio:admin-skill-create' %}" class="btn-primary-custom">
-            <i class="fas fa-plus"></i>Agregar Habilidad
+            <i class="fas fa-plus"></i>Add Skill
         </a>
     </div>
     {% endif %}

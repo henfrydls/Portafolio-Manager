@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load simple_i18n %}
 
 {% block title %}{{ profile.name|default:"Your Name" }}{% if profile %} - {{ profile.title }}{% endif %}{%
 endblock %}
@@ -80,12 +81,12 @@ endblock %}
 
             <!-- Navigation Links -->
             <div class="profile-nav">
-                <a href="#about">About</a>
-                <a href="#recent">Recent</a>
-                <a href="{% url 'portfolio:post-list' %}">All Posts</a>
-                <a href="#featured">Featured Work</a>
-                <a href="#projects">Work & Projects</a>
-                <button onclick="openContactModal()" class="contact-nav-btn">Contact</button>
+                <a href="#about">{% trans "About" %}</a>
+                <a href="#recent">{% trans "Recent" %}</a>
+                <a href="{% url 'portfolio:post-list' %}">{% trans "All Posts" %}</a>
+                <a href="#featured">{% trans "Featured Work" %}</a>
+                <a href="#projects">{% trans "Work & Projects" %}</a>
+                <button onclick="openContactModal()" class="contact-nav-btn">{% trans "Contact" %}</button>
             </div>
 
         </div>
@@ -97,7 +98,7 @@ endblock %}
 
             <!-- About Section -->
             <div class="section" id="about">
-                <h2 class="section-title">About</h2>
+                <h2 class="section-title">{% trans "About" %}</h2>
                 {% if profile.bio %}
                 <div class="about-content">
                     <p>{{ profile.bio }}</p>
@@ -109,10 +110,10 @@ endblock %}
             {% if latest_posts %}
             <div class="section" id="recent">
                 <div class="section-header">
-                    <h2 class="section-title">Recent</h2>
+                    <h2 class="section-title">{% trans "Recent" %}</h2>
                     <div class="section-header-actions">
                         <a href="{% url 'portfolio:post-list' %}" class="all-posts-link">
-                            View All Posts <i class="fas fa-arrow-right"></i>
+                            {% trans "View All Posts" %} <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>
                 </div>
@@ -146,8 +147,8 @@ endblock %}
             {% if featured_items %}
             <div class="section" id="featured">
                 <div class="section-header">
-                    <h2 class="section-title">Featured Work</h2>
-                    <p class="section-subtitle">Selected projects and contributions</p>
+                    <h2 class="section-title">{% trans "Featured Work" %}</h2>
+                    <p class="section-subtitle">{% trans "Selected projects and contributions" %}</p>
                 </div>
 
                 <div class="featured-grid">
@@ -175,7 +176,7 @@ endblock %}
                             <div class="featured-content">
                                 <div class="featured-meta">
                                     <span class="featured-type">
-                                        {% if item.type == 'project' %}Project{% else %}{{ item.post_type|capfirst }}{% endif %}
+                                        {% if item.type == 'project' %}{% trans "Project" %}{% else %}{{ item.post_type|capfirst }}{% endif %}
                                     </span>
                                     <time class="featured-date">{{ item.date|date:"Y" }}</time>
                                 </div>
@@ -230,11 +231,11 @@ endblock %}
             <!-- Projects Section -->
             <div class="section" id="projects">
                 <div class="section-header">
-                    <h2 class="section-title">Work & Projects</h2>
+                    <h2 class="section-title">{% trans "Work & Projects" %}</h2>
                     {% if projects_paginator.num_pages > 1 %}
                     <div class="projects-page-info">
                         <span class="page-counter">
-                            Page {{ projects_page_obj.number }} of {{ projects_paginator.num_pages }}
+                            {% trans "Page" %} {{ projects_page_obj.number }} {% trans "of" %} {{ projects_paginator.num_pages }}
                         </span>
                     </div>
                     {% endif %}

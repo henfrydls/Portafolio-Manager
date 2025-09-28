@@ -1,0 +1,154 @@
+# Spanish translation for Portfolio
+# Copyright (C) 2024
+# This file is distributed under the same license as the Portfolio package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Portfolio\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-09-27 00:00+0000\n"
+"PO-Revision-Date: 2024-09-27 00:00+0000\n"
+"Last-Translator: Portfolio Team\n"
+"Language-Team: Spanish\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# Common UI strings
+msgid "Dashboard"
+msgstr "Panel de Control"
+
+msgid "Projects"
+msgstr "Proyectos"
+
+msgid "Blog"
+msgstr "Blog"
+
+msgid "Contact"
+msgstr "Contacto"
+
+msgid "Experience"
+msgstr "Experiencia"
+
+msgid "Education"
+msgstr "Educación"
+
+msgid "Skills"
+msgstr "Habilidades"
+
+msgid "Home"
+msgstr "Inicio"
+
+msgid "About"
+msgstr "Acerca de"
+
+msgid "Resume"
+msgstr "Currículum"
+
+msgid "Portfolio"
+msgstr "Portafolio"
+
+# Actions
+msgid "Create"
+msgstr "Crear"
+
+msgid "Edit"
+msgstr "Editar"
+
+msgid "Delete"
+msgstr "Eliminar"
+
+msgid "Save"
+msgstr "Guardar"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Update"
+msgstr "Actualizar"
+
+msgid "Add"
+msgstr "Agregar"
+
+msgid "Remove"
+msgstr "Remover"
+
+msgid "Back"
+msgstr "Volver"
+
+msgid "Next"
+msgstr "Siguiente"
+
+msgid "Previous"
+msgstr "Anterior"
+
+msgid "Submit"
+msgstr "Enviar"
+
+msgid "Search"
+msgstr "Buscar"
+
+msgid "Filter"
+msgstr "Filtrar"
+
+# Messages
+msgid "Welcome"
+msgstr "Bienvenido"
+
+msgid "Loading..."
+msgstr "Cargando..."
+
+msgid "No results found"
+msgstr "No se encontraron resultados"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "Success"
+msgstr "Éxito"
+
+msgid "Warning"
+msgstr "Advertencia"
+
+msgid "Information"
+msgstr "Información"
+
+# Common labels
+msgid "Name"
+msgstr "Nombre"
+
+msgid "Title"
+msgstr "Título"
+
+msgid "Description"
+msgstr "Descripción"
+
+msgid "Date"
+msgstr "Fecha"
+
+msgid "Category"
+msgstr "Categoría"
+
+msgid "Status"
+msgstr "Estado"
+
+msgid "Type"
+msgstr "Tipo"
+
+msgid "Published"
+msgstr "Publicado"
+
+msgid "Draft"
+msgstr "Borrador"
+
+msgid "Featured"
+msgstr "Destacado"
+
+# Navigation
+msgid "Switch to"
+msgstr "Cambiar a"
+
+msgid "Language"
+msgstr "Idioma"

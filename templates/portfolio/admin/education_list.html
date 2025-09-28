@@ -1,12 +1,13 @@
 {% extends "portfolio/admin/base_admin.html" %}
 {% load static %}
+{% load simple_i18n %}
 
-{% block admin_title %}Gestión de Educación{% endblock %}
-{% block admin_subtitle %}Administra tu formación académica, certificaciones y cursos{% endblock %}
+{% block admin_title %}{% trans "Education Management" %}{% endblock %}
+{% block admin_subtitle %}{% trans "Manage your academic background, certifications and courses" %}{% endblock %}
 
 {% block admin_actions %}
 <a href="{% url 'portfolio:admin-education-create' %}" class="btn-primary-custom">
-    <i class="fas fa-plus"></i>Nueva Educación
+    <i class="fas fa-plus"></i>{% trans "New Education" %}
 </a>
 {% endblock %}
 
@@ -15,37 +16,37 @@
 <div class="filters-section">
     <form method="get" class="filters-grid">
         <div>
-            <label class="form-label-custom">Buscar educación</label>
+            <label class="form-label-custom">{% trans "Search education" %}</label>
             <input type="text" name="search" class="form-control-custom" 
-                   placeholder="Institución, título..." value="{{ current_search }}">
+                   placeholder="{% trans "Institution, title..." %}" value="{{ current_search }}">
         </div>
         <div>
-            <label class="form-label-custom">Tipo</label>
+            <label class="form-label-custom">{% trans "Type" %}</label>
             <select name="education_type" class="form-control-custom">
-                <option value="">Todos los tipos</option>
-                <option value="formal" {% if current_type == 'formal' %}selected{% endif %}>Educación Formal</option>
-                <option value="online_course" {% if current_type == 'online_course' %}selected{% endif %}>Curso Online</option>
-                <option value="certification" {% if current_type == 'certification' %}selected{% endif %}>Certificación</option>
-                <option value="bootcamp" {% if current_type == 'bootcamp' %}selected{% endif %}>Bootcamp</option>
-                <option value="workshop" {% if current_type == 'workshop' %}selected{% endif %}>Taller/Workshop</option>
+                <option value="">{% trans "All types" %}</option>
+                <option value="formal" {% if current_type == 'formal' %}selected{% endif %}>Formal Education</option>
+                <option value="online_course" {% if current_type == 'online_course' %}selected{% endif %}>{% trans "Online Course" %}</option>
+                <option value="certification" {% if current_type == 'certification' %}selected{% endif %}>{% trans "Certification" %}</option>
+                <option value="bootcamp" {% if current_type == 'bootcamp' %}selected{% endif %}>{% trans "Bootcamp" %}</option>
+                <option value="workshop" {% if current_type == 'workshop' %}selected{% endif %}>{% trans "Workshop" %}</option>
             </select>
         </div>
         <div>
-            <label class="form-label-custom">Estado</label>
+            <label class="form-label-custom">{% trans "Status" %}</label>
             <select name="current" class="form-control-custom">
-                <option value="">Todos los estados</option>
-                <option value="true" {% if current_filter == 'true' %}selected{% endif %}>En curso</option>
-                <option value="false" {% if current_filter == 'false' %}selected{% endif %}>Completado</option>
+                <option value="">{% trans "All statuses" %}</option>
+                <option value="true" {% if current_filter == 'true' %}selected{% endif %}>{% trans "In progress" %}</option>
+                <option value="false" {% if current_filter == 'false' %}selected{% endif %}>{% trans "Completed" %}</option>
             </select>
         </div>
         <div>
             <button type="submit" class="btn-primary-custom">
-                <i class="fas fa-search"></i>Filtrar
+                <i class="fas fa-search"></i>{% trans "Filter" %}
             </button>
         </div>
         <div>
             <a href="{% url 'portfolio:admin-education-list' %}" class="btn-secondary-custom">
-                <i class="fas fa-times"></i>Limpiar
+                <i class="fas fa-times"></i>{% trans "Clear" %}
             </a>
         </div>
     </form>
@@ -55,8 +56,8 @@
 <div class="content-card">
     <div class="card-header-custom">
         <div>
-            <h2 class="card-title-custom">Educación y Formación</h2>
-            <p class="card-subtitle-custom">{{ educations|length }} registros mostrados • Total: {{ paginator.count }}</p>
+            <h2 class="card-title-custom">Education and Training</h2>
+            <p class="card-subtitle-custom">{{ educations|length }} {% trans "records shown" %} • {% trans "Total:" %} {{ paginator.count }}</p>
         </div>
     </div>
     
@@ -65,12 +66,12 @@
         <table class="table-custom">
             <thead>
                 <tr>
-                    <th>Título/Certificación</th>
-                    <th>Institución</th>
+                    <th>{% trans "Title/Certification" %}</th>
+                    <th>{% trans "Institution" %}</th>
                     <th>Tipo</th>
-                    <th>Período</th>
+                    <th>{% trans "Period" %}</th>
                     <th>Estado</th>
-                    <th width="200">Acciones</th>
+                    <th width="200">{% trans "Actions" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -92,23 +93,23 @@
                     <td>
                         {% if education.education_type == 'formal' %}
                             <span class="badge-custom badge-primary">
-                                <i class="fas fa-university" style="margin-right: 4px;"></i>Formal
+                                <i class="fas fa-university" style="margin-right: 4px;"></i>{% trans "Formal" %}
                             </span>
                         {% elif education.education_type == 'online_course' %}
                             <span class="badge-custom badge-info">
-                                <i class="fas fa-laptop" style="margin-right: 4px;"></i>Curso Online
+                                <i class="fas fa-laptop" style="margin-right: 4px;"></i>{% trans "Online Course" %}
                             </span>
                         {% elif education.education_type == 'certification' %}
                             <span class="badge-custom badge-success">
-                                <i class="fas fa-certificate" style="margin-right: 4px;"></i>Certificación
+                                <i class="fas fa-certificate" style="margin-right: 4px;"></i>{% trans "Certification" %}
                             </span>
                         {% elif education.education_type == 'bootcamp' %}
                             <span class="badge-custom badge-warning">
-                                <i class="fas fa-code" style="margin-right: 4px;"></i>Bootcamp
+                                <i class="fas fa-code" style="margin-right: 4px;"></i>{% trans "Bootcamp" %}
                             </span>
                         {% elif education.education_type == 'workshop' %}
                             <span class="badge-custom badge-secondary">
-                                <i class="fas fa-tools" style="margin-right: 4px;"></i>Workshop
+                                <i class="fas fa-tools" style="margin-right: 4px;"></i>{% trans "Workshop" %}
                             </span>
                         {% endif %}
                     </td>
@@ -116,7 +117,7 @@
                         <div style="font-size: 13px; color: #6B6B6B;">
                             {{ education.start_date|date:"M Y" }}
                             {% if education.current %}
-                                - Presente
+                                - {% trans "Present" %}
                             {% elif education.end_date %}
                                 - {{ education.end_date|date:"M Y" }}
                             {% endif %}
@@ -125,11 +126,11 @@
                     <td>
                         {% if education.current %}
                             <span class="badge-custom badge-success">
-                                <i class="fas fa-clock" style="margin-right: 4px;"></i>En curso
+                                <i class="fas fa-clock" style="margin-right: 4px;"></i>{% trans "In progress" %}
                             </span>
                         {% else %}
                             <span class="badge-custom badge-secondary">
-                                <i class="fas fa-check" style="margin-right: 4px;"></i>Completado
+                                <i class="fas fa-check" style="margin-right: 4px;"></i>{% trans "Completed" %}
                             </span>
                         {% endif %}
                     </td>
@@ -137,16 +138,16 @@
                         <div class="quick-actions">
                             {% if education.credential_url %}
                                 <a href="{{ education.credential_url }}" 
-                                   class="btn" target="_blank" title="Ver Certificado">
+                                   class="btn" target="_blank" title="{% trans "View Certificate" %}">
                                     <i class="fas fa-external-link-alt"></i>
                                 </a>
                             {% endif %}
                             <a href="{% url 'portfolio:admin-education-edit' education.pk %}" 
-                               class="btn" title="Editar">
+                               class="btn" title="{% trans "Edit" %}">
                                 <i class="fas fa-edit"></i>
                             </a>
                             <a href="{% url 'portfolio:admin-education-delete' education.pk %}" 
-                               class="btn" title="Eliminar" style="color: #dc3545;">
+                               class="btn" title="{% trans "Delete" %}" style="color: #dc3545;">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </div>
@@ -159,16 +160,16 @@
     {% else %}
     <div class="empty-state">
         <i class="fas fa-graduation-cap"></i>
-        <h3>No hay registros de educación</h3>
+        <h3>{% trans "No education records" %}</h3>
         <p>
             {% if current_search or current_type or current_filter %}
-                No se encontraron registros con los filtros aplicados.
+                {% trans "No records found with the applied filters." %}
             {% else %}
-                Comienza agregando tu primera formación académica.
+                {% trans "Start by adding your first academic training." %}
             {% endif %}
         </p>
         <a href="{% url 'portfolio:admin-education-create' %}" class="btn-primary-custom">
-            <i class="fas fa-plus"></i>Agregar Educación
+            <i class="fas fa-plus"></i>{% trans "Add Education" %}
         </a>
     </div>
     {% endif %}
@@ -187,7 +188,7 @@
     {% endif %}
 
     <span class="page-link active">
-        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        {% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}
     </span>
 
     {% if page_obj.has_next %}

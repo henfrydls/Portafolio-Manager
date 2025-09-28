@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="es">
+{% load simple_i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -77,6 +79,63 @@
 
         .nav-links i {
             font-size: 1rem;
+        }
+
+        /* Floating Language Switcher - Ultra specific to avoid conflicts */
+        #portfolio-lang-switcher {
+            position: fixed !important;
+            top: 15px !important;
+            right: 30px !important;
+            z-index: 99999 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 0 !important;
+            font-family: 'Montserrat', sans-serif !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            background: transparent !important;
+            padding: 4px 8px !important;
+            margin: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            pointer-events: auto !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        #portfolio-lang-switcher .portfolio-lang-option {
+            background: none !important;
+            border: none !important;
+            color: #666 !important;
+            cursor: pointer !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            font-family: 'Montserrat', sans-serif !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            transition: color 0.2s ease !important;
+            text-decoration: none !important;
+            line-height: 1.4 !important;
+            display: inline !important;
+            box-shadow: none !important;
+            outline: none !important;
+        }
+
+        #portfolio-lang-switcher .portfolio-lang-option:hover {
+            color: #333 !important;
+            text-decoration: none !important;
+        }
+
+        #portfolio-lang-switcher .portfolio-lang-option.active {
+            color: #333 !important;
+            font-weight: 400 !important;
+        }
+
+        #portfolio-lang-switcher .portfolio-lang-separator {
+            margin: 0 6px !important;
+            color: #ccc !important;
+            font-weight: 300 !important;
+            display: inline !important;
         }
 
         /* Main content container - Removed for single-page layout */
@@ -158,6 +217,30 @@
     </style>
 </head>
 <body>
+    <!-- Floating Language Switcher -->
+    <div id="portfolio-lang-switcher">
+        {% get_current_language as CURRENT_LANGUAGE %}
+        {% if CURRENT_LANGUAGE == 'en' %}
+            <span class="portfolio-lang-option active">EN</span>
+            <span class="portfolio-lang-separator">|</span>
+            <form method="post" action="{% url 'set_language' %}" style="display:inline!important; margin:0!important; padding:0!important;">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="{{ request.get_full_path }}" />
+                <input name="language" type="hidden" value="es" />
+                <button type="submit" class="portfolio-lang-option">ES</button>
+            </form>
+        {% else %}
+            <form method="post" action="{% url 'set_language' %}" style="display:inline!important; margin:0!important; padding:0!important;">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="{{ request.get_full_path }}" />
+                <input name="language" type="hidden" value="en" />
+                <button type="submit" class="portfolio-lang-option">EN</button>
+            </form>
+            <span class="portfolio-lang-separator">|</span>
+            <span class="portfolio-lang-option active">ES</span>
+        {% endif %}
+    </div>
+
     <!-- Navigation -->
     <nav class="top-nav">
         <div class="nav-container">
@@ -178,6 +261,7 @@
                     <i class="fas fa-cog"></i>
                 </a>
                 {% endif %}
+
 
                 {% if profile %}
                     {% if profile.github_url %}
@@ -228,5 +312,25 @@
     {% endif %}
 
     {% block extra_js %}{% endblock %}
+
+    <!-- Language Switcher Debug Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var langSwitcher = document.getElementById('portfolio-lang-switcher');
+            if (langSwitcher) {
+                console.log('Language switcher found and visible');
+                // Force visibility just in case
+                langSwitcher.style.display = 'flex';
+                langSwitcher.style.position = 'fixed';
+                langSwitcher.style.top = '5px';
+                langSwitcher.style.right = '20px';
+                langSwitcher.style.zIndex = '99999';
+                langSwitcher.style.visibility = 'visible';
+                langSwitcher.style.opacity = '1';
+            } else {
+                console.error('Language switcher NOT found');
+            }
+        });
+    </script>
 </body>
 </html>

@@ -6,7 +6,7 @@
 
 {% block admin_actions %}
 <a href="{% url 'portfolio:admin-dashboard' %}" class="btn-secondary-custom">
-    <i class="fas fa-arrow-left"></i>Volver al Dashboard
+    <i class="fas fa-arrow-left"></i>Back to Dashboard
 </a>
 {% endblock %}
 
@@ -15,8 +15,8 @@
     <div class="content-card">
         <div class="card-header-custom">
             <div>
-                <h2 class="card-title-custom">Información Personal</h2>
-                <p class="card-subtitle-custom">Actualiza tu información de perfil público</p>
+                <h2 class="card-title-custom">Personal Information</h2>
+                <p class="card-subtitle-custom">Update your public profile information</p>
             </div>
         </div>
         
@@ -25,7 +25,7 @@
             
             <!-- Basic Information -->
             <div style="margin-bottom: 32px;">
-                <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin-bottom: 16px;">Información Básica</h3>
+                <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin-bottom: 16px;">Basic Information</h3>
                 
                 <div style="margin-bottom: 20px;">
                     <label for="{{ form.name.id_for_label }}" class="form-label-custom">
@@ -53,7 +53,7 @@
                         {{ form.bio.label }} <span style="color: #dc3545;">*</span>
                     </label>
                     {{ form.bio }}
-                    <div class="form-text-custom">Descripción breve sobre ti y tu trabajo</div>
+                    <div class="form-text-custom">Brief description about you and your work</div>
                     {% if form.bio.errors %}
                         <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">{{ form.bio.errors.0 }}</div>
                     {% endif %}
@@ -79,7 +79,7 @@
 
             <!-- Contact Information -->
             <div style="margin-bottom: 32px;">
-                <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin-bottom: 16px;">Información de Contacto</h3>
+                <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin-bottom: 16px;">Contact Information</h3>
                 
                 <div style="margin-bottom: 20px;">
                     <label for="{{ form.email.id_for_label }}" class="form-label-custom">
@@ -174,7 +174,7 @@
                             </div>
                             <button type="button" id="delete-resume-btn"
                                     style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                                <i class="fas fa-trash"></i> Eliminar CV
+                                <i class="fas fa-trash"></i> Remove CV
                             </button>
                         </div>
                     {% endif %}
@@ -196,10 +196,10 @@
 
             <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 24px; border-top: 1px solid #F2F2F2;">
                 <a href="{% url 'portfolio:admin-dashboard' %}" class="btn-secondary-custom">
-                    <i class="fas fa-times"></i>Cancelar
+                    <i class="fas fa-times"></i>Cancel
                 </a>
                 <button type="submit" class="btn-primary-custom">
-                    <i class="fas fa-save"></i>Guardar Cambios
+                    <i class="fas fa-save"></i>Save Changes
                 </button>
             </div>
         </form>

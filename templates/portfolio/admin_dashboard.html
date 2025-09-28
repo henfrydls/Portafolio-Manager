@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load simple_i18n %}
 
-{% block title %}Dashboard - {{ profile.name|default:"Your Name" }}{% endblock %}
+{% block title %}{% trans "Dashboard" %} - {{ profile.name|default:"Your Name" }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -543,17 +544,17 @@ body {
     <nav class="admin-top-nav">
         <div class="nav-container">
             <div class="nav-left">
-                <a href="{% url 'portfolio:admin-dashboard' %}" class="nav-link">Dashboard</a>
+                <a href="{% url 'portfolio:admin-dashboard' %}" class="nav-link">{% trans "Dashboard" %}</a>
             </div>
             <div class="nav-right">
-                <a href="{% url 'portfolio:admin-project-list' %}" class="nav-link">Proyectos</a>
-                <a href="{% url 'portfolio:admin-blog-list' %}" class="nav-link">Blog</a>
-                <a href="{% url 'portfolio:admin-contact-list' %}" class="nav-link">Mensajes</a>
-                <a href="{% url 'portfolio:admin-cv-hub' %}" class="nav-link">CV</a>
-                <a href="{% url 'portfolio:admin-profile-edit' %}" class="nav-link">Mi Perfil</a>
-                <a href="{% url 'portfolio:admin-analytics' %}" class="nav-link">Analytics</a>
-                <a href="{% url 'admin:index' %}" class="nav-link">Admin Panel</a>
-                <a href="{% url 'portfolio:home' %}" class="nav-link" target="_blank">Ver Sitio</a>
+                <a href="{% url 'portfolio:admin-project-list' %}" class="nav-link">{% trans "Projects" %}</a>
+                <a href="{% url 'portfolio:admin-blog-list' %}" class="nav-link">{% trans "Blog" %}</a>
+                <a href="{% url 'portfolio:admin-contact-list' %}" class="nav-link">{% trans "Messages" %}</a>
+                <a href="{% url 'portfolio:admin-cv-hub' %}" class="nav-link">{% trans "CV" %}</a>
+                <a href="{% url 'portfolio:admin-profile-edit' %}" class="nav-link">{% trans "My Profile" %}</a>
+                <a href="{% url 'portfolio:admin-analytics' %}" class="nav-link">{% trans "Analytics" %}</a>
+                <a href="{% url 'admin:index' %}" class="nav-link">{% trans "Admin Panel" %}</a>
+                <a href="{% url 'portfolio:home' %}" class="nav-link" target="_blank">{% trans "View Site" %}</a>
             </div>
         </div>
     </nav>
@@ -563,8 +564,8 @@ body {
         <div class="dashboard-container">
             <!-- Page Header -->
             <header class="dashboard-header">
-                <h1 class="dashboard-title">Dashboard</h1>
-                <p class="dashboard-subtitle">Overview of your portfolio performance and content</p>
+                <h1 class="dashboard-title">{% trans "Dashboard" %}</h1>
+                <p class="dashboard-subtitle">{% trans "Overview of your portfolio performance and content" %}</p>
             </header>
 
             <!-- Statistics Grid -->
@@ -574,10 +575,10 @@ body {
                         <div class="stats-icon">
                             <i class="fas fa-eye"></i>
                         </div>
-                        <div class="stats-label">Site Visits</div>
+                        <div class="stats-label">{% trans "Site Visits" %}</div>
                     </div>
                     <h3 class="stats-number">{{ stats.total_visits }}</h3>
-                    <div class="stats-meta">{{ today_visits }} today, {{ week_visits }} this week</div>
+                    <div class="stats-meta">{{ today_visits }} {% trans "today" %}, {{ week_visits }} {% trans "this week" %}</div>
                 </div>
 
                 <div class="stats-card">
@@ -585,10 +586,10 @@ body {
                         <div class="stats-icon">
                             <i class="fas fa-blog"></i>
                         </div>
-                        <div class="stats-label">Blog Posts</div>
+                        <div class="stats-label">{% trans "Blog Posts" %}</div>
                     </div>
                     <h3 class="stats-number">{{ stats.total_posts }}</h3>
-                    <div class="stats-meta">{{ stats.published_posts }} published, {{ stats.draft_posts }} drafts</div>
+                    <div class="stats-meta">{{ stats.published_posts }} {% trans "published" %}, {{ stats.draft_posts }} {% trans "drafts" %}</div>
                 </div>
 
                 <div class="stats-card">
@@ -596,14 +597,14 @@ body {
                         <div class="stats-icon">
                             <i class="fas fa-envelope"></i>
                         </div>
-                        <div class="stats-label">Messages</div>
+                        <div class="stats-label">{% trans "Messages" %}</div>
                     </div>
                     <h3 class="stats-number">{{ stats.total_messages }}</h3>
                     <div class="stats-meta">
                         {% if stats.unread_messages > 0 %}
-                        {{ stats.unread_messages }} unread messages
+                        {{ stats.unread_messages }} {% trans "unread messages" %}
                         {% else %}
-                        All messages read
+                        {% trans "All messages read" %}
                         {% endif %}
                     </div>
                 </div>
@@ -612,8 +613,8 @@ body {
             <!-- Chart Section -->
             <div class="chart-section">
                 <div class="chart-header">
-                    <h2 class="chart-title">Site Traffic</h2>
-                    <p class="chart-subtitle">Visits over the last 30 days</p>
+                    <h2 class="chart-title">{% trans "Site Traffic" %}</h2>
+                    <p class="chart-subtitle">{% trans "Visits over the last 30 days" %}</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="visitsChart"></canvas>
@@ -622,14 +623,14 @@ body {
 
             <!-- Quick Actions -->
             <div class="quick-actions-section">
-                <h2 class="section-title">Quick Actions</h2>
+                <h2 class="section-title">{% trans "Quick Actions" %}</h2>
                 <div class="actions-grid">
                     <a href="{% url 'portfolio:admin-blog-create' %}" class="action-btn">
                         <div class="action-btn-header">
                             <i class="fas fa-plus"></i>
                             <div class="action-btn-content">
-                                <div class="action-btn-title">New Blog Post</div>
-                                <div class="action-meta">Create a new article or tutorial</div>
+                                <div class="action-btn-title">{% trans "New Blog Post" %}</div>
+                                <div class="action-meta">{% trans "Create a new article or tutorial" %}</div>
                             </div>
                         </div>
                     </a>
@@ -637,8 +638,8 @@ body {
                         <div class="action-btn-header">
                             <i class="fas fa-folder-plus"></i>
                             <div class="action-btn-content">
-                                <div class="action-btn-title">New Project</div>
-                                <div class="action-meta">Add a new project to portfolio</div>
+                                <div class="action-btn-title">{% trans "New Project" %}</div>
+                                <div class="action-meta">{% trans "Add a new project to portfolio" %}</div>
                             </div>
                         </div>
                     </a>
@@ -646,8 +647,8 @@ body {
                         <div class="action-btn-header">
                             <i class="fas fa-user-edit"></i>
                             <div class="action-btn-content">
-                                <div class="action-btn-title">Edit Profile</div>
-                                <div class="action-meta">Update personal information</div>
+                                <div class="action-btn-title">{% trans "Edit Profile" %}</div>
+                                <div class="action-meta">{% trans "Update personal information" %}</div>
                             </div>
                         </div>
                     </a>
@@ -655,8 +656,8 @@ body {
                         <div class="action-btn-header">
                             <i class="fas fa-chart-bar"></i>
                             <div class="action-btn-content">
-                                <div class="action-btn-title">Analytics</div>
-                                <div class="action-meta">View detailed site statistics</div>
+                                <div class="action-btn-title">{% trans "Analytics" %}</div>
+                                <div class="action-meta">{% trans "View detailed site statistics" %}</div>
                             </div>
                         </div>
                     </a>
@@ -664,8 +665,8 @@ body {
                         <div class="action-btn-header">
                             <i class="fas fa-external-link-alt"></i>
                             <div class="action-btn-content">
-                                <div class="action-btn-title">View Site</div>
-                                <div class="action-meta">Open public portfolio</div>
+                                <div class="action-btn-title">{% trans "View Site" %}</div>
+                                <div class="action-meta">{% trans "Open public portfolio" %}</div>
                             </div>
                         </div>
                     </a>
@@ -674,14 +675,14 @@ body {
 
             <!-- Content Management -->
             <div class="quick-actions-section">
-                <h2 class="section-title">Content Management</h2>
+                <h2 class="section-title">{% trans "Content Management" %}</h2>
                 <div class="actions-grid">
                     <a href="{% url 'portfolio:admin-blog-list' %}" class="action-btn">
                         <div class="action-btn-header">
                             <i class="fas fa-blog"></i>
                             <div class="action-btn-content">
-                                <div class="action-btn-title">Manage Blog Posts</div>
-                                <div class="action-meta">{{ stats.total_posts }} posts total • {{ stats.published_posts }} published</div>
+                                <div class="action-btn-title">{% trans "Manage Blog Posts" %}</div>
+                                <div class="action-meta">{{ stats.total_posts }} {% trans "posts total" %} • {{ stats.published_posts }} {% trans "published" %}</div>
                             </div>
                         </div>
                     </a>
@@ -689,8 +690,8 @@ body {
                         <div class="action-btn-header">
                             <i class="fas fa-folder"></i>
                             <div class="action-btn-content">
-                                <div class="action-btn-title">Manage Projects</div>
-                                <div class="action-meta">View, edit and organize projects</div>
+                                <div class="action-btn-title">{% trans "Manage Projects" %}</div>
+                                <div class="action-meta">{% trans "View, edit and organize projects" %}</div>
                             </div>
                         </div>
                     </a>
@@ -698,12 +699,12 @@ body {
                         <div class="action-btn-header">
                             <i class="fas fa-inbox"></i>
                             <div class="action-btn-content">
-                                <div class="action-btn-title">Message Inbox</div>
+                                <div class="action-btn-title">{% trans "Message Inbox" %}</div>
                                 <div class="action-meta">
                                     {% if stats.unread_messages > 0 %}
                                         {{ stats.unread_messages }} unread message{{ stats.unread_messages|pluralize }}
                                     {% else %}
-                                        All messages read • {{ stats.total_messages }} total
+                                        {% trans "All messages read" %} • {{ stats.total_messages }} total
                                     {% endif %}
                                 </div>
                             </div>
@@ -885,7 +886,7 @@ document.addEventListener('DOMContentLoaded', function() {
         data: {
             labels: visitLabels,
             datasets: [{
-                label: 'Visitas por día',
+                label: '{% trans "Visits per day" %}',
                 data: visitData,
                 borderColor: '#667eea',
                 backgroundColor: 'rgba(102, 126, 234, 0.1)',

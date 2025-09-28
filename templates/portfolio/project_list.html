@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load simple_i18n %}
 
-{% block title %}Proyectos - {{ profile.name }}{% endblock %}
+{% block title %}{% trans "Projects" %} - {{ profile.name }}{% endblock %}
 
 {% block content %}
 <!-- Page Header -->
@@ -9,9 +10,9 @@
     <div class="container">
         <div class="row">
             <div class="col-12 text-center">
-                <h1 class="display-4 fw-bold text-dark mb-3">Mis Proyectos</h1>
+                <h1 class="display-4 fw-bold text-dark mb-3">{% trans "My Projects" %}</h1>
                 <p class="lead text-muted">
-                    Una colección de mis trabajos y experimentos en desarrollo de software
+                    {% trans "A collection of my work and experiments in software development" %}
                 </p>
             </div>
         </div>
@@ -25,10 +26,10 @@
             <div class="col-md-8">
                 <!-- Technology Filter -->
                 <div class="d-flex flex-wrap gap-2 align-items-center">
-                    <span class="text-muted me-2">Filtrar por:</span>
+                    <span class="text-muted me-2">{% trans "Filter by:" %}</span>
                     <a href="{% url 'portfolio:project-list' %}" 
                        class="btn btn-sm {% if not current_tech %}btn-primary{% else %}btn-outline-primary{% endif %}">
-                        Todos
+                        {% trans "All" %}
                     </a>
                     {% for tech in technologies %}
                     <a href="?tech={{ tech.name }}" 
@@ -47,7 +48,7 @@
                     <input type="hidden" name="tech" value="{{ current_tech }}">
                     {% endif %}
                     <input type="search" name="search" class="form-control me-2" 
-                           placeholder="Buscar proyectos..." value="{{ current_search }}">
+                           placeholder="{% trans "Search projects..." %}" value="{{ current_search }}">
                     <button type="submit" class="btn btn-outline-primary">
                         <i class="fas fa-search"></i>
                     </button>

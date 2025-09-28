@@ -17,26 +17,26 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
         <!-- Experience -->
         <div style="padding: 24px; border: 1px solid #F2F2F2; border-radius: 8px;">
-            <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin: 0 0 8px 0;">Experiencia Laboral</h3>
-            <p style="color: #6B6B6B; margin: 0 0 16px 0; font-size: 14px;">{{ stats.total_experiences }} registros</p>
+            <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin: 0 0 8px 0;">Work Experience</h3>
+            <p style="color: #6B6B6B; margin: 0 0 16px 0; font-size: 14px;">{{ stats.total_experiences }} records</p>
             
             {% if stats.current_job %}
                 <div style="margin-bottom: 16px; padding: 12px; background: #F8F9FA; border-radius: 6px;">
                     <div style="font-weight: 500; color: #242424;">{{ stats.current_job.position }}</div>
-                    <div style="font-size: 14px; color: #6B6B6B;">{{ stats.current_job.company }} • Actual</div>
+                    <div style="font-size: 14px; color: #6B6B6B;">{{ stats.current_job.company }} • Current</div>
                 </div>
             {% endif %}
             
             <div style="display: flex; gap: 12px;">
                 <a href="{% url 'portfolio:admin-experience-list' %}" class="btn-primary-custom">Ver Todas</a>
-                <a href="{% url 'portfolio:admin-experience-create' %}" class="btn-secondary-custom">Agregar</a>
+                <a href="{% url 'portfolio:admin-experience-create' %}" class="btn-secondary-custom">Add</a>
             </div>
         </div>
 
         <!-- Education -->
         <div style="padding: 24px; border: 1px solid #F2F2F2; border-radius: 8px;">
-            <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin: 0 0 8px 0;">Educación</h3>
-            <p style="color: #6B6B6B; margin: 0 0 16px 0; font-size: 14px;">{{ stats.total_education }} registros</p>
+            <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin: 0 0 8px 0;">Education</h3>
+            <p style="color: #6B6B6B; margin: 0 0 16px 0; font-size: 14px;">{{ stats.total_education }} records</p>
             
             {% if stats.current_education > 0 %}
                 <div style="margin-bottom: 16px; padding: 12px; background: #F8F9FA; border-radius: 6px;">
@@ -46,18 +46,18 @@
             
             <div style="display: flex; gap: 12px;">
                 <a href="{% url 'portfolio:admin-education-list' %}" class="btn-primary-custom">Ver Todas</a>
-                <a href="{% url 'portfolio:admin-education-create' %}" class="btn-secondary-custom">Agregar</a>
+                <a href="{% url 'portfolio:admin-education-create' %}" class="btn-secondary-custom">Add</a>
             </div>
         </div>
 
         <!-- Skills -->
         <div style="padding: 24px; border: 1px solid #F2F2F2; border-radius: 8px;">
-            <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin: 0 0 8px 0;">Habilidades</h3>
+            <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin: 0 0 8px 0;">Skills</h3>
             <p style="color: #6B6B6B; margin: 0 0 16px 0; font-size: 14px;">{{ stats.total_skills }} habilidades en {{ stats.skill_categories }} categorías</p>
             
             <div style="display: flex; gap: 12px;">
                 <a href="{% url 'portfolio:admin-skill-list' %}" class="btn-primary-custom">Ver Todas</a>
-                <a href="{% url 'portfolio:admin-skill-create' %}" class="btn-secondary-custom">Agregar</a>
+                <a href="{% url 'portfolio:admin-skill-create' %}" class="btn-secondary-custom">Add</a>
             </div>
         </div>
     </div>

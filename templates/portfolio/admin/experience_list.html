@@ -1,12 +1,12 @@
 {% extends "portfolio/admin/base_admin.html" %}
 {% load static %}
 
-{% block admin_title %}Gestión de Experiencia Laboral{% endblock %}
-{% block admin_subtitle %}Administra tu historial profesional y experiencia laboral{% endblock %}
+{% block admin_title %}Work Experience Management{% endblock %}
+{% block admin_subtitle %}Manage your professional history and work experience{% endblock %}
 
 {% block admin_actions %}
 <a href="{% url 'portfolio:admin-experience-create' %}" class="btn-primary-custom">
-    <i class="fas fa-plus"></i>Nueva Experiencia
+    <i class="fas fa-plus"></i>New Experience
 </a>
 {% endblock %}
 
@@ -15,7 +15,7 @@
 <div class="filters-section">
     <form method="get" class="filters-grid">
         <div>
-            <label class="form-label-custom">Buscar experiencias</label>
+            <label class="form-label-custom">Search experiences</label>
             <input type="text" name="search" class="form-control-custom" 
                    placeholder="Empresa, posición..." value="{{ current_search }}">
         </div>
@@ -94,7 +94,7 @@
                             </span>
                         {% else %}
                             <span class="badge-custom badge-secondary">
-                                <i class="fas fa-history" style="margin-right: 4px;"></i>Anterior
+                                <i class="fas fa-history" style="margin-right: 4px;"></i>Previous
                             </span>
                         {% endif %}
                     </td>
@@ -127,7 +127,7 @@
             {% endif %}
         </p>
         <a href="{% url 'portfolio:admin-experience-create' %}" class="btn-primary-custom">
-            <i class="fas fa-plus"></i>Agregar Experiencia
+            <i class="fas fa-plus"></i>Add Experience
         </a>
     </div>
     {% endif %}

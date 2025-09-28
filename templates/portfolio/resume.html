@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load simple_i18n %}
 
-{% block title %}Resume - {{ profile.name }}{% endblock %}
+{% block title %}{% trans "Resume" %} - {{ profile.name }}{% endblock %}
 
 {% block content %}
 <div class="modern-resume-page">
@@ -10,14 +11,14 @@
         <div class="header-container">
             <a href="{% url 'portfolio:home' %}" class="back-button">
                 <i class="fas fa-arrow-left"></i>
-                <span>Back to Portfolio</span>
+                <span>{% trans "Back to Portfolio" %}</span>
             </a>
 
             <div class="header-actions">
                 {% if profile and profile.resume_pdf %}
                 <a href="{{ profile.resume_pdf.url }}" target="_blank" class="header-btn primary">
                     <i class="fas fa-download"></i>
-                    Download PDF
+                    {% trans "Download PDF" %}
                 </a>
                 {% endif %}
             </div>
@@ -99,8 +100,8 @@
         {% if experiences %}
         <section class="content-section">
             <div class="section-header">
-                <h2 class="section-title">Experience</h2>
-                <div class="section-subtitle">{{ experiences.count }} positions</div>
+                <h2 class="section-title">{% trans "Experience" %}</h2>
+                <div class="section-subtitle">{{ experiences.count }} {% trans "positions" %}</div>
             </div>
 
             <div class="timeline-container">
@@ -112,10 +113,10 @@
                             <div class="timeline-meta">
                                 <span class="timeline-period">
                                     {{ experience.start_date|date:"M Y" }} -
-                                    {% if experience.current %}Present{% else %}{{ experience.end_date|date:"M Y" }}{% endif %}
+                                    {% if experience.current %}{% trans "Present" %}{% else %}{{ experience.end_date|date:"M Y" }}{% endif %}
                                 </span>
                                 {% if experience.current %}
-                                <span class="timeline-current">Current</span>
+                                <span class="timeline-current">{% trans "Current" %}</span>
                                 {% endif %}
                             </div>
                             <h3 class="timeline-title">{{ experience.position }}</h3>
@@ -133,8 +134,8 @@
         {% if skills_by_category %}
         <section class="content-section">
             <div class="section-header">
-                <h2 class="section-title">Technical Skills</h2>
-                <div class="section-subtitle">Expertise across multiple domains</div>
+                <h2 class="section-title">{% trans "Technical Skills" %}</h2>
+                <div class="section-subtitle">{% trans "Expertise across multiple domains" %}</div>
             </div>
 
             <div class="skills-container">
@@ -165,8 +166,8 @@
         <!-- Education & Certifications Section -->
         <section class="content-section">
             <div class="section-header">
-                <h2 class="section-title">Education & Certifications</h2>
-                <div class="section-subtitle">Academic background & professional credentials</div>
+                <h2 class="section-title">{% trans "Education & Certifications" %}</h2>
+                <div class="section-subtitle">{% trans "Academic background & professional credentials" %}</div>
             </div>
 
             <div class="education-container">
@@ -175,11 +176,11 @@
                     <!-- Formal Education -->
                     {% if formal_education %}
                     <div class="education-group">
-                        <h4 class="education-group-title">Formal Education</h4>
+                        <h4 class="education-group-title">{% trans "Formal Education" %}</h4>
                         {% for education in formal_education %}
                         <div class="education-item">
                             <div class="education-meta">
-                                <span class="education-period">{{ education.start_date|date:"Y" }}—{% if education.current %}Present{% else %}{{ education.end_date|date:"Y" }}{% endif %}</span>
+                                <span class="education-period">{{ education.start_date|date:"Y" }}—{% if education.current %}{% trans "Present" %}{% else %}{{ education.end_date|date:"Y" }}{% endif %}</span>
                             </div>
                             <div class="education-details">
                                 <h5 class="education-degree">{{ education.degree }}</h5>
@@ -194,13 +195,13 @@
                     <!-- Certifications -->
                     {% if certifications %}
                     <div class="education-group">
-                        <h4 class="education-group-title">Certifications</h4>
+                        <h4 class="education-group-title">{% trans "Certifications" %}</h4>
                         {% for cert in certifications %}
                         <div class="education-item">
                             <div class="education-meta">
                                 {% if cert.end_date %}<span class="education-period">{{ cert.end_date|date:"Y" }}</span>{% endif %}
                                 {% if cert.credential_url %}
-                                <a href="{{ cert.credential_url }}" target="_blank" class="cert-verify">Verify</a>
+                                <a href="{{ cert.credential_url }}" target="_blank" class="cert-verify">{% trans "Verify" %}</a>
                                 {% endif %}
                             </div>
                             <div class="education-details">
@@ -217,8 +218,8 @@
                 {% if online_courses %}
                 <div class="learning-section">
                     <h4 class="education-group-title">
-                        Continuous Learning
-                        <span class="learning-count">{{ online_courses.count }} courses</span>
+                        {% trans "Continuous Learning" %}
+                        <span class="learning-count">{{ online_courses.count }} {% trans "courses" %}</span>
                     </h4>
 
                     <!-- Learning Statistics -->
@@ -237,9 +238,9 @@
                     <!-- Course Browser -->
                     <div class="course-browser">
                         <div class="course-header">
-                            <input type="text" id="courseFilter" placeholder="Filter courses..." class="course-filter">
+                            <input type="text" id="courseFilter" placeholder="{% trans "Filter courses..." %}" class="course-filter">
                             <button class="toggle-view-btn" onclick="toggleCourseView()">
-                                <span class="toggle-text">Show All</span>
+                                <span class="toggle-text">{% trans "Show All" %}</span>
                                 <span class="toggle-arrow">↓</span>
                             </button>
                         </div>
@@ -289,8 +290,8 @@
         <div class="footer-container">
             <div class="footer-content">
                 <div class="footer-text">
-                    <p>Last updated: {{ last_updated|date:"F Y" }}</p>
-                    <p>{{ profile.name|default:"Your Name" }} • Professional Resume</p>
+                    <p>{% trans "Last updated:" %} {{ last_updated|date:"F Y" }}</p>
+                    <p>{{ profile.name|default:"Your Name" }} • {% trans "Professional Resume" %}</p>
                 </div>
             </div>
         </div>
@@ -306,11 +307,11 @@ function toggleCourseView() {
 
     if (hiddenCourses.style.display === 'none') {
         hiddenCourses.style.display = 'block';
-        toggleText.textContent = 'Show Less';
+        toggleText.textContent = '{% trans "Show Less" %}';
         toggleArrow.textContent = '↑';
     } else {
         hiddenCourses.style.display = 'none';
-        toggleText.textContent = 'Show All';
+        toggleText.textContent = '{% trans "Show All" %}';
         toggleArrow.textContent = '↓';
     }
 }
@@ -348,6 +349,8 @@ document.getElementById('courseFilter').addEventListener('input', function(e) {
 /* Floating Header */
 .floating-header {
     position: fixed;
+    padding-bottom: 10px;
+    padding-top: 10px;
     top: 0;
     left: 0;
     right: 0;
@@ -355,7 +358,6 @@ document.getElementById('courseFilter').addEventListener('input', function(e) {
     backdrop-filter: blur(20px);
     border-bottom: 1px solid #F2F2F2;
     z-index: 1000;
-    padding: 16px 0;
 }
 
 .header-container {

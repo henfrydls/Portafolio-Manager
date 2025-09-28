@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load simple_i18n %}
 
 {% block title %}{{ project.title }} - {{ profile.name }}{% endblock %}
 
@@ -9,7 +10,7 @@
     <div class="row mt-4 mb-3">
         <div class="col-12">
             <a href="{% url 'portfolio:home' %}" class="text-decoration-none text-muted">
-                <i class="fas fa-arrow-left me-2"></i>Volver al inicio
+                <i class="fas fa-arrow-left me-2"></i>{% trans "Back to home" %}
             </a>
         </div>
     </div>
@@ -61,7 +62,7 @@
     <!-- Project Details -->
     <div class="row mb-4">
         <div class="col-12">
-            <h2 class="h5 fw-bold mb-3">Descripción del Proyecto</h2>
+            <h2 class="h5 fw-bold mb-3">{% trans "Project Description" %}</h2>
             <div class="text-muted" style="text-align: justify; line-height: 1.6;">
                 {{ project.detailed_description|linebreaks }}
             </div>
@@ -71,19 +72,19 @@
     <!-- Project Meta -->
     <div class="row mb-4">
         <div class="col-6">
-            <h3 class="h6 fw-bold mb-2">Información del Proyecto</h3>
+            <h3 class="h6 fw-bold mb-2">{% trans "Project Information" %}</h3>
             <div class="small text-muted">
                 <div class="mb-1">
-                    <strong>Fecha de creación:</strong> {{ project.created_at|date:"F Y" }}
+                    <strong>{% trans "Created:" %}</strong> {{ project.created_at|date:"F Y" }}
                 </div>
                 <div class="mb-1">
-                    <strong>Estado:</strong>
-                    <span class="badge bg-success">Completado</span>
+                    <strong>{% trans "Status" %}:</strong>
+                    <span class="badge bg-success">Completed</span>
                 </div>
                 {% if project.featured %}
                 <div class="mb-1">
                     <span class="badge bg-warning text-dark">
-                        <i class="fas fa-star me-1"></i>Proyecto Destacado
+                        <i class="fas fa-star me-1"></i>{% trans "Featured" %}
                     </span>
                 </div>
                 {% endif %}
@@ -91,7 +92,7 @@
         </div>
 
         <div class="col-6">
-            <h3 class="h6 fw-bold mb-2">Tecnologías Utilizadas</h3>
+            <h3 class="h6 fw-bold mb-2">Technologies Used</h3>
             <div class="row">
                 {% for tech in project.technologies.all %}
                 <div class="col-6 mb-2">
@@ -114,7 +115,7 @@
     {% if related_projects %}
     <div class="row mb-4">
         <div class="col-12">
-            <h2 class="h5 fw-bold mb-3">Proyectos Relacionados</h2>
+            <h2 class="h5 fw-bold mb-3">Related Projects</h2>
             <div class="row">
                 {% for related_project in related_projects|slice:":3" %}
                 <div class="col-4">
@@ -149,8 +150,8 @@
     <div class="row mt-5 pt-4 border-top">
         <div class="col-12 text-center">
             <p class="text-muted small mb-0">
-                ¿Te interesa este proyecto?
-                <a href="{% url 'portfolio:contact' %}" class="text-decoration-none">Contáctame</a>
+                Interested in this project?
+                <a href="{% url 'portfolio:contact' %}" class="text-decoration-none">Contact me</a>
             </p>
         </div>
     </div>
