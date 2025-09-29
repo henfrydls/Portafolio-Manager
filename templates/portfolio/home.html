@@ -355,144 +355,7 @@ endblock %}
     </div> <!-- End main-content -->
 </div> <!-- End portfolio-layout -->
 
-<!-- Contact Modal -->
-<div id="contactModal" class="contact-modal">
-    <div class="modal-overlay" onclick="closeContactModal()"></div>
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 class="modal-title">Get In Touch</h2>
-            <button class="modal-close" onclick="closeContactModal()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-
-        <div class="modal-body">
-            <div class="contact-intro">
-                <p class="contact-description">
-                    Ready to collaborate on your next project? Whether you need technical leadership, system
-                    architecture, or digital transformation guidance, I'd love to hear from you.
-                </p>
-            </div>
-
-            <div class="contact-methods">
-                <div class="contact-grid">
-                    <!-- Email Contact -->
-                    {% if profile.email %}
-                    <div class="contact-method primary">
-                        <div class="contact-method-icon">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <div class="contact-method-content">
-                            <h3 class="contact-method-title">Email</h3>
-                            <p class="contact-method-description">Best for detailed project discussions</p>
-                            <a href="mailto:{{ profile.email }}" class="contact-method-action">
-                                Send an Email
-                                <i class="fas fa-paper-plane"></i>
-                            </a>
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    <!-- LinkedIn Contact -->
-                    {% if profile.linkedin_url %}
-                    <div class="contact-method">
-                        <div class="contact-method-icon">
-                            <i class="fab fa-linkedin"></i>
-                        </div>
-                        <div class="contact-method-content">
-                            <h3 class="contact-method-title">LinkedIn</h3>
-                            <p class="contact-method-description">Professional networking & quick messages</p>
-                            <a href="{{ profile.linkedin_url }}" target="_blank" class="contact-method-action">
-                                Connect on LinkedIn
-                                <i class="fas fa-external-link-alt"></i>
-                            </a>
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    <!-- GitHub Contact -->
-                    {% if profile.github_url %}
-                    <div class="contact-method">
-                        <div class="contact-method-icon">
-                            <i class="fab fa-github"></i>
-                        </div>
-                        <div class="contact-method-content">
-                            <h3 class="contact-method-title">GitHub</h3>
-                            <p class="contact-method-description">Code collaboration & technical discussions</p>
-                            <a href="{{ profile.github_url }}" target="_blank" class="contact-method-action">
-                                View GitHub Profile
-                                <i class="fas fa-external-link-alt"></i>
-                            </a>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-
-                <!-- Contact Form Alternative -->
-                <div class="contact-form-section">
-                    <div class="contact-form-header">
-                        <h3 class="form-title">Send a Message</h3>
-                        <p class="form-description">Prefer a contact form? Fill out the details below.</p>
-                    </div>
-
-                    <form class="contact-form" method="post" action="{% url 'portfolio:home' %}" id="contactForm">
-                        {% csrf_token %}
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="contact_name">Name *</label>
-                                <input type="text" id="contact_name" name="name" required placeholder="Your full name">
-                            </div>
-                            <div class="form-group">
-                                <label for="contact_email">Email *</label>
-                                <input type="email" id="contact_email" name="email" required
-                                    placeholder="your.email@example.com">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="contact_subject">Subject *</label>
-                            <input type="text" id="contact_subject" name="subject" required
-                                placeholder="What's this about?">
-                        </div>
-                        <div class="form-group">
-                            <label for="contact_message">Message *</label>
-                            <textarea id="contact_message" name="message" rows="5" required
-                                placeholder="Tell me about your project, ideas, or just say hello..."></textarea>
-                        </div>
-                        <button type="submit" class="contact-submit-btn" id="submitBtn">
-                            <span class="btn-text">Send Message</span>
-                            <i class="fas fa-paper-plane btn-icon"></i>
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Contact CTA -->
-            <div class="contact-cta-section">
-                <div class="cta-content">
-                    <h3 class="cta-title">Let's Build Something Great Together</h3>
-                    <p class="cta-description">
-                        From concept to deployment, I help organizations leverage technology
-                        to achieve their strategic goals.
-                    </p>
-                    <div class="cta-stats">
-                        <div class="cta-stat">
-                            <span class="stat-number">{{ projects_count|default:"10" }}+</span>
-                            <span class="stat-label">Projects Delivered</span>
-                        </div>
-                        <div class="cta-stat">
-                            <span class="stat-number">{{ experience_years|default:"5" }}+</span>
-                            <span class="stat-label">Years Experience</span>
-                        </div>
-                        <div class="cta-stat">
-                            <span class="stat-number">{{ technologies_count|default:"15" }}+</span>
-                            <span class="stat-label">Technologies</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{% include 'portfolio/includes/contact_modal.html' %}
 {% endblock %}
 
 {% block extra_js %}
@@ -646,6 +509,14 @@ endblock %}
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
 
+        // Hide language selector when modal opens
+        const languageSelector = document.getElementById('portfolio-lang-switcher');
+        if (languageSelector) {
+            languageSelector.style.setProperty('display', 'none', 'important');
+            languageSelector.style.setProperty('visibility', 'hidden', 'important');
+            languageSelector.style.setProperty('opacity', '0', 'important');
+        }
+
         // Focus on first input
         setTimeout(() => {
             const firstInput = modal.querySelector('input');
@@ -657,6 +528,14 @@ endblock %}
         const modal = document.getElementById('contactModal');
         modal.classList.remove('active');
         document.body.style.overflow = '';
+
+        // Show language selector when modal closes
+        const languageSelector = document.getElementById('portfolio-lang-switcher');
+        if (languageSelector) {
+            languageSelector.style.removeProperty('display');
+            languageSelector.style.removeProperty('visibility');
+            languageSelector.style.removeProperty('opacity');
+        }
 
         // Reset modal content opacity
         const modalContent = document.querySelector('.modal-content');
@@ -850,6 +729,10 @@ endblock %}
 {% block extra_css %}
 <!-- AOS CSS -->
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<!-- Contact Modal CSS -->
+{% include 'portfolio/includes/contact_modal_css.html' %}
+
 <style>
     /* Matt Deitke Exact Layout - Fixed Sidebar + Scrollable Content */
 

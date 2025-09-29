@@ -1,0 +1,158 @@
+{% load simple_i18n %}
+
+<script>
+    // Contact Modal Functions
+    function openContactModal() {
+        const modal = document.getElementById('contactModal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        // Hide language selector when modal opens
+        const languageSelector = document.getElementById('portfolio-lang-switcher');
+        if (languageSelector) {
+            languageSelector.style.setProperty('display', 'none', 'important');
+            languageSelector.style.setProperty('visibility', 'hidden', 'important');
+            languageSelector.style.setProperty('opacity', '0', 'important');
+        }
+
+        // Focus on first input
+        setTimeout(() => {
+            const firstInput = modal.querySelector('input');
+            if (firstInput) firstInput.focus();
+        }, 300);
+    }
+
+    function closeContactModal() {
+        const modal = document.getElementById('contactModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+
+        // Show language selector when modal closes
+        const languageSelector = document.getElementById('portfolio-lang-switcher');
+        if (languageSelector) {
+            languageSelector.style.removeProperty('display');
+            languageSelector.style.removeProperty('visibility');
+            languageSelector.style.removeProperty('opacity');
+        }
+
+        // Reset modal content opacity
+        const modalContent = document.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.style.opacity = '';
+        }
+
+        // Reset form if it exists
+        const form = document.getElementById('contactForm');
+        if (form) {
+            form.reset();
+
+            // Reset button state
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.querySelector('.btn-text');
+            const btnIcon = document.querySelector('.btn-icon');
+
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
+            }
+            if (btnText) btnText.textContent = '{% trans "Send Message" %}';
+            if (btnIcon) btnIcon.className = 'fas fa-paper-plane btn-icon';
+
+            // Reset field groups
+            const fieldGroups = form.querySelectorAll('.form-group');
+            fieldGroups.forEach(group => {
+                group.classList.remove('valid', 'invalid');
+            });
+        }
+    }
+
+    // Initialize modal functionality when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('contactForm');
+        if (form) {
+            const inputs = form.querySelectorAll('input, textarea');
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.querySelector('.btn-text');
+            const btnIcon = document.querySelector('.btn-icon');
+
+            // Field validation
+            inputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    validateField(this);
+                });
+
+                input.addEventListener('input', function() {
+                    const fieldGroup = this.closest('.form-group');
+                    if (fieldGroup.classList.contains('invalid')) {
+                        validateField(this);
+                    }
+                });
+            });
+
+            function validateField(field) {
+                const fieldGroup = field.closest('.form-group');
+                const value = field.value.trim();
+
+                fieldGroup.classList.remove('valid', 'invalid');
+
+                if (field.hasAttribute('required') && value === '') {
+                    fieldGroup.classList.add('invalid');
+                    return false;
+                }
+
+                if (field.type === 'email' && value !== '') {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(value)) {
+                        fieldGroup.classList.add('invalid');
+                        return false;
+                    }
+                }
+
+                if (value !== '') {
+                    fieldGroup.classList.add('valid');
+                }
+
+                return true;
+            }
+
+            // Form submission with loading state
+            form.addEventListener('submit', function (e) {
+                let isValid = true;
+
+                inputs.forEach(input => {
+                    if (!validateField(input)) {
+                        isValid = false;
+                    }
+                });
+
+                if (isValid) {
+                    // Show loading state
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('loading');
+                    btnText.textContent = '{% trans "Sending..." %}';
+                    btnIcon.className = 'fas fa-spinner fa-spin btn-icon';
+
+                    // Add a subtle animation to the modal content
+                    const modalContent = document.querySelector('.modal-content');
+                    if (modalContent) {
+                        modalContent.style.opacity = '0.8';
+                    }
+                } else {
+                    e.preventDefault();
+                    // Focus on first invalid field
+                    const firstInvalid = form.querySelector('.invalid input, .invalid textarea');
+                    if (firstInvalid) {
+                        firstInvalid.focus();
+                    }
+                }
+            });
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeContactModal();
+            }
+        });
+    });
+</script>

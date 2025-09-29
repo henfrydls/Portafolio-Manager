@@ -1,0 +1,140 @@
+{% load simple_i18n %}
+
+<!-- Contact Modal -->
+<div id="contactModal" class="contact-modal">
+    <div class="modal-overlay" onclick="closeContactModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">{% trans "Get In Touch" %}</h2>
+            <button class="modal-close" onclick="closeContactModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="contact-intro">
+                <p class="contact-description">
+                    {% trans "Ready to collaborate on your next project? Whether you need technical leadership, system" %}
+                    {% trans "architecture, or digital transformation guidance, I'd love to hear from you." %}
+                </p>
+            </div>
+
+            <div class="contact-methods">
+                <div class="contact-grid">
+                    <!-- Email Contact -->
+                    {% if profile.email %}
+                    <div class="contact-method primary">
+                        <div class="contact-method-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-method-content">
+                            <h3 class="contact-method-title">{% trans "Email" %}</h3>
+                            <p class="contact-method-description">{% trans "Best for detailed project discussions" %}</p>
+                            <a href="mailto:{{ profile.email }}" class="contact-method-action">
+                                {% trans "Send an Email" %}
+                                <i class="fas fa-paper-plane"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- LinkedIn Contact -->
+                    {% if profile.linkedin_url %}
+                    <div class="contact-method">
+                        <div class="contact-method-icon">
+                            <i class="fab fa-linkedin"></i>
+                        </div>
+                        <div class="contact-method-content">
+                            <h3 class="contact-method-title">LinkedIn</h3>
+                            <p class="contact-method-description">{% trans "Professional networking & quick messages" %}</p>
+                            <a href="{{ profile.linkedin_url }}" target="_blank" class="contact-method-action">
+                                {% trans "Connect on LinkedIn" %}
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- GitHub Contact -->
+                    {% if profile.github_url %}
+                    <div class="contact-method">
+                        <div class="contact-method-icon">
+                            <i class="fab fa-github"></i>
+                        </div>
+                        <div class="contact-method-content">
+                            <h3 class="contact-method-title">GitHub</h3>
+                            <p class="contact-method-description">{% trans "Code collaboration & technical discussions" %}</p>
+                            <a href="{{ profile.github_url }}" target="_blank" class="contact-method-action">
+                                {% trans "View GitHub Profile" %}
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Contact Form Alternative -->
+                <div class="contact-form-section">
+                    <div class="contact-form-header">
+                        <h3 class="form-title">{% trans "Send a Message" %}</h3>
+                        <p class="form-description">{% trans "Prefer a contact form? Fill out the details below." %}</p>
+                    </div>
+
+                    <form class="contact-form" method="post" action="{% url 'portfolio:home' %}" id="contactForm">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="contact_name">{% trans "Name" %} *</label>
+                                <input type="text" id="contact_name" name="name" required placeholder="{% trans "Your full name" %}">
+                            </div>
+                            <div class="form-group">
+                                <label for="contact_email">{% trans "Email" %} *</label>
+                                <input type="email" id="contact_email" name="email" required
+                                    placeholder="{% trans "your.email@example.com" %}">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="contact_subject">{% trans "Subject" %} *</label>
+                            <input type="text" id="contact_subject" name="subject" required
+                                placeholder="{% trans "What's this about?" %}">
+                        </div>
+                        <div class="form-group">
+                            <label for="contact_message">{% trans "Message" %} *</label>
+                            <textarea id="contact_message" name="message" rows="5" required
+                                placeholder="{% trans "Tell me about your project, ideas, or just say hello..." %}"></textarea>
+                        </div>
+                        <button type="submit" class="contact-submit-btn" id="submitBtn">
+                            <span class="btn-text">{% trans "Send Message" %}</span>
+                            <i class="fas fa-paper-plane btn-icon"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Contact CTA -->
+            <div class="contact-cta-section">
+                <div class="cta-content">
+                    <h3 class="cta-title">{% trans "Let's Build Something Great Together" %}</h3>
+                    <p class="cta-description">
+                        {% trans "From concept to deployment, I help organizations leverage technology" %}
+                        {% trans "to achieve their strategic goals." %}
+                    </p>
+                    <div class="cta-stats">
+                        <div class="cta-stat">
+                            <span class="stat-number">{{ projects_count|default:"10" }}+</span>
+                            <span class="stat-label">{% trans "Projects Delivered" %}</span>
+                        </div>
+                        <div class="cta-stat">
+                            <span class="stat-number">{{ experience_years|default:"5" }}+</span>
+                            <span class="stat-label">{% trans "Years Experience" %}</span>
+                        </div>
+                        <div class="cta-stat">
+                            <span class="stat-number">{{ technologies_count|default:"15" }}+</span>
+                            <span class="stat-label">{% trans "Technologies" %}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
