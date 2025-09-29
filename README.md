@@ -16,6 +16,8 @@ Personal portfolio website for Henfry de los Santos built with Django.
 - **Featured Work section** showcasing major projects and achievements
 - **Projects section** displaying all development work and technologies
 - **Medium-style blog detail pages** with professional typography and responsive design
+- **Bilingual support** (English/Spanish) with custom translation system
+- **Reusable contact modal** with form validation and language-aware UI
 - **Admin panel** for content management
 - **Responsive design** optimized for desktop and mobile devices
 
@@ -33,6 +35,8 @@ This portfolio is inspired by **Matt Deitke's website** design, featuring:
 - **Database**: SQLite (development) / PostgreSQL (production ready)
 - **Frontend**: HTML5, CSS3, JavaScript, Montserrat Typography
 - **Design System**: Matt Deitke-inspired layout with Medium-style blog posts
+- **Internationalization**: Custom template tags for bilingual support
+- **Content Processing**: Markdown with syntax highlighting
 - **Static Files**: WhiteNoise
 - **Email**: Django Email Backend
 
@@ -139,6 +143,8 @@ Portafolio web personal de Henfry de los Santos desarrollado con Django.
 - **Sección Featured Work** mostrando proyectos principales y logros
 - **Sección Projects** mostrando todo el trabajo de desarrollo y tecnologías
 - **Páginas de detalle de blog estilo Medium** con tipografía profesional y diseño responsivo
+- **Soporte bilingüe** (Inglés/Español) con sistema de traducción personalizado
+- **Modal de contacto reutilizable** con validación de formularios e interfaz consciente del idioma
 - **Panel de administración** para gestión de contenido
 - **Diseño responsivo** optimizado para escritorio y móvil
 
@@ -146,9 +152,10 @@ Portafolio web personal de Henfry de los Santos desarrollado con Django.
 
 - **Backend**: Django 5.2
 - **Base de Datos**: SQLite (desarrollo) / PostgreSQL (listo para producción)
-- **Frontend**: HTML5, CSS3, JavaScript, Bootstrap 5
+- **Frontend**: HTML5, CSS3, JavaScript, Tipografía Montserrat
+- **Internacionalización**: Template tags personalizados para soporte bilingüe
+- **Procesamiento de Contenido**: Markdown con resaltado de sintaxis
 - **Archivos Estáticos**: WhiteNoise
-- **Generación PDF**: ReportLab / WeasyPrint
 - **Email**: Django Email Backend
 
 ### Inicio Rápido
@@ -350,6 +357,27 @@ Sistema de tracking personalizado que incluye:
 - **Información Capturada**: URL, título de página, IP, user agent, timestamp
 - **Limpieza Automática**: Eliminación periódica de registros antiguos (configurable)
 - **Configuración Flexible**: Personalizable a través de settings de Django
+
+### 🌐 Sistema de Internacionalización y Modal de Contacto
+
+#### Modal de Contacto Refactorizado
+- **Componentes Reutilizables**: Modal HTML, CSS y JavaScript separados en includes
+- **DRY Implementation**: Eliminación de ~650+ líneas de código duplicado
+- **Funcionalidad Preservada**: Mantenimiento de paginación AJAX y validación de formularios
+- **Interfaz Bilingüe**: Ocultación automática del selector de idioma durante la interacción
+
+#### Sistema de Template Tags Personalizados
+- **simple_i18n.py**: Sistema de traducción ligero para contenido estático
+- **markdown_extras.py**: Procesamiento de contenido Markdown con extensiones
+- **Soporte Completo**: Traducciones en inglés y español para toda la interfaz
+
+#### Estructura de Archivos
+```
+templates/portfolio/includes/
+├── contact_modal.html          # HTML del modal con traducciones
+├── contact_modal_css.html      # Estilos CSS completos
+└── contact_modal_js.html       # JavaScript con funcionalidad completa
+```
 
 ### Contribución
 
