@@ -13,14 +13,14 @@ class SessionManager {
             loginUrl: '/login/',
             ...options
         };
-        
+
         this.warningShown = false;
         this.sessionData = null;
         this.checkTimer = null;
-        
+
         this.init();
     }
-    
+
     init() {
         // Only run on admin pages
         if (this.isAdminPage()) {
@@ -28,27 +28,27 @@ class SessionManager {
             this.bindEvents();
         }
     }
-    
+
     isAdminPage() {
-        return window.location.pathname.includes('admin') || 
-               window.location.pathname.includes('dashboard') ||
-               document.body.classList.contains('admin-page');
+        return window.location.pathname.includes('admin') ||
+            window.location.pathname.includes('dashboard') ||
+            document.body.classList.contains('admin-page');
     }
-    
+
     startSessionCheck() {
         this.checkSession();
         this.checkTimer = setInterval(() => {
             this.checkSession();
         }, this.options.checkInterval);
     }
-    
+
     stopSessionCheck() {
         if (this.checkTimer) {
             clearInterval(this.checkTimer);
             this.checkTimer = null;
         }
     }
-    
+
     async checkSession() {
         try {
             const response = await fetch(this.options.statusUrl, {
@@ -59,38 +59,38 @@ class SessionManager {
                 },
                 credentials: 'same-origin'
             });
-            
+
             if (!response.ok) {
                 throw new Error('Session check failed');
             }
-            
+
             const data = await response.json();
             this.sessionData = data;
-            
+
             if (!data.authenticated || data.session_expired) {
                 this.handleSessionExpired();
                 return;
             }
-            
+
             // Check if session is about to expire
             if (data.session_age && data.session_age <= this.options.warningTime / 1000) {
                 this.showSessionWarning(data.session_age);
             } else {
                 this.hideSessionWarning();
             }
-            
+
         } catch (error) {
             console.error('Session check error:', error);
             // Don't show warning on network errors, just log them
         }
     }
-    
+
     showSessionWarning(secondsLeft) {
         if (this.warningShown) return;
-        
+
         this.warningShown = true;
         const minutes = Math.ceil(secondsLeft / 60);
-        
+
         const warningHtml = `
             <div id="session-warning" class="session-warning-banner">
                 <div class="session-warning-content">
@@ -109,23 +109,23 @@ class SessionManager {
                 </div>
             </div>
         `;
-        
+
         // Remove existing warning
         this.hideSessionWarning();
-        
+
         // Add warning to page
         document.body.insertAdjacentHTML('afterbegin', warningHtml);
-        
+
         // Bind events
         document.getElementById('extend-session-btn').addEventListener('click', () => {
             this.extendSession();
         });
-        
+
         document.getElementById('dismiss-warning-btn').addEventListener('click', () => {
             this.hideSessionWarning();
         });
     }
-    
+
     hideSessionWarning() {
         const warning = document.getElementById('session-warning');
         if (warning) {
@@ -133,7 +133,7 @@ class SessionManager {
         }
         this.warningShown = false;
     }
-    
+
     async extendSession() {
         try {
             const response = await fetch(this.options.extendUrl, {
@@ -145,31 +145,31 @@ class SessionManager {
                 },
                 credentials: 'same-origin'
             });
-            
+
             if (!response.ok) {
                 throw new Error('Session extension failed');
             }
-            
+
             const data = await response.json();
-            
+
             if (data.success) {
                 this.hideSessionWarning();
                 this.showSuccessMessage('Sesión extendida correctamente');
             } else {
                 throw new Error(data.error || 'Session extension failed');
             }
-            
+
         } catch (error) {
             console.error('Session extension error:', error);
             this.showErrorMessage('Error al extender la sesión');
         }
     }
-    
+
     handleSessionExpired() {
         this.stopSessionCheck();
         this.showSessionExpiredModal();
     }
-    
+
     showSessionExpiredModal() {
         const modalHtml = `
             <div id="session-expired-modal" class="session-modal-overlay">
@@ -188,31 +188,31 @@ class SessionManager {
                 </div>
             </div>
         `;
-        
+
         document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
+
         document.getElementById('login-again-btn').addEventListener('click', () => {
             window.location.href = this.options.loginUrl;
         });
     }
-    
+
     showSuccessMessage(message) {
         this.showMessage(message, 'success');
     }
-    
+
     showErrorMessage(message) {
         this.showMessage(message, 'error');
     }
-    
+
     showMessage(message, type = 'info') {
         const messageHtml = `
             <div class="session-message session-message-${type}">
                 ${message}
             </div>
         `;
-        
+
         document.body.insertAdjacentHTML('afterbegin', messageHtml);
-        
+
         // Auto-remove after 3 seconds
         setTimeout(() => {
             const messageEl = document.querySelector('.session-message');
@@ -221,7 +221,7 @@ class SessionManager {
             }
         }, 3000);
     }
-    
+
     getCSRFToken() {
         const cookies = document.cookie.split(';');
         for (let cookie of cookies) {
@@ -230,27 +230,27 @@ class SessionManager {
                 return value;
             }
         }
-        
+
         // Fallback: try to get from meta tag
         const csrfMeta = document.querySelector('meta[name="csrf-token"]');
         if (csrfMeta) {
             return csrfMeta.getAttribute('content');
         }
-        
+
         // Fallback: try to get from form
         const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
         if (csrfInput) {
             return csrfInput.value;
         }
-        
+
         return '';
     }
-    
+
     bindEvents() {
         // Extend session on user activity
         const activityEvents = ['click', 'keypress', 'scroll', 'mousemove'];
         let lastActivity = Date.now();
-        
+
         const handleActivity = () => {
             const now = Date.now();
             // Only extend if it's been more than 5 minutes since last activity
@@ -262,11 +262,11 @@ class SessionManager {
                 }
             }
         };
-        
+
         activityEvents.forEach(event => {
             document.addEventListener(event, handleActivity, { passive: true });
         });
-        
+
         // Handle page visibility change
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
@@ -472,7 +472,7 @@ const sessionStyles = `
 document.head.insertAdjacentHTML('beforeend', sessionStyles);
 
 // Initialize session manager when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     window.sessionManager = new SessionManager();
 });
 

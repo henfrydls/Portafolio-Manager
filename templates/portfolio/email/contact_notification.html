@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo mensaje de contacto</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .email-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #007bff;
+            margin: 0;
+            font-size: 24px;
+        }
+        .contact-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .contact-info h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .message-content {
+            background-color: #fff;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .metadata {
+            font-size: 12px;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+            padding-top: 15px;
+            margin-top: 30px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>📧 Nuevo mensaje de contacto</h1>
+            <p>Has recibido un nuevo mensaje desde tu portafolio web</p>
+        </div>
+
+        <div class="contact-info">
+            <h3>Información del contacto:</h3>
+            <p><strong>Nombre:</strong> {{ contact.name }}</p>
+            <p><strong>Email:</strong> <a href="mailto:{{ contact.email }}">{{ contact.email }}</a></p>
+            <p><strong>Asunto:</strong> {{ contact.subject }}</p>
+        </div>
+
+        <div class="message-content">
+            <h3>Mensaje:</h3>
+            <p>{{ contact.message|linebreaks }}</p>
+        </div>
+
+        <a href="mailto:{{ contact.email }}?subject=Re: {{ contact.subject }}" class="btn">
+            Responder directamente
+        </a>
+
+        <div class="metadata">
+            <p><strong>Fecha:</strong> {{ contact.created_at|date:"d/m/Y H:i" }}</p>
+            <p><strong>IP:</strong> {{ ip_address }}</p>
+            <p><strong>User Agent:</strong> {{ user_agent|truncatechars:100 }}</p>
+            <hr>
+            <p><em>Este mensaje fue enviado desde el formulario de contacto de tu portafolio web.</em></p>
+        </div>
+    </div>
+</body>
+</html>

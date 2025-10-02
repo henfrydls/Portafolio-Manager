@@ -20,28 +20,61 @@ class HomeView(TemplateView):
     
     def post(self, request, *args, **kwargs):
         # Manejar el formulario de contacto
+        from .email_service import EmailService
+        import logging
+        
+        logger = logging.getLogger('portfolio')
+        
         name = request.POST.get('name')
         email = request.POST.get('email')
         subject = request.POST.get('subject')
         message = request.POST.get('message')
         
         if name and email and subject and message:
-            # Crear el contacto en la base de datos
-            Contact.objects.create(
-                name=name,
-                email=email,
-                subject=subject,
-                message=message
-            )
-            
-            # Agregar mensaje de éxito
-            messages.success(request, 'Thank you for your message! I\'ll get back to you soon.')
-            return redirect('portfolio:home')
+            try:
+                # Crear el contacto en la base de datos
+                contact = Contact.objects.create(
+                    name=name,
+                    email=email,
+                    subject=subject,
+                    message=message
+                )
+                
+                # Log successful contact form submission
+                logger.info(f'Contact form submitted by {contact.email} from IP {self.get_client_ip(request)}')
+                
+                # Enviar emails usando el servicio de email
+                notification_sent = EmailService.send_contact_notification(contact, request.META)
+                confirmation_sent = EmailService.send_contact_confirmation(contact)
+                
+                # Mensaje de éxito personalizado basado en el estado del email
+                if notification_sent and confirmation_sent:
+                    success_message = 'Thank you for your message! I\'ve sent you a confirmation email and will get back to you soon.'
+                elif notification_sent:
+                    success_message = 'Thank you for your message! I\'ll get back to you soon.'
+                else:
+                    success_message = 'Thank you for your message! It has been saved and I\'ll get back to you soon.'
+                
+                messages.success(request, success_message)
+                return redirect('portfolio:home')
+                
+            except Exception as e:
+                logger.error(f'Contact form error: {e}')
+                messages.error(request, 'There was an error processing your message. Please try again.')
         else:
             messages.error(request, 'Please fill in all required fields.')
             
         context = self.get_context_data()
         return render(request, self.template_name, context)
+    
+    def get_client_ip(self, request):
+        """Extract client IP from request."""
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR', 'Unknown')
+        return ip
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -442,10 +475,9 @@ class ContactView(TemplateView):
     def post(self, request, *args, **kwargs):
         """Procesar formulario de contacto con validación mejorada"""
         from django.contrib import messages
-        from django.core.mail import send_mail
-        from django.conf import settings
         from django.shortcuts import redirect
         from .forms import SecureContactFormWithHoneypot
+        from .email_service import EmailService
         import logging
         
         logger = logging.getLogger('portfolio')
@@ -460,42 +492,19 @@ class ContactView(TemplateView):
                 # Log successful contact form submission
                 logger.info(f'Contact form submitted by {contact.email} from IP {self.get_client_ip(request)}')
                 
-                # Enviar email de notificación (si está configurado)
-                try:
-                    profile = Profile.objects.first()
-                    if profile and profile.email:
-                        email_subject = f"Nuevo mensaje de contacto: {contact.subject}"
-                        email_message = f"""
-Nuevo mensaje recibido:
-
-Nombre: {contact.name}
-Email: {contact.email}
-Asunto: {contact.subject}
-
-Mensaje:
-{contact.message}
-
----
-Este mensaje fue enviado desde el formulario de contacto
-IP: {self.get_client_ip(request)}
-Fecha: {contact.created_at}
-                        """
-                        
-                        send_mail(
-                            email_subject,
-                            email_message,
-                            settings.DEFAULT_FROM_EMAIL,
-                            [profile.email],
-                            fail_silently=True,
-                        )
-                except Exception as e:
-                    # Log error but don't fail the contact form
-                    logger.error(f'Failed to send contact email: {e}')
+                # Enviar emails usando el servicio de email
+                notification_sent = EmailService.send_contact_notification(contact, request.META)
+                confirmation_sent = EmailService.send_contact_confirmation(contact)
                 
-                messages.success(
-                    request, 
-                    '¡Gracias por tu mensaje! Te responderé lo antes posible.'
-                )
+                # Mensaje de éxito personalizado basado en el estado del email
+                if notification_sent and confirmation_sent:
+                    success_message = '¡Gracias por tu mensaje! Te he enviado una confirmación por email y te responderé lo antes posible.'
+                elif notification_sent:
+                    success_message = '¡Gracias por tu mensaje! Te responderé lo antes posible.'
+                else:
+                    success_message = '¡Gracias por tu mensaje! Ha sido guardado y te responderé lo antes posible.'
+                
+                messages.success(request, success_message)
                 return redirect('portfolio:home')
                 
             except Exception as e:
@@ -627,6 +636,24 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
         ).count()
         
         return context
+
+class EmailTestView(AdminRequiredMixin, View):
+    """Vista para probar la configuración de email"""
+    
+    def post(self, request, *args, **kwargs):
+        """Enviar email de prueba"""
+        from django.http import JsonResponse
+        from .email_service import EmailService
+        
+        result = EmailService.test_email_configuration()
+        
+        if result['success']:
+            messages.success(request, result['message'])
+        else:
+            messages.error(request, result['message'])
+        
+        return JsonResponse(result)
+
 
 class AnalyticsView(AdminRequiredMixin, TemplateView):
     """Vista de análiticas detalladas con métricas de visitas y gráficos"""
@@ -1539,3 +1566,41 @@ class BlogImageUploadView(AdminRequiredMixin, View):
                 'success': False,
                 'message': 'Error al procesar la imagen'
             })
+
+
+# Custom Error Handlers
+def custom_404(request, exception):
+    """Custom 404 error handler"""
+    try:
+        profile = Profile.objects.first()
+    except Profile.DoesNotExist:
+        profile = None
+    
+    return render(request, '404.html', {
+        'profile': profile,
+    }, status=404)
+
+
+def custom_500(request):
+    """Custom 500 error handler"""
+    try:
+        profile = Profile.objects.first()
+    except Profile.DoesNotExist:
+        profile = None
+    
+    return render(request, '500.html', {
+        'profile': profile,
+    }, status=500)
+
+
+def custom_403(request, exception):
+    """Custom 403 error handler"""
+    try:
+        profile = Profile.objects.first()
+    except Profile.DoesNotExist:
+        profile = None
+    
+    return render(request, '403.html', {
+        'profile': profile,
+    }, status=403)
+

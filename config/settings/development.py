@@ -33,9 +33,20 @@ DATABASES = {
     }
 }
 
-# Email backend for development
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@localhost')
+# Email configuration for development
+# Use SMTP backend to actually send emails
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+# Use EMAIL_HOST_USER as DEFAULT_FROM_EMAIL if not specified (simplifies configuration)
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'noreply@localhost')
+EMAIL_TIMEOUT = 60  # Increased timeout for external domains
+# Additional settings for better external domain compatibility
+EMAIL_USE_LOCALTIME = False
+SERVER_EMAIL = EMAIL_HOST_USER
 
 # CSRF trusted origins for development
 CSRF_TRUSTED_ORIGINS = [

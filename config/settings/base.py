@@ -166,6 +166,9 @@ BLOCKED_EXTENSIONS = [
 ]
 
 # Email configuration will be set per environment
+# Contact form email settings
+SEND_CONTACT_CONFIRMATIONS = os.environ.get('SEND_CONTACT_CONFIRMATIONS', 'True').lower() == 'true'
+EMAIL_TIMEOUT = 30  # seconds
 
 # Page Visit Tracking Configuration
 PAGE_VISIT_CLEANUP_FREQUENCY = 1000  # Ejecutar limpieza cada 1000 requests

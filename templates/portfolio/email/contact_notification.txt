@@ -1,0 +1,24 @@
+NUEVO MENSAJE DE CONTACTO
+========================
+
+Has recibido un nuevo mensaje desde tu portafolio web.
+
+INFORMACIÓN DEL CONTACTO:
+------------------------
+Nombre: {{ contact.name }}
+Email: {{ contact.email }}
+Asunto: {{ contact.subject }}
+
+MENSAJE:
+--------
+{{ contact.message }}
+
+METADATOS:
+----------
+Fecha: {{ contact.created_at|date:"d/m/Y H:i" }}
+IP: {{ ip_address }}
+User Agent: {{ user_agent }}
+
+---
+Este mensaje fue enviado desde el formulario de contacto de tu portafolio web.
+Para responder, simplemente contesta a este email o escribe directamente a: {{ contact.email }}

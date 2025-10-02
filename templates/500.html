@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% load simple_i18n %}
+
+{% block title %}{% trans "Error del servidor" %} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="error-page-container">
+    <div class="error-content">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+        </div>
+        
+        <h1 class="error-title">500</h1>
+        <h2 class="error-subtitle">{% trans "Error interno del servidor" %}</h2>
+        
+        <p class="error-message">
+            {% trans "Algo salió mal en nuestro servidor. Estamos trabajando para solucionarlo." %}
+        </p>
+        
+        <div class="error-actions">
+            <a href="/" class="btn btn-primary">
+                <i class="fas fa-home"></i>
+                {% trans "Ir al inicio" %}
+            </a>
+            <button onclick="location.reload()" class="btn btn-outline-secondary">
+                <i class="fas fa-redo"></i>
+                {% trans "Intentar de nuevo" %}
+            </button>
+        </div>
+        
+        <div class="error-info">
+            <div class="error-suggestions">
+                <h3>{% trans "¿Qué puedes hacer mientras tanto?" %}</h3>
+                <ul>
+                    <li><a href="/">{% trans "Visitar la página principal" %}</a></li>
+                    <li><a href="/#contact">{% trans "Reportar este problema" %}</a></li>
+                    <li>{% trans "Esperar unos minutos e intentar de nuevo" %}</li>
+                </ul>
+            </div>
+            
+            <div class="error-contact">
+                <h3>{% trans "¿Necesitas ayuda?" %}</h3>
+                <p>
+                    {% trans "Si el problema persiste, puedes contactarme directamente:" %}
+                </p>
+                <div class="contact-links">
+                    {% if profile.email %}
+                    <a href="mailto:{{ profile.email }}" class="contact-link">
+                        <i class="fas fa-envelope"></i>
+                        {{ profile.email }}
+                    </a>
+                    {% endif %}
+                    {% if profile.github_url %}
+                    <a href="{{ profile.github_url }}" target="_blank" class="contact-link">
+                        <i class="fab fa-github"></i>
+                        GitHub
+                    </a>
+                    {% endif %}
+                    {% if profile.linkedin_url %}
+                    <a href="{{ profile.linkedin_url }}" target="_blank" class="contact-link">
+                        <i class="fab fa-linkedin"></i>
+                        LinkedIn
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-page-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+}
+
+.error-content {
+    text-align: center;
+    max-width: 700px;
+    background: white;
+    padding: 60px 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.error-icon {
+    font-size: 4rem;
+    color: #dc3545;
+    margin-bottom: 20px;
+}
+
+.error-title {
+    font-size: 6rem;
+    font-weight: 700;
+    color: #dc3545;
+    margin: 0;
+    line-height: 1;
+}
+
+.error-subtitle {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #333;
+    margin: 20px 0;
+}
+
+.error-message {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 40px;
+    line-height: 1.6;
+}
+
+.error-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #0085ff;
+    color: white;
+    border-color: #0085ff;
+}
+
+.btn-primary:hover {
+    background: #0066cc;
+    border-color: #0066cc;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+.btn-outline-secondary {
+    background: transparent;
+    color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.error-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.error-suggestions,
+.error-contact {
+    text-align: left;
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 8px;
+}
+
+.error-suggestions h3,
+.error-contact h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.error-suggestions ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.error-suggestions li {
+    margin-bottom: 10px;
+    color: #666;
+}
+
+.error-suggestions a {
+    color: #0085ff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.error-suggestions a:hover {
+    color: #0066cc;
+    text-decoration: underline;
+}
+
+.error-suggestions a:before {
+    content: "→ ";
+    margin-right: 8px;
+    color: #6c757d;
+}
+
+.error-contact p {
+    color: #666;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+}
+
+.contact-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.contact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #0085ff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.contact-link:hover {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+.contact-link i {
+    width: 16px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .error-content {
+        padding: 40px 20px;
+    }
+    
+    .error-title {
+        font-size: 4rem;
+    }
+    
+    .error-subtitle {
+        font-size: 1.5rem;
+    }
+    
+    .error-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn {
+        width: 100%;
+        max-width: 250px;
+        justify-content: center;
+    }
+    
+    .error-info {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+</style>
+{% endblock %}

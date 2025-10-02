@@ -1,0 +1,25 @@
+¡MENSAJE RECIBIDO!
+==================
+
+Hola {{ contact.name }},
+
+Gracias por contactarme. He recibido tu mensaje y te responderé lo antes posible.
+
+RESUMEN DE TU MENSAJE:
+----------------------
+Asunto: {{ contact.subject }}
+
+Mensaje:
+{{ contact.message }}
+
+Normalmente respondo en un plazo de 24-48 horas. Si tu consulta es urgente, no dudes en contactarme directamente a través de mis redes sociales.
+
+---
+{{ profile.name }}
+{{ profile.title }}
+
+{% if profile.linkedin_url %}LinkedIn: {{ profile.linkedin_url }}{% endif %}
+{% if profile.github_url %}GitHub: {{ profile.github_url }}{% endif %}
+{% if profile.medium_url %}Medium: {{ profile.medium_url }}{% endif %}
+
+Este es un mensaje automático de confirmación.

@@ -84,4 +84,5 @@ urlpatterns = [
     path('manage/ajax/toggle-project-featured/', views.ToggleProjectFeaturedView.as_view(), name='ajax-toggle-project-featured'),
     path('manage/ajax/toggle-blog-featured/', views.ToggleBlogPostFeaturedView.as_view(), name='ajax-toggle-blog-featured'),
     path('manage/ajax/quick-publish-blog/', views.QuickPublishBlogPostView.as_view(), name='ajax-quick-publish-blog'),
+    path('manage/ajax/test-email/', views.EmailTestView.as_view(), name='ajax-test-email'),
 ]

@@ -17,8 +17,10 @@ Personal portfolio website for Henfry de los Santos built with Django.
 - **Projects section** displaying all development work and technologies
 - **Medium-style blog detail pages** with professional typography and responsive design
 - **Bilingual support** (English/Spanish) with custom translation system
-- **Reusable contact modal** with form validation and language-aware UI
-- **Admin panel** for content management
+- **Contact form** with email notifications and confirmations
+- **Custom error pages** (404, 500, 403) with professional design
+- **Admin panel** for content management with analytics
+- **Management commands** for setup, maintenance, and troubleshooting
 - **Responsive design** optimized for desktop and mobile devices
 
 ### Design Inspiration
@@ -47,6 +49,65 @@ This portfolio is inspired by **Matt Deitke's website** design, featuring:
    git clone <repository-url>
    cd henfrydls-portfolio
    ```
+
+2. **Set up environment**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+
+3. **Configure environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your settings (see Email Setup section)
+   ```
+
+4. **Set up database**
+   ```bash
+   python manage.py migrate
+   python manage.py createsuperuser
+   ```
+
+5. **Test email configuration (optional)**
+   ```bash
+   python manage.py test_email
+   ```
+
+6. **Run development server**
+   ```bash
+   python manage.py runserver
+   ```
+
+### Email Configuration
+
+The portfolio includes contact form functionality with email notifications. See [Email Setup Guide](docs/EMAIL_SETUP.md) for detailed configuration instructions.
+
+**Quick email setup:**
+1. Configure SMTP settings in `.env` file
+2. Set your profile email in admin dashboard
+3. Test configuration: `python manage.py test_email`
+
+### Management Commands
+
+The portfolio includes useful management commands for setup and maintenance. See [Management Commands Guide](docs/MANAGEMENT_COMMANDS.md) for complete documentation.
+
+**Essential commands:**
+```bash
+# Verify configuration
+python manage.py check_env
+
+# Test email setup
+python manage.py test_email
+
+# Populate sample data
+python manage.py populate_sample_data
+
+# Regular maintenance
+python manage.py cleanup_old_visits
+```
+
+**Supported providers:** Gmail, Outlook, Yahoo, Custom SMTP
 
 2. **Set up virtual environment**
    ```bash

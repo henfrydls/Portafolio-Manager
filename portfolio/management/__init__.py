@@ -1,1 +1,1 @@
-# Management commands for portfolio app
+# Management commands package

@@ -40,8 +40,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-# Set DEFAULT_FROM_EMAIL based on environment or domain
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', f'noreply@{os.environ.get("PRODUCTION_DOMAIN", "yourdomain.com")}')
+# Use EMAIL_HOST_USER as DEFAULT_FROM_EMAIL if not specified (simplifies configuration)
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or f'noreply@{os.environ.get("PRODUCTION_DOMAIN", "yourdomain.com")}')
 
 # Static files configuration for production
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

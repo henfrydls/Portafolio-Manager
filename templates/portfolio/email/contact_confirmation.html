@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mensaje recibido - Confirmación</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .email-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #28a745;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #28a745;
+            margin: 0;
+            font-size: 24px;
+        }
+        .success-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .message-summary {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+            padding-top: 20px;
+            margin-top: 30px;
+        }
+        .social-links {
+            margin-top: 20px;
+        }
+        .social-links a {
+            display: inline-block;
+            margin: 0 10px;
+            color: #007bff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="success-icon">✅</div>
+            <h1>¡Mensaje recibido!</h1>
+            <p>Gracias por contactarme, {{ contact.name }}</p>
+        </div>
+
+        <p>Hola {{ contact.name }},</p>
+        
+        <p>He recibido tu mensaje y te responderé lo antes posible. Aquí tienes un resumen de lo que me enviaste:</p>
+
+        <div class="message-summary">
+            <p><strong>Asunto:</strong> {{ contact.subject }}</p>
+            <p><strong>Mensaje:</strong></p>
+            <p>{{ contact.message|linebreaks }}</p>
+        </div>
+
+        <p>Normalmente respondo en un plazo de 24-48 horas. Si tu consulta es urgente, no dudes en contactarme directamente a través de mis redes sociales.</p>
+
+        <div class="footer">
+            <p><strong>{{ profile.name }}</strong></p>
+            <p>{{ profile.title }}</p>
+            
+            {% if profile.linkedin_url or profile.github_url or profile.medium_url %}
+            <div class="social-links">
+                {% if profile.linkedin_url %}
+                <a href="{{ profile.linkedin_url }}" target="_blank">LinkedIn</a>
+                {% endif %}
+                {% if profile.github_url %}
+                <a href="{{ profile.github_url }}" target="_blank">GitHub</a>
+                {% endif %}
+                {% if profile.medium_url %}
+                <a href="{{ profile.medium_url }}" target="_blank">Medium</a>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <p><em>Este es un mensaje automático de confirmación.</em></p>
+        </div>
+    </div>
+</body>
+</html>

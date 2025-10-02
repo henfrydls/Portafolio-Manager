@@ -534,7 +534,7 @@ python manage.py createsuperuser --settings=config.settings.development
 
 ### 8. Run Server
 
-**Development (recommended to start):**
+**Development:**
 ```bash
 python manage.py runserver --settings=config.settings.development
 ```

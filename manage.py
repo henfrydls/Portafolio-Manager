@@ -6,6 +6,14 @@ import sys
 
 def main():
     """Run administrative tasks."""
+    # Load .env file first
+    try:
+        import dotenv
+        dotenv.load_dotenv()
+    except ImportError:
+        pass
+    
+    # Use DJANGO_SETTINGS_MODULE from .env or default to development
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
     try:
         from django.core.management import execute_from_command_line
