@@ -8,6 +8,16 @@ from django.utils.safestring import mark_safe
 
 register = template.Library()
 
+@register.filter(name='get_resume_for_language')
+def get_resume_for_language(profile, language_code):
+    """
+    Template filter to get the appropriate resume PDF based on language.
+    Usage: {{ profile|get_resume_for_language:LANGUAGE_CODE }}
+    """
+    if not profile:
+        return None
+    return profile.get_resume_pdf_for_language(language_code)
+
 # Translation dictionary
 TRANSLATIONS = {
     'en': {
@@ -665,6 +675,7 @@ TRANSLATIONS = {
         'Clear': 'Limpiar',
         'Project': 'Proyecto',
         'Technologies': 'Tecnologías',
+        'Sending...': 'Enviando...',
         'more': 'más',
         'projects shown': 'proyectos mostrados',
         'No projects': 'No hay proyectos',

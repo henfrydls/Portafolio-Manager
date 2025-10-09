@@ -182,11 +182,16 @@ class SecureProfileForm(forms.ModelForm):
     
     class Meta:
         model = Profile
-        fields = '__all__'
+        fields = [
+            'name', 'title', 'bio', 'profile_image', 'email', 'phone', 'location',
+            'linkedin_url', 'github_url', 'medium_url', 
+            'resume_pdf', 'resume_pdf_es', 'show_web_resume'
+        ]
         widgets = {
             'bio': forms.Textarea(attrs={'rows': 4}),
             'profile_image': forms.FileInput(),
             'resume_pdf': forms.FileInput(),
+            'resume_pdf_es': forms.FileInput(),
         }
     
     def clean_profile_image(self):
@@ -205,12 +210,27 @@ class SecureProfileForm(forms.ModelForm):
         return image
     
     def clean_resume_pdf(self):
-        """Validate resume PDF upload."""
+        """Validate resume PDF upload (English)."""
         pdf = self.cleaned_data.get('resume_pdf')
 
         # If no new PDF uploaded but instance has existing PDF, keep existing
         if not pdf and self.instance and self.instance.pk and self.instance.resume_pdf:
             return self.instance.resume_pdf
+
+        # Only validate if a new PDF is being uploaded
+        if pdf:
+            from .file_handlers import clean_uploaded_file
+            return clean_uploaded_file(pdf)
+
+        return pdf
+    
+    def clean_resume_pdf_es(self):
+        """Validate resume PDF upload (Spanish)."""
+        pdf = self.cleaned_data.get('resume_pdf_es')
+
+        # If no new PDF uploaded but instance has existing PDF, keep existing
+        if not pdf and self.instance and self.instance.pk and self.instance.resume_pdf_es:
+            return self.instance.resume_pdf_es
 
         # Only validate if a new PDF is being uploaded
         if pdf:

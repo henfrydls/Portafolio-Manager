@@ -9,10 +9,12 @@ from django.db.models import Q
 from django.http import JsonResponse
 import os
 import uuid
-from .models import Profile, Project, BlogPost, Technology, Experience, Education, Skill, Contact, PageVisit, Category
+from .models import Profile, Project, BlogPost, Technology, Experience, Education, Skill, Language, Contact, PageVisit, Category
 from .decorators import AdminRequiredMixin, SuperuserRequiredMixin
 from .forms import SecureProfileForm, SecureProjectForm, SecureBlogPostForm, SecureExperienceForm, SecureEducationForm, SecureSkillForm
 from .utils import cleanup_old_page_visits
+from .query_optimizations import QueryOptimizer
+from .seo_utils import SEOGenerator
 
 class HomeView(TemplateView):
     """Vista de página principal minimalista con toda la información esencial"""
@@ -79,77 +81,25 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Obtener perfil (asumimos que hay solo uno)
-        try:
-            context['profile'] = Profile.objects.first()
-        except Profile.DoesNotExist:
-            context['profile'] = None
+        # Obtener perfil optimizado con cache
+        profile = QueryOptimizer.get_optimized_profile()
+        context['profile'] = profile
         
-        # Obtener contenido destacado mixto (proyectos y posts)
-        featured_projects = Project.objects.filter(
-            featured=True,
-            visibility='public'
-        ).order_by('order')
-
-        featured_posts = BlogPost.objects.filter(
-            featured=True,
-            status='published'
-        ).order_by('-publish_date')
-
-        # Combinar y preparar items destacados con metadata
-        featured_items = []
-
-        # Agregar proyectos destacados
-        for project in featured_projects:
-            featured_url = project.get_featured_link_url()
-            is_external = project.featured_link_type in ['github', 'demo', 'pdf', 'custom']
-
-            featured_items.append({
-                'type': 'project',
-                'object': project,
-                'title': project.title,
-                'description': project.description,
-                'image': project.image,
-                'url': project.get_absolute_url() if hasattr(project, 'get_absolute_url') else None,
-                'external_url': featured_url if is_external else None,
-                'featured_url': featured_url,  # Always include the featured URL
-                'featured_link_type': project.featured_link_type,
-                'featured_icon': project.get_featured_link_icon(),
-                'has_featured_link': project.has_featured_link(),
-                'date': project.created_at,
-                'order': project.order,
-                'technologies': project.technologies.all()[:3],
-                'is_external': is_external
-            })
-
-        # Agregar posts destacados
-        for post in featured_posts:
-            featured_items.append({
-                'type': 'post',
-                'object': post,
-                'title': post.title,
-                'description': post.excerpt or post.content[:200],
-                'image': post.featured_image,
-                'url': post.get_absolute_url(),
-                'external_url': None,
-                'date': post.publish_date,
-                'order': 999,  # Posts van después de proyectos por defecto
-                'category': post.category,
-                'reading_time': post.reading_time,
-                'is_external': False
-            })
-
-        # Ordenar por order primero, luego por fecha (más reciente primero)
-        featured_items.sort(key=lambda x: (x['order'], -x['date'].timestamp()))
-
-        # Limitar a máximo 4 items destacados
-        context['featured_items'] = featured_items[:4]
+        # Agregar contexto SEO
+        seo_context = SEOGenerator.generate_home_seo(profile, self.request)
+        context.update(seo_context)
         
-        # Obtener proyectos con paginación para la sección Work & Projects
+        # Obtener contenido destacado optimizado
+        context['featured_items'] = QueryOptimizer.get_featured_items_optimized(limit=4)
+        
+        # Obtener proyectos con paginación optimizada
         from django.core.paginator import Paginator
         
+        # Use optimized query for projects
         projects_queryset = Project.objects.filter(
             visibility='public'
+        ).select_related('project_type_obj').prefetch_related(
+            'technologies'
         ).order_by('order', '-created_at')
         
         # Paginación: 10 proyectos por página
@@ -165,10 +115,11 @@ class HomeView(TemplateView):
         context['projects_page_obj'] = projects_page_obj
         context['projects_paginator'] = projects_paginator
         
-        # Obtener últimos posts del blog publicados (máximo 5)
-        context['latest_posts'] = BlogPost.objects.filter(
-            status='published'
-        ).order_by('-publish_date')[:5]
+        # Obtener últimos posts del blog optimizados
+        context['latest_posts'] = QueryOptimizer.get_optimized_blog_posts(
+            status='published', 
+            limit=5
+        )
         
         # Agregar datos dinámicos para el modal de contacto
         context['projects_count'] = Project.objects.filter(visibility='public').count()
@@ -183,6 +134,10 @@ class HomeView(TemplateView):
         else:
             context['experience_years'] = 5  # Valor por defecto
         
+        # Agregar datos estructurados
+        context['person_structured_data'] = SEOGenerator.generate_structured_data_person(profile, self.request)
+        context['website_structured_data'] = SEOGenerator.generate_structured_data_website(self.request)
+        
         return context
 
 
@@ -194,7 +149,12 @@ class ProjectListView(ListView):
     paginate_by = 12
     
     def get_queryset(self):
-        queryset = Project.objects.filter(visibility='public').order_by('order', '-created_at')
+        # Use optimized query with select_related and prefetch_related
+        queryset = Project.objects.filter(
+            visibility='public'
+        ).select_related('project_type_obj').prefetch_related(
+            'technologies'
+        ).order_by('order', '-created_at')
         
         # Filtro por tecnología
         tech_filter = self.request.GET.get('tech')
@@ -214,8 +174,8 @@ class ProjectListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Obtener todas las tecnologías para el filtro
-        context['technologies'] = Technology.objects.all().order_by('name')
+        # Obtener todas las tecnologías optimizadas para el filtro
+        context['technologies'] = QueryOptimizer.get_optimized_technologies()
         
         # Mantener filtros en el contexto
         context['current_tech'] = self.request.GET.get('tech', '')
@@ -244,6 +204,10 @@ class ProjectDetailView(DetailView):
         ).exclude(id=project.id).distinct()[:3]
         
         context['related_projects'] = related_projects
+        
+        # Agregar contexto SEO
+        seo_context = SEOGenerator.generate_project_seo(project, self.request)
+        context.update(seo_context)
         
         return context
 
@@ -290,6 +254,9 @@ class ResumeView(TemplateView):
                 skills_by_category[skill.category] = []
             skills_by_category[skill.category].append(skill)
         context['skills_by_category'] = skills_by_category
+        
+        # Obtener idiomas
+        context['languages'] = Language.objects.all().order_by('order')
         
         return context
 
@@ -356,6 +323,17 @@ class BlogListView(ListView):
             status='published',
             featured=True
         ).order_by('-publish_date')[:5]
+
+        # Agregar contexto SEO
+        category_filter = None
+        if context['current_category']:
+            try:
+                category_filter = Category.objects.get(slug=context['current_category'])
+            except Category.DoesNotExist:
+                pass
+        
+        seo_context = SEOGenerator.generate_blog_list_seo(self.request, category_filter)
+        context.update(seo_context)
 
         return context
 
@@ -581,12 +559,16 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
         visit_data = []
         visit_labels = []
         for visit in daily_visits:
-            visit_labels.append(visit['day'])
+            # Convertir fecha a string para JSON
+            day_str = visit['day'].strftime('%Y-%m-%d') if hasattr(visit['day'], 'strftime') else str(visit['day'])
+            visit_labels.append(day_str)
             visit_data.append(visit['visits'])
         
+        # Convertir a JSON para el template
+        import json
         context['visit_chart_data'] = {
-            'labels': visit_labels,
-            'data': visit_data
+            'labels': json.dumps(visit_labels),
+            'data': json.dumps(visit_data)
         }
         
         # Páginas más visitadas (últimos 30 días)
@@ -851,39 +833,27 @@ class ProfileUpdateView(AdminRequiredMixin, UpdateView):
     success_url = reverse_lazy('portfolio:admin-dashboard')
     
     def get_object(self, queryset=None):
-        """Obtener o crear el perfil único"""
-        from django.conf import settings
-        import os
-
-        # Get default values from environment or use template defaults
-        default_name = os.environ.get('PROFILE_NAME', 'Your Name')
-        default_title = os.environ.get('PROFILE_TITLE', 'Developer')
-        default_bio = os.environ.get('PROFILE_BIO', 'Passionate developer creating innovative technology solutions.')
-        default_email = os.environ.get('PROFILE_EMAIL', 'contact@yourdomain.com')
-        default_location = os.environ.get('PROFILE_LOCATION', 'Your Location')
-
-        profile, created = Profile.objects.get_or_create(
-            pk=1,
-            defaults={
-                'name': default_name,
-                'professional_title': default_title,
-                'bio': default_bio,
-                'email': default_email,
-                'location': default_location
-            }
-        )
-        return profile
+        """Obtener o crear el perfil único (Singleton)"""
+        return Profile.get_solo()
 
     def post(self, request, *args, **kwargs):
         """Handle post request including CV deletion"""
         self.object = self.get_object()
 
-        # Check if CV deletion was requested
+        # Check if English CV deletion was requested
         if request.POST.get('delete_resume') == 'true':
             if self.object.resume_pdf:
                 # Delete the file from storage
                 self.object.resume_pdf.delete()
-                messages.success(request, 'CV eliminado exitosamente.')
+                messages.success(request, 'English CV deleted successfully.')
+                return redirect(self.success_url)
+
+        # Check if Spanish CV deletion was requested
+        if request.POST.get('delete_resume_es') == 'true':
+            if self.object.resume_pdf_es:
+                # Delete the file from storage
+                self.object.resume_pdf_es.delete()
+                messages.success(request, 'CV en Español eliminado exitosamente.')
                 return redirect(self.success_url)
 
         return super().post(request, *args, **kwargs)
@@ -891,6 +861,13 @@ class ProfileUpdateView(AdminRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, 'Perfil actualizado exitosamente.')
         return super().form_valid(form)
+    
+    def form_invalid(self, form):
+        messages.error(self.request, 'Error al actualizar el perfil. Revisa los campos.')
+        import logging
+        logger = logging.getLogger('portfolio')
+        logger.error(f'Profile form errors: {form.errors}')
+        return super().form_invalid(form)
     
     def form_invalid(self, form):
         messages.error(self.request, 'Error al actualizar el perfil. Revisa los campos.')
@@ -1604,3 +1581,196 @@ def custom_403(request, exception):
         'profile': profile,
     }, status=403)
 
+
+
+# ============================================================================
+# Language Management API Views
+# ============================================================================
+
+class LanguageListAPIView(AdminRequiredMixin, View):
+    """API view to list all languages"""
+    
+    def get(self, request, *args, **kwargs):
+        languages = Language.objects.all().order_by('order', 'name')
+        data = {
+            'success': True,
+            'languages': [
+                {
+                    'id': lang.id,
+                    'name': lang.name,
+                    'proficiency': lang.proficiency,
+                    'order': lang.order
+                }
+                for lang in languages
+            ]
+        }
+        return JsonResponse(data)
+
+
+class LanguageDetailAPIView(AdminRequiredMixin, View):
+    """API view to get language details"""
+    
+    def get(self, request, pk, *args, **kwargs):
+        try:
+            language = Language.objects.get(pk=pk)
+            data = {
+                'success': True,
+                'id': language.id,
+                'name': language.name,
+                'proficiency': language.proficiency,
+                'order': language.order
+            }
+            return JsonResponse(data)
+        except Language.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Language not found'}, status=404)
+
+
+class LanguageCreateAPIView(AdminRequiredMixin, View):
+    """API view to create a new language"""
+    
+    def post(self, request, *args, **kwargs):
+        import json
+        try:
+            data = json.loads(request.body)
+            
+            # Validate required fields
+            if not data.get('name') or not data.get('proficiency'):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Name and proficiency are required'
+                }, status=400)
+            
+            # Create language
+            language = Language.objects.create(
+                name=data['name'],
+                proficiency=data['proficiency'],
+                order=int(data.get('order', 0))
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'id': language.id,
+                'message': 'Language created successfully'
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            import logging
+            logger = logging.getLogger('portfolio')
+            logger.error(f'Error creating language: {e}')
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+class LanguageUpdateAPIView(AdminRequiredMixin, View):
+    """API view to update an existing language"""
+    
+    def post(self, request, pk, *args, **kwargs):
+        import json
+        try:
+            language = Language.objects.get(pk=pk)
+            data = json.loads(request.body)
+            
+            # Update fields
+            if 'name' in data:
+                language.name = data['name']
+            if 'proficiency' in data:
+                language.proficiency = data['proficiency']
+            if 'order' in data:
+                language.order = int(data['order'])
+            
+            language.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Language updated successfully'
+            })
+            
+        except Language.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Language not found'}, status=404)
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            import logging
+            logger = logging.getLogger('portfolio')
+            logger.error(f'Error updating language: {e}')
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+class LanguageDeleteAPIView(AdminRequiredMixin, View):
+    """API view to delete a language"""
+    
+    def post(self, request, pk, *args, **kwargs):
+        try:
+            language = Language.objects.get(pk=pk)
+            language.delete()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Language deleted successfully'
+            })
+            
+        except Language.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Language not found'}, status=404)
+        except Exception as e:
+            import logging
+            logger = logging.getLogger('portfolio')
+            logger.error(f'Error deleting language: {e}')
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+# =============================================================================
+# SEO Views
+# =============================================================================
+
+def robots_txt(request):
+    """Generate robots.txt file"""
+    from django.http import HttpResponse
+    
+    lines = [
+        "User-agent: *",
+        "Allow: /",
+        "",
+        f"Sitemap: {request.scheme}://{request.get_host()}/sitemap.xml",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")
+
+
+def security_txt(request):
+    """Generate security.txt file"""
+    from django.http import HttpResponse
+    
+    lines = [
+        "Contact: mailto:security@example.com",
+        "Preferred-Languages: en, es",
+        "Canonical: https://example.com/.well-known/security.txt",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")
+
+
+def manifest_json(request):
+    """Generate manifest.json for PWA"""
+    from django.http import JsonResponse
+    
+    manifest = {
+        "name": "Portfolio",
+        "short_name": "Portfolio",
+        "description": "Professional Portfolio",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#ffffff",
+        "theme_color": "#000000",
+        "icons": [
+            {
+                "src": "/static/images/icon-192.png",
+                "sizes": "192x192",
+                "type": "image/png"
+            },
+            {
+                "src": "/static/images/icon-512.png",
+                "sizes": "512x512",
+                "type": "image/png"
+            }
+        ]
+    }
+    return JsonResponse(manifest)

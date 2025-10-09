@@ -386,6 +386,37 @@ body {
     margin: 0 0 24px 0;
 }
 
+/* Toast Messages */
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
+.toast-message {
+    animation: slideIn 0.3s ease;
+}
+
+.toast-message.hiding {
+    animation: slideOut 0.3s ease;
+}
+
 /* Messages */
 .alert-custom {
     padding: 16px 20px;
@@ -493,13 +524,17 @@ body {
                 </div>
             </header>
 
-            <!-- Messages -->
+            <!-- Toast Messages (compact notifications) -->
             {% if messages %}
+            <div id="toast-container" style="position: fixed; top: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; max-width: 400px;">
                 {% for message in messages %}
-                    <div class="alert-custom alert-{{ message.tags }}" role="alert">
-                        {{ message }}
-                    </div>
+                <div class="toast-message toast-{{ message.tags }}" style="background: white; padding: 12px 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-left: 4px solid {% if message.tags == 'success' %}#4CAF50{% elif message.tags == 'error' %}#dc3545{% elif message.tags == 'warning' %}#FF9800{% else %}#1976D2{% endif %}; display: flex; align-items: center; gap: 12px; animation: slideIn 0.3s ease;">
+                    <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}" style="color: {% if message.tags == 'success' %}#4CAF50{% elif message.tags == 'error' %}#dc3545{% elif message.tags == 'warning' %}#FF9800{% else %}#1976D2{% endif %}; font-size: 18px;"></i>
+                    <span style="flex: 1; font-size: 14px; color: #242424;">{{ message }}</span>
+                    <button type="button" class="close-toast" onclick="this.parentElement.remove()" style="background: none; border: none; color: #6B6B6B; cursor: pointer; font-size: 18px; padding: 0; line-height: 1;">×</button>
+                </div>
                 {% endfor %}
+            </div>
             {% endif %}
 
             {% block admin_content %}{% endblock %}
@@ -552,14 +587,12 @@ function quickToggle(url, data, successCallback) {
     });
 }
 
-// Auto-hide alerts after 5 seconds
+// Auto-hide toast messages after 5 seconds
 setTimeout(function() {
-    const alerts = document.querySelectorAll('.alert-admin');
-    alerts.forEach(alert => {
-        if (alert.classList.contains('show')) {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
-        }
+    const toasts = document.querySelectorAll('.toast-message');
+    toasts.forEach(toast => {
+        toast.classList.add('hiding');
+        setTimeout(() => toast.remove(), 300);
     });
 }, 5000);
 </script>

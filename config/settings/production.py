@@ -79,6 +79,10 @@ csrf_origins_env = os.environ.get('CSRF_TRUSTED_ORIGINS_PROD', '')
 if csrf_origins_env:
     CSRF_TRUSTED_ORIGINS.extend(csrf_origins_env.split(','))
 
+# SEO Configuration for production
+BASE_URL = f'https://{production_domain}'
+SITE_NAME = os.environ.get('SITE_NAME', 'Portfolio Profesional')
+
 # Cache configuration for production (using database cache)
 CACHES = {
     'default': {
@@ -90,6 +94,14 @@ CACHES = {
         }
     }
 }
+
+# Template caching for better performance
+TEMPLATES[0]['OPTIONS']['loaders'] = [
+    ('django.template.loaders.cached.Loader', [
+        'django.template.loaders.filesystem.Loader',
+        'django.template.loaders.app_directories.Loader',
+    ]),
+]
 
 # Logging configuration for production
 LOGGING = {

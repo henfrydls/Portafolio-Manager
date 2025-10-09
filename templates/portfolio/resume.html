@@ -15,11 +15,16 @@
             </a>
 
             <div class="header-actions">
-                {% if profile and profile.resume_pdf %}
-                <a href="{{ profile.resume_pdf.url }}" target="_blank" class="header-btn primary">
+                {% if profile %}
+                {% get_current_language as LANGUAGE_CODE %}
+                {% with resume_pdf=profile|get_resume_for_language:LANGUAGE_CODE %}
+                {% if resume_pdf %}
+                <a href="{{ resume_pdf.url }}" target="_blank" class="header-btn primary">
                     <i class="fas fa-download"></i>
                     {% trans "Download PDF" %}
                 </a>
+                {% endif %}
+                {% endwith %}
                 {% endif %}
             </div>
         </div>
@@ -75,14 +80,6 @@
                         <span>Medium</span>
                     </a>
                     {% endif %}
-
-                    {% if profile.twitter_url %}
-                    <a href="{{ profile.twitter_url }}" target="_blank" class="social-link">
-                        <i class="fab fa-twitter"></i>
-                        <span>Twitter</span>
-                    </a>
-                    {% endif %}
-
                     {% if profile.website_url %}
                     <a href="{{ profile.website_url }}" target="_blank" class="social-link">
                         <i class="fas fa-globe"></i>
@@ -113,7 +110,11 @@
                             <div class="timeline-meta">
                                 <span class="timeline-period">
                                     {{ experience.start_date|date:"M Y" }} -
-                                    {% if experience.current %}{% trans "Present" %}{% else %}{{ experience.end_date|date:"M Y" }}{% endif %}
+                                    {% if experience.current %}
+                                        {% trans "Present" %}
+                                    {% else %}
+                                        {{ experience.end_date|date:"M Y" }}
+                                    {% endif %}
                                 </span>
                                 {% if experience.current %}
                                 <span class="timeline-current">{% trans "Current" %}</span>
@@ -147,7 +148,8 @@
                         <div class="skill-item">
                             <div class="skill-info">
                                 <span class="skill-name">{{ skill.name }}</span>
-                                <span class="skill-meta">{{ skill.years_experience }}y • {{ skill.get_proficiency_display }}</span>
+                                <span class="skill-meta">{{ skill.years_experience }}y • {{
+                                    skill.get_proficiency_display }}</span>
                             </div>
                             <div class="skill-indicator">
                                 {% for i in "1234" %}
@@ -180,7 +182,14 @@
                         {% for education in formal_education %}
                         <div class="education-item">
                             <div class="education-meta">
-                                <span class="education-period">{{ education.start_date|date:"Y" }}—{% if education.current %}{% trans "Present" %}{% else %}{{ education.end_date|date:"Y" }}{% endif %}</span>
+                                <span class="education-period">
+                                    {{ education.start_date|date:"Y" }}—
+                                    {% if education.current %}
+                                        {% trans "Present" %}
+                                    {% else %}
+                                        {{ education.end_date|date:"Y" }}
+                                    {% endif %}
+                                </span>
                             </div>
                             <div class="education-details">
                                 <h5 class="education-degree">{{ education.degree }}</h5>
@@ -199,9 +208,11 @@
                         {% for cert in certifications %}
                         <div class="education-item">
                             <div class="education-meta">
-                                {% if cert.end_date %}<span class="education-period">{{ cert.end_date|date:"Y" }}</span>{% endif %}
+                                {% if cert.end_date %}
+                                    <span class="education-period">{{ cert.end_date|date:"Y" }}</span>
+                                {% endif %}
                                 {% if cert.credential_url %}
-                                <a href="{{ cert.credential_url }}" target="_blank" class="cert-verify">{% trans "Verify" %}</a>
+                                    <a href="{{ cert.credential_url }}" target="_blank" class="cert-verify">{% trans "Verify" %}</a>
                                 {% endif %}
                             </div>
                             <div class="education-details">
@@ -213,6 +224,30 @@
                     </div>
                     {% endif %}
                 </div>
+
+                <!-- Languages Section -->
+                {% if languages %}
+                <div class="learning-section">
+                    <h4 class="education-group-title">
+                        Languages
+                        <span class="learning-count">
+                            {{ languages.count }} {% if languages.count == 1 %}language{% else %}languages{% endif %}
+                        </span>
+                    </h4>
+
+                    <!-- Languages Stats -->
+                    <div class="learning-stats">
+                        <div class="stats-row">
+                            {% for language in languages|slice:":4" %}
+                            <div class="stat-item">
+                                <div class="stat-number">{{ language.proficiency }}</div>
+                                <div class="stat-label">{{ language.name }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
 
                 <!-- Continuous Learning Section (Style 4) -->
                 {% if online_courses %}
@@ -238,7 +273,8 @@
                     <!-- Course Browser -->
                     <div class="course-browser">
                         <div class="course-header">
-                            <input type="text" id="courseFilter" placeholder="{% trans "Filter courses..." %}" class="course-filter">
+                            <input type="text" id="courseFilter" placeholder="{% trans " Filter courses..." %}"
+                                class="course-filter">
                             <button class="toggle-view-btn" onclick="toggleCourseView()">
                                 <span class="toggle-text">{% trans "Show All" %}</span>
                                 <span class="toggle-arrow">↓</span>
@@ -253,9 +289,11 @@
                                     <span class="course-provider">{{ course.institution }}</span>
                                 </div>
                                 <div class="course-actions">
-                                    {% if course.end_date %}<span class="course-date">{{ course.end_date|date:"M Y" }}</span>{% endif %}
+                                    {% if course.end_date %}
+                                        <span class="course-date">{{ course.end_date|date:"M Y" }}</span>
+                                    {% endif %}
                                     {% if course.credential_url %}
-                                    <a href="{{ course.credential_url }}" target="_blank" class="course-cert">⚡</a>
+                                        <a href="{{ course.credential_url }}" target="_blank" class="course-cert">⚡</a>
                                     {% endif %}
                                 </div>
                             </div>
@@ -269,7 +307,9 @@
                                         <span class="course-provider">{{ course.institution }}</span>
                                     </div>
                                     <div class="course-actions">
-                                        {% if course.end_date %}<span class="course-date">{{ course.end_date|date:"M Y" }}</span>{% endif %}
+                                        {% if course.end_date %}
+                                            <span class="course-date">{{ course.end_date|date:"M Y" }}</span>
+                                        {% endif %}
                                         {% if course.credential_url %}
                                         <a href="{{ course.credential_url }}" target="_blank" class="course-cert">⚡</a>
                                         {% endif %}
@@ -299,836 +339,842 @@
 </div>
 
 <script>
-function toggleCourseView() {
-    const hiddenCourses = document.getElementById('courseHidden');
-    const button = document.querySelector('.toggle-view-btn');
-    const toggleText = button.querySelector('.toggle-text');
-    const toggleArrow = button.querySelector('.toggle-arrow');
+    function toggleCourseView() {
+        const hiddenCourses = document.getElementById('courseHidden');
+        const button = document.querySelector('.toggle-view-btn');
+        const toggleText = button.querySelector('.toggle-text');
+        const toggleArrow = button.querySelector('.toggle-arrow');
 
-    if (hiddenCourses.style.display === 'none') {
-        hiddenCourses.style.display = 'block';
-        toggleText.textContent = '{% trans "Show Less" %}';
-        toggleArrow.textContent = '↑';
-    } else {
-        hiddenCourses.style.display = 'none';
-        toggleText.textContent = '{% trans "Show All" %}';
-        toggleArrow.textContent = '↓';
-    }
-}
-
-// Course filtering
-document.getElementById('courseFilter').addEventListener('input', function(e) {
-    const filterValue = e.target.value.toLowerCase();
-    const courseRows = document.querySelectorAll('.course-row');
-
-    courseRows.forEach(row => {
-        const title = row.querySelector('.course-title').textContent.toLowerCase();
-        const provider = row.querySelector('.course-provider').textContent.toLowerCase();
-
-        if (title.includes(filterValue) || provider.includes(filterValue)) {
-            row.style.display = 'flex';
+        if (hiddenCourses.style.display === 'none') {
+            hiddenCourses.style.display = 'block';
+            toggleText.textContent = '{% trans "Show Less" %}';
+            toggleArrow.textContent = '↑';
         } else {
-            row.style.display = 'none';
+            hiddenCourses.style.display = 'none';
+            toggleText.textContent = '{% trans "Show All" %}';
+            toggleArrow.textContent = '↓';
         }
+    }
+
+    // Course filtering
+    document.getElementById('courseFilter').addEventListener('input', function (e) {
+        const filterValue = e.target.value.toLowerCase();
+        const courseRows = document.querySelectorAll('.course-row');
+
+        courseRows.forEach(row => {
+            const title = row.querySelector('.course-title').textContent.toLowerCase();
+            const provider = row.querySelector('.course-provider').textContent.toLowerCase();
+
+            if (title.includes(filterValue) || provider.includes(filterValue)) {
+                row.style.display = 'flex';
+            } else {
+                row.style.display = 'none';
+            }
+        });
     });
-});
 
 </script>
 {% endblock %}
 
 {% block extra_css %}
 <style>
-/* Modern Minimalist Resume - Hybrid Design */
-.modern-resume-page {
-    font-family: "Sohne", -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    background: #f8f8f8;
-    min-height: 100vh;
-    color: #242424;
-}
-
-/* Floating Header */
-.floating-header {
-    position: fixed;
-    padding-bottom: 10px;
-    padding-top: 10px;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid #F2F2F2;
-    z-index: 1000;
-}
-
-.header-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 0 32px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.back-button {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #6B6B6B;
-    text-decoration: none;
-    font-weight: 400;
-    font-size: 14px;
-    transition: color 0.2s ease;
-}
-
-.back-button:hover {
-    color: #242424;
-}
-
-.header-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 400;
-    font-size: 14px;
-    transition: all 0.2s ease;
-}
-
-.header-btn.primary {
-    background: #242424;
-    color: white;
-}
-
-.header-btn.primary:hover {
-    background: #1a1a1a;
-    transform: translateY(-1px);
-}
-
-/* Hero Section */
-.hero-section {
-    padding: 120px 0 60px;
-    background: white;
-    border-bottom: 1px solid #F2F2F2;
-}
-
-.hero-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 0 32px;
-}
-
-.hero-content {
-    text-align: center;
-    max-width: 700px;
-    margin: 0 auto;
-}
-
-.hero-title {
-    font-size: 48px;
-    font-weight: 300;
-    line-height: 1.2;
-    margin: 0 0 16px 0;
-    color: #242424;
-    letter-spacing: -0.02em;
-}
-
-.hero-subtitle {
-    font-size: 24px;
-    font-weight: 300;
-    color: #6B6B6B;
-    margin: 0 0 24px 0;
-}
-
-.hero-bio {
-    font-size: 18px;
-    line-height: 1.6;
-    color: #6B6B6B;
-    margin-bottom: 32px;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-/* Primary Contact Info */
-.hero-primary-contact {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-    margin-bottom: 24px;
-}
-
-.contact-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: white;
-    border: 1px solid #F2F2F2;
-    padding: 8px 16px;
-    border-radius: 100px;
-    color: #242424;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 400;
-    transition: all 0.2s ease;
-}
-
-.contact-chip:hover {
-    background: #f8f8f8;
-    transform: translateY(-2px);
-}
-
-.contact-chip.primary {
-    background: #f8f8f8;
-    border-color: #242424;
-}
-
-.contact-chip.primary:hover {
-    background: #242424;
-    color: white;
-}
-
-/* Secondary Social Links */
-.hero-social-links {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 12px;
-    max-width: 500px;
-    margin: 0 auto;
-}
-
-.social-link {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    color: #242424;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 400;
-    transition: all 0.2s ease;
-    justify-content: center;
-}
-
-.social-link:hover {
-    background: rgba(36, 36, 36, 0.05);
-    border-color: #242424;
-    transform: translateY(-2px);
-}
-
-.social-link i {
-    font-size: 16px;
-    width: 16px;
-    text-align: center;
-}
-
-.social-link span {
-    font-size: 13px;
-    font-weight: 400;
-}
-
-/* Main Container */
-.main-container {
-    background: #f8f8f8;
-    padding: 64px 0;
-}
-
-/* Content Sections */
-.content-section {
-    max-width: 1000px;
-    margin: 0 auto 80px;
-    padding: 0 32px;
-}
-
-.section-header {
-    text-align: center;
-    margin-bottom: 48px;
-}
-
-.section-title {
-    font-size: 32px;
-    font-weight: 300;
-    margin: 0 0 8px 0;
-    color: #242424;
-    letter-spacing: -0.01em;
-}
-
-.section-subtitle {
-    font-size: 16px;
-    color: #6B6B6B;
-    margin: 0;
-    font-weight: 300;
-}
-
-/* Timeline Experience Section */
-.timeline-container {
-    background: white;
-    border-radius: 12px;
-    padding: 40px 32px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    border: 1px solid #F2F2F2;
-}
-
-.timeline {
-    position: relative;
-    padding-left: 40px;
-}
-
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 9px;
-    top: 9px;
-    bottom: 0;
-    width: 2px;
-    background: linear-gradient(to bottom, #242424 0%, #F2F2F2 100%);
-}
-
-.timeline-item {
-    position: relative;
-    margin-bottom: 48px;
-    padding-left: 32px;
-}
-
-.timeline-item:last-child {
-    margin-bottom: 0;
-}
-
-.timeline-marker {
-    position: absolute;
-    left: -38px;
-    top: 10px;
-    width: 16px;
-    height: 16px;
-    background: #242424;
-    border: 4px solid white;
-    border-radius: 50%;
-    box-shadow: 0 0 0 2px #242424;
-    z-index: 2;
-}
-
-.timeline-meta {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 8px;
-}
-
-.timeline-period {
-    font-size: 12px;
-    font-weight: 400;
-    color: #6B6B6B;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.timeline-current {
-    font-size: 11px;
-    background: #242424;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-weight: 400;
-}
-
-.timeline-title {
-    font-size: 20px;
-    font-weight: 400;
-    margin: 0 0 6px 0;
-    color: #242424;
-}
-
-.timeline-company {
-    font-size: 16px;
-    color: #6B6B6B;
-    margin-bottom: 12px;
-    font-weight: 400;
-}
-
-.timeline-description {
-    color: #6B6B6B;
-    line-height: 1.6;
-    font-size: 15px;
-}
-
-/* Technical Skills - Compact Style */
-.skills-container {
-    background: white;
-    border-radius: 12px;
-    padding: 32px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    border: 1px solid #F2F2F2;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 32px;
-}
-
-.skill-section {
-    margin-bottom: 0;
-}
-
-.skill-section-title {
-    font-size: 16px;
-    font-weight: 400;
-    margin: 0 0 20px 0;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #242424;
-    border-bottom: 2px solid #F2F2F2;
-    padding-bottom: 8px;
-}
-
-.skill-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.skill-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid #F2F2F2;
-}
-
-.skill-item:last-child {
-    border-bottom: none;
-}
-
-.skill-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.skill-name {
-    font-size: 14px;
-    font-weight: 400;
-    color: #242424;
-}
-
-.skill-meta {
-    font-size: 11px;
-    font-weight: 300;
-    color: #6B6B6B;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.skill-indicator {
-    display: flex;
-    gap: 3px;
-}
-
-.skill-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #F2F2F2;
-}
-
-.skill-dot.filled {
-    background: #242424;
-}
-
-/* Education Container */
-.education-container {
-    background: white;
-    border-radius: 12px;
-    padding: 32px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    border: 1px solid #F2F2F2;
-}
-
-.education-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 32px;
-    margin-bottom: 40px;
-}
-
-.education-group {
-    margin-bottom: 0;
-}
-
-.education-group-title {
-    font-size: 16px;
-    font-weight: 400;
-    margin: 0 0 24px 0;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #242424;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #F2F2F2;
-    padding-bottom: 8px;
-}
-
-.learning-count {
-    font-size: 12px;
-    font-weight: 300;
-    color: #6B6B6B;
-    text-transform: none;
-    letter-spacing: normal;
-}
-
-.education-item {
-    display: grid;
-    grid-template-columns: 80px 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #F2F2F2;
-}
-
-.education-item:last-child {
-    margin-bottom: 0;
-    border-bottom: none;
-}
-
-.education-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.education-period {
-    font-size: 11px;
-    font-weight: 400;
-    color: #242424;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.cert-verify {
-    font-size: 10px;
-    font-weight: 400;
-    color: #6B6B6B;
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-}
-
-.cert-verify:hover {
-    color: #242424;
-}
-
-.education-degree {
-    font-size: 15px;
-    font-weight: 400;
-    margin: 0 0 4px 0;
-    color: #242424;
-}
-
-.education-institution {
-    font-size: 12px;
-    font-weight: 400;
-    margin: 0 0 4px 0;
-    color: #6B6B6B;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.education-field {
-    font-size: 12px;
-    font-weight: 300;
-    margin: 0;
-    color: #6B6B6B;
-}
-
-/* Learning Section (Style 4) */
-.learning-section {
-    border-top: 1px solid #F2F2F2;
-    padding-top: 32px;
-}
-
-.learning-stats {
-    margin: 24px 0 32px;
-    padding: 20px;
-    background: #f8f8f8;
-    border-radius: 8px;
-    border: 1px solid #F2F2F2;
-}
-
-.stats-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    text-align: center;
-}
-
-.stat-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.stat-number {
-    font-size: 24px;
-    font-weight: 300;
-    color: #242424;
-}
-
-.stat-label {
-    font-size: 10px;
-    font-weight: 300;
-    color: #6B6B6B;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-}
-
-/* Course Browser */
-.course-browser {
-    border: 1px solid #F2F2F2;
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.course-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
-    border-bottom: 1px solid #F2F2F2;
-    background: #f8f8f8;
-}
-
-.course-filter {
-    border: none;
-    background: transparent;
-    font-size: 12px;
-    font-weight: 300;
-    color: #242424;
-    outline: none;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 0;
-    width: 200px;
-}
-
-.course-filter::placeholder {
-    color: #6B6B6B;
-}
-
-.toggle-view-btn {
-    background: none;
-    border: none;
-    font-size: 12px;
-    font-weight: 400;
-    color: #242424;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0;
-}
-
-.toggle-view-btn:hover {
-    opacity: 0.6;
-}
-
-.course-list {
-    display: flex;
-    flex-direction: column;
-}
-
-.course-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 20px;
-    border-bottom: 1px solid #F2F2F2;
-    transition: background-color 0.2s ease;
-}
-
-.course-row:hover {
-    background: #f8f8f8;
-}
-
-.course-row:last-child {
-    border-bottom: none;
-}
-
-.course-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.course-title {
-    font-size: 13px;
-    font-weight: 400;
-    color: #242424;
-}
-
-.course-provider {
-    font-size: 11px;
-    font-weight: 300;
-    color: #6B6B6B;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.course-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.course-date {
-    font-size: 11px;
-    font-weight: 300;
-    color: #6B6B6B;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.course-cert {
-    font-size: 14px;
-    color: #242424;
-    text-decoration: none;
-    transition: opacity 0.2s ease;
-}
-
-.course-cert:hover {
-    opacity: 0.6;
-}
-
-/* Footer */
-.modern-footer {
-    background: #242424;
-    color: white;
-    padding: 40px 0;
-}
-
-.footer-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 0 32px;
-}
-
-.footer-content {
-    text-align: center;
-}
-
-.footer-text p {
-    margin: 0 0 8px 0;
-    color: #6B6B6B;
-    font-size: 14px;
-    font-weight: 300;
-}
-
-.footer-text p:last-child {
-    margin: 0;
-    color: white;
-    font-weight: 400;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .header-container,
-    .hero-container,
-    .footer-container {
-        padding-left: 16px;
-        padding-right: 16px;
+    /* Modern Minimalist Resume - Hybrid Design */
+    .modern-resume-page {
+        font-family: "Sohne", -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        background: #f8f8f8;
+        min-height: 100vh;
+        color: #242424;
     }
 
-    .content-section {
-        padding-left: 16px;
-        padding-right: 16px;
+    /* Floating Header */
+    .floating-header {
+        position: fixed;
+        height: 56px;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid #F2F2F2;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+    }
+
+    .header-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 0 32px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+    }
+
+    .back-button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #6B6B6B;
+        text-decoration: none;
+        font-weight: 400;
+        font-size: 14px;
+        transition: color 0.2s ease;
+    }
+
+    .back-button:hover {
+        color: #242424;
+    }
+
+    .header-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 400;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+
+    .header-btn.primary {
+        background: #242424;
+        color: white;
+    }
+
+    .header-btn.primary:hover {
+        background: #1a1a1a;
+        transform: translateY(-1px);
+    }
+
+    /* Hero Section */
+    .hero-section {
+        padding: 80px 0 60px;
+        background: white;
+        border-bottom: 1px solid #F2F2F2;
+    }
+
+    .hero-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 0 32px;
+    }
+
+    .hero-content {
+        text-align: center;
+        max-width: 700px;
+        margin: 0 auto;
     }
 
     .hero-title {
-        font-size: 36px;
+        font-size: 48px;
+        font-weight: 300;
+        line-height: 1.2;
+        margin: 0 0 16px 0;
+        color: #242424;
+        letter-spacing: -0.02em;
+    }
+
+    .hero-subtitle {
+        font-size: 24px;
+        font-weight: 300;
+        color: #6B6B6B;
+        margin: 0 0 24px 0;
     }
 
     .hero-bio {
-        font-size: 16px;
-        max-width: 100%;
+        font-size: 18px;
+        line-height: 1.6;
+        color: #6B6B6B;
+        margin-bottom: 32px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
+    /* Primary Contact Info */
     .hero-primary-contact {
-        flex-direction: column;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+        margin-bottom: 24px;
+    }
+
+    .contact-chip {
+        display: inline-flex;
         align-items: center;
         gap: 8px;
+        background: white;
+        border: 1px solid #F2F2F2;
+        padding: 8px 16px;
+        border-radius: 100px;
+        color: #242424;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 400;
+        transition: all 0.2s ease;
     }
 
+    .contact-chip:hover {
+        background: #f8f8f8;
+        transform: translateY(-2px);
+    }
+
+    .contact-chip.primary {
+        background: #f8f8f8;
+        border-color: #242424;
+    }
+
+    .contact-chip.primary:hover {
+        background: #242424;
+        color: white;
+    }
+
+    /* Secondary Social Links */
     .hero-social-links {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-        max-width: 100%;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 12px;
+        max-width: 500px;
+        margin: 0 auto;
     }
 
     .social-link {
-        padding: 8px 12px;
-        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: #242424;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 400;
+        transition: all 0.2s ease;
+        justify-content: center;
+    }
+
+    .social-link:hover {
+        background: rgba(36, 36, 36, 0.05);
+        border-color: #242424;
+        transform: translateY(-2px);
+    }
+
+    .social-link i {
+        font-size: 16px;
+        width: 16px;
+        text-align: center;
     }
 
     .social-link span {
-        font-size: 12px;
+        font-size: 13px;
+        font-weight: 400;
+    }
+
+    /* Main Container */
+    .main-container {
+        background: #f8f8f8;
+        padding: 64px 0;
+    }
+
+    /* Content Sections */
+    .content-section {
+        max-width: 1000px;
+        margin: 0 auto 80px;
+        padding: 0 32px;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 48px;
     }
 
     .section-title {
-        font-size: 28px;
+        font-size: 32px;
+        font-weight: 300;
+        margin: 0 0 8px 0;
+        color: #242424;
+        letter-spacing: -0.01em;
+    }
+
+    .section-subtitle {
+        font-size: 16px;
+        color: #6B6B6B;
+        margin: 0;
+        font-weight: 300;
+    }
+
+    /* Timeline Experience Section */
+    .timeline-container {
+        background: white;
+        border-radius: 12px;
+        padding: 40px 32px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        border: 1px solid #F2F2F2;
     }
 
     .timeline {
-        padding-left: 32px;
+        position: relative;
+        padding-left: 40px;
     }
 
     .timeline::before {
-        left: 16px;
+        content: '';
+        position: absolute;
+        left: 9px;
+        top: 9px;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(to bottom, #242424 0%, #F2F2F2 100%);
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 48px;
+        padding-left: 32px;
+    }
+
+    .timeline-item:last-child {
+        margin-bottom: 0;
     }
 
     .timeline-marker {
-        left: -30px;
-        width: 12px;
-        height: 12px;
-        border: 3px solid white;
+        position: absolute;
+        left: -38px;
+        top: 10px;
+        width: 16px;
+        height: 16px;
+        background: #242424;
+        border: 4px solid white;
+        border-radius: 50%;
+        box-shadow: 0 0 0 2px #242424;
+        z-index: 2;
     }
 
+    .timeline-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+    }
+
+    .timeline-period {
+        font-size: 12px;
+        font-weight: 400;
+        color: #6B6B6B;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .timeline-current {
+        font-size: 11px;
+        background: #242424;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-weight: 400;
+    }
+
+    .timeline-title {
+        font-size: 20px;
+        font-weight: 400;
+        margin: 0 0 6px 0;
+        color: #242424;
+    }
+
+    .timeline-company {
+        font-size: 16px;
+        color: #6B6B6B;
+        margin-bottom: 12px;
+        font-weight: 400;
+    }
+
+    .timeline-description {
+        color: #6B6B6B;
+        line-height: 1.6;
+        font-size: 15px;
+    }
+
+    /* Technical Skills - Compact Style */
     .skills-container {
-        grid-template-columns: 1fr;
+        background: white;
+        border-radius: 12px;
+        padding: 32px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        border: 1px solid #F2F2F2;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 32px;
+    }
+
+    .skill-section {
+        margin-bottom: 0;
     }
 
     .skill-section-title {
-        font-size: 14px;
+        font-size: 16px;
+        font-weight: 400;
+        margin: 0 0 20px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #242424;
+        border-bottom: 2px solid #F2F2F2;
+        padding-bottom: 8px;
     }
 
-    .education-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .education-item {
-        grid-template-columns: 1fr;
+    .skill-list {
+        display: flex;
+        flex-direction: column;
         gap: 8px;
     }
 
+    .skill-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #F2F2F2;
+    }
+
+    .skill-item:last-child {
+        border-bottom: none;
+    }
+
+    .skill-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .skill-name {
+        font-size: 14px;
+        font-weight: 400;
+        color: #242424;
+    }
+
+    .skill-meta {
+        font-size: 11px;
+        font-weight: 300;
+        color: #6B6B6B;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .skill-indicator {
+        display: flex;
+        gap: 3px;
+    }
+
+    .skill-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #F2F2F2;
+    }
+
+    .skill-dot.filled {
+        background: #242424;
+    }
+
+    /* Education Container */
+    .education-container {
+        background: white;
+        border-radius: 12px;
+        padding: 32px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        border: 1px solid #F2F2F2;
+    }
+
+    .education-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 32px;
+        margin-bottom: 40px;
+    }
+
+    .education-group {
+        margin-bottom: 0;
+    }
+
+    .education-group-title {
+        font-size: 16px;
+        font-weight: 400;
+        margin: 0 0 24px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #242424;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #F2F2F2;
+        padding-bottom: 8px;
+    }
+
+    .learning-count {
+        font-size: 12px;
+        font-weight: 300;
+        color: #6B6B6B;
+        text-transform: none;
+        letter-spacing: normal;
+    }
+
+    .education-item {
+        display: grid;
+        grid-template-columns: 80px 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #F2F2F2;
+    }
+
+    .education-item:last-child {
+        margin-bottom: 0;
+        border-bottom: none;
+    }
+
+    .education-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .education-period {
+        font-size: 11px;
+        font-weight: 400;
+        color: #242424;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .cert-verify {
+        font-size: 10px;
+        font-weight: 400;
+        color: #6B6B6B;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    .cert-verify:hover {
+        color: #242424;
+    }
+
+    .education-degree {
+        font-size: 15px;
+        font-weight: 400;
+        margin: 0 0 4px 0;
+        color: #242424;
+    }
+
+    .education-institution {
+        font-size: 12px;
+        font-weight: 400;
+        margin: 0 0 4px 0;
+        color: #6B6B6B;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .education-field {
+        font-size: 12px;
+        font-weight: 300;
+        margin: 0;
+        color: #6B6B6B;
+    }
+
+    /* Learning Section (Style 4) */
+    .learning-section {
+        border-top: 1px solid #F2F2F2;
+        padding-top: 32px;
+    }
+
+    .learning-stats {
+        margin: 24px 0 32px;
+        padding: 20px;
+        background: #f8f8f8;
+        border-radius: 8px;
+        border: 1px solid #F2F2F2;
+    }
+
     .stats-row {
-        grid-template-columns: repeat(2, 1fr);
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        text-align: center;
+        flex-wrap: wrap;
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 100px;
+    }
+
+    .stat-number {
+        font-size: 24px;
+        font-weight: 300;
+        color: #242424;
+    }
+
+    .stat-label {
+        font-size: 10px;
+        font-weight: 300;
+        color: #6B6B6B;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    /* Course Browser */
+    .course-browser {
+        border: 1px solid #F2F2F2;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
     }
 
     .course-header {
-        flex-direction: column;
-        gap: 12px;
-        align-items: stretch;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid #F2F2F2;
+        background: #f8f8f8;
     }
 
     .course-filter {
-        text-align: center;
-        padding: 8px 0;
-        width: 100%;
+        border: none;
+        background: transparent;
+        font-size: 12px;
+        font-weight: 300;
+        color: #242424;
+        outline: none;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0;
+        width: 200px;
     }
-}
+
+    .course-filter::placeholder {
+        color: #6B6B6B;
+    }
+
+    .toggle-view-btn {
+        background: none;
+        border: none;
+        font-size: 12px;
+        font-weight: 400;
+        color: #242424;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0;
+    }
+
+    .toggle-view-btn:hover {
+        opacity: 0.6;
+    }
+
+    .course-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .course-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-bottom: 1px solid #F2F2F2;
+        transition: background-color 0.2s ease;
+    }
+
+    .course-row:hover {
+        background: #f8f8f8;
+    }
+
+    .course-row:last-child {
+        border-bottom: none;
+    }
+
+    .course-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .course-title {
+        font-size: 13px;
+        font-weight: 400;
+        color: #242424;
+    }
+
+    .course-provider {
+        font-size: 11px;
+        font-weight: 300;
+        color: #6B6B6B;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .course-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .course-date {
+        font-size: 11px;
+        font-weight: 300;
+        color: #6B6B6B;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .course-cert {
+        font-size: 14px;
+        color: #242424;
+        text-decoration: none;
+        transition: opacity 0.2s ease;
+    }
+
+    .course-cert:hover {
+        opacity: 0.6;
+    }
+
+    /* Footer */
+    .modern-footer {
+        background: #242424;
+        color: white;
+        padding: 40px 0;
+    }
+
+    .footer-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 0 32px;
+    }
+
+    .footer-content {
+        text-align: center;
+    }
+
+    .footer-text p {
+        margin: 0 0 8px 0;
+        color: #6B6B6B;
+        font-size: 14px;
+        font-weight: 300;
+    }
+
+    .footer-text p:last-child {
+        margin: 0;
+        color: white;
+        font-weight: 400;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+
+        .header-container,
+        .hero-container,
+        .footer-container {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+
+        .content-section {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+
+        .hero-title {
+            font-size: 36px;
+        }
+
+        .hero-bio {
+            font-size: 16px;
+            max-width: 100%;
+        }
+
+        .hero-primary-contact {
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hero-social-links {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            max-width: 100%;
+        }
+
+        .social-link {
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+
+        .social-link span {
+            font-size: 12px;
+        }
+
+        .section-title {
+            font-size: 28px;
+        }
+
+        .timeline {
+            padding-left: 32px;
+        }
+
+        .timeline::before {
+            left: 16px;
+        }
+
+        .timeline-marker {
+            left: -30px;
+            width: 12px;
+            height: 12px;
+            border: 3px solid white;
+        }
+
+        .skills-container {
+            grid-template-columns: 1fr;
+        }
+
+        .skill-section-title {
+            font-size: 14px;
+        }
+
+        .education-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .education-item {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .stats-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .course-header {
+            flex-direction: column;
+            gap: 12px;
+            align-items: stretch;
+        }
+
+        .course-filter {
+            text-align: center;
+            padding: 8px 0;
+            width: 100%;
+        }
+    }
 </style>
 {% endblock %}

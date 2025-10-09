@@ -75,7 +75,6 @@ class PageVisitMiddleware(MiddlewareMixin):
         'baiduspider',
         'yandexbot',
         'facebookexternalhit',
-        'twitterbot',
         'linkedinbot',
         'whatsapp',
         'telegram',

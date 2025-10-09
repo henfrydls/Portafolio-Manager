@@ -6,11 +6,14 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
+from django.contrib.sitemaps.views import sitemap
+from portfolio.sitemaps import sitemaps
 
 # Non-translatable URLs (like admin)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('i18n/setlang/', include('portfolio.language_urls')),  # Custom language switcher
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 ]
 
 # Translatable URLs with language prefix

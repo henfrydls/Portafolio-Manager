@@ -2,10 +2,8 @@
 {% load simple_i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 <html lang="{{ LANGUAGE_CODE }}">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ profile.name|default:"Your Name" }}{% endblock %}</title>
     {% load static %}
 
     <!-- Google Fonts - Montserrat for clean typography -->
@@ -216,28 +214,31 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Floating Language Switcher -->
     <div id="portfolio-lang-switcher">
         {% get_current_language as CURRENT_LANGUAGE %}
         {% if CURRENT_LANGUAGE == 'en' %}
-            <span class="portfolio-lang-option active">EN</span>
-            <span class="portfolio-lang-separator">|</span>
-            <form method="post" action="{% url 'set_language' %}" style="display:inline!important; margin:0!important; padding:0!important;">
-                {% csrf_token %}
-                <input name="next" type="hidden" value="{{ request.get_full_path }}" />
-                <input name="language" type="hidden" value="es" />
-                <button type="submit" class="portfolio-lang-option">ES</button>
-            </form>
+        <span class="portfolio-lang-option active">EN</span>
+        <span class="portfolio-lang-separator">|</span>
+        <form method="post" action="{% url 'set_language' %}"
+            style="display:inline!important; margin:0!important; padding:0!important;">
+            {% csrf_token %}
+            <input name="next" type="hidden" value="{{ request.get_full_path }}" />
+            <input name="language" type="hidden" value="es" />
+            <button type="submit" class="portfolio-lang-option">ES</button>
+        </form>
         {% else %}
-            <form method="post" action="{% url 'set_language' %}" style="display:inline!important; margin:0!important; padding:0!important;">
-                {% csrf_token %}
-                <input name="next" type="hidden" value="{{ request.get_full_path }}" />
-                <input name="language" type="hidden" value="en" />
-                <button type="submit" class="portfolio-lang-option">EN</button>
-            </form>
-            <span class="portfolio-lang-separator">|</span>
-            <span class="portfolio-lang-option active">ES</span>
+        <form method="post" action="{% url 'set_language' %}"
+            style="display:inline!important; margin:0!important; padding:0!important;">
+            {% csrf_token %}
+            <input name="next" type="hidden" value="{{ request.get_full_path }}" />
+            <input name="language" type="hidden" value="en" />
+            <button type="submit" class="portfolio-lang-option">EN</button>
+        </form>
+        <span class="portfolio-lang-separator">|</span>
+        <span class="portfolio-lang-option active">ES</span>
         {% endif %}
     </div>
 
@@ -246,9 +247,9 @@
         <div class="nav-container">
             <a href="/" class="nav-brand">
                 {% if profile.website_url %}
-                    {{ profile.website_url|cut:"https://"|cut:"http://"|cut:"www." }}
+                {{ profile.website_url|cut:"https://"|cut:"http://"|cut:"www." }}
                 {% else %}
-                    {{ profile.name|default:"Your Portfolio" }}
+                {{ profile.name|default:"Your Portfolio" }}
                 {% endif %}
             </a>
 
@@ -264,16 +265,16 @@
 
 
                 {% if profile %}
-                    {% if profile.github_url %}
-                    <a href="{{ profile.github_url }}" target="_blank" title="GitHub">
-                        <i class="fab fa-github"></i>
-                    </a>
-                    {% endif %}
-                    {% if profile.linkedin_url %}
-                    <a href="{{ profile.linkedin_url }}" target="_blank" title="LinkedIn">
-                        <i class="fab fa-linkedin"></i>
-                    </a>
-                    {% endif %}
+                {% if profile.github_url %}
+                <a href="{{ profile.github_url }}" target="_blank" title="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                {% endif %}
+                {% if profile.linkedin_url %}
+                <a href="{{ profile.linkedin_url }}" target="_blank" title="LinkedIn">
+                    <i class="fab fa-linkedin"></i>
+                </a>
+                {% endif %}
                 {% endif %}
             </div>
         </div>
@@ -313,9 +314,12 @@
 
     {% block extra_js %}{% endblock %}
 
+    <!-- Structured Data -->
+    {% block structured_data %}{% endblock %}
+
     <!-- Language Switcher Debug Script -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             var langSwitcher = document.getElementById('portfolio-lang-switcher');
             if (langSwitcher) {
                 console.log('Language switcher found and visible');
@@ -368,4 +372,5 @@
         }
     </script>
 </body>
+
 </html>

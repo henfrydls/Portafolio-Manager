@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.sitemaps',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'portfolio',
@@ -173,6 +174,10 @@ EMAIL_TIMEOUT = 30  # seconds
 # Page Visit Tracking Configuration
 PAGE_VISIT_CLEANUP_FREQUENCY = 1000  # Ejecutar limpieza cada 1000 requests
 PAGE_VISIT_RETENTION_DAYS = 180      # Mantener visitas de los últimos 6 meses
+
+# SEO Configuration
+SITE_NAME = 'Portfolio Profesional'
+BASE_URL = 'http://localhost:8000'  # Will be overridden in production
 
 # Logging configuration
 LOGGING = {

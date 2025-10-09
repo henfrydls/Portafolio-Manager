@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
 from django.urls import reverse
+from django.core.exceptions import ValidationError
 from .validators import (
     profile_image_validator, 
     project_image_validator, 
@@ -9,16 +10,18 @@ from .validators import (
     validate_no_executable,
     validate_filename
 )
+from .image_utils import optimize_uploaded_image
 
 
 class Profile(models.Model):
-    """Modelo para información personal del portafolio"""
+    """Modelo para información personal del portafolio (Singleton)"""
     name = models.CharField(max_length=100, verbose_name="Nombre")
     title = models.CharField(max_length=200, verbose_name="Título profesional")
     bio = models.TextField(verbose_name="Biografía")
     profile_image = models.ImageField(
         upload_to='profile/', 
         verbose_name="Foto de perfil",
+        help_text="Sube una imagen cuadrada (misma anchura y altura). Se optimizará automáticamente a 250x250px. Formatos: JPG, PNG, WebP. Máximo 3MB.",
         validators=[profile_image_validator, validate_no_executable]
     )
     email = models.EmailField(verbose_name="Email")
@@ -30,7 +33,15 @@ class Profile(models.Model):
     resume_pdf = models.FileField(
         upload_to='profile/', 
         blank=True, 
-        verbose_name="CV en PDF",
+        verbose_name="CV en PDF (English)",
+        help_text="Upload your resume in English (PDF format)",
+        validators=[resume_pdf_validator, validate_no_executable]
+    )
+    resume_pdf_es = models.FileField(
+        upload_to='profile/', 
+        blank=True, 
+        verbose_name="CV en PDF (Español)",
+        help_text="Sube tu currículum en español (formato PDF)",
         validators=[resume_pdf_validator, validate_no_executable]
     )
     show_web_resume = models.BooleanField(default=True, verbose_name="Mostrar CV web")
@@ -43,6 +54,43 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        # Singleton pattern: ensure only one profile exists
+        if not self.pk and Profile.objects.exists():
+            raise ValidationError('Solo puede existir un perfil. Por favor edita el perfil existente.')
+        
+        # Optimize profile image before saving
+        if self.profile_image:
+            optimize_uploaded_image(self.profile_image, image_type='profile', quality='high')
+        
+        return super().save(*args, **kwargs)
+    
+    @classmethod
+    def get_solo(cls):
+        """Get or create the singleton profile instance"""
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+    
+    def delete(self, *args, **kwargs):
+        """Prevent deletion of the profile"""
+        raise ValidationError('No se puede eliminar el perfil. Solo puedes editarlo.')
+    
+    def get_resume_pdf_for_language(self, language_code):
+        """
+        Returns the appropriate resume PDF based on language.
+        Falls back to available PDF if requested language is not available.
+        """
+        if language_code == 'es' and self.resume_pdf_es:
+            return self.resume_pdf_es
+        elif language_code == 'en' and self.resume_pdf:
+            return self.resume_pdf
+        # Fallback: return whichever is available
+        elif self.resume_pdf_es:
+            return self.resume_pdf_es
+        elif self.resume_pdf:
+            return self.resume_pdf
+        return None
 
 
 class Technology(models.Model):
@@ -412,11 +460,6 @@ class Project(models.Model):
     def __str__(self):
         return self.title
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title)
-        super().save(*args, **kwargs)
-
     def get_absolute_url(self):
         return reverse('portfolio:project-detail', kwargs={'slug': self.slug})
 
@@ -496,6 +539,17 @@ class Project(models.Model):
     def has_featured_link(self):
         """Verifica si el proyecto tiene un enlace configurado para featured work"""
         return self.featured_link_type != 'none' and self.get_featured_link_url() is not None
+    
+    def save(self, *args, **kwargs):
+        # Auto-generate slug if not provided
+        if not self.slug:
+            self.slug = slugify(self.title)
+        
+        # Optimize project image before saving
+        if self.image:
+            optimize_uploaded_image(self.image, image_type='project', quality='medium')
+        
+        super().save(*args, **kwargs)
 
 
 class Experience(models.Model):
@@ -589,6 +643,34 @@ class Skill(models.Model):
         return (self.proficiency / 4) * 100
 
 
+class Language(models.Model):
+    """Modelo para idiomas y nivel de dominio"""
+    PROFICIENCY_LEVELS = [
+        ('A1', 'A1 - Beginner'),
+        ('A2', 'A2 - Elementary'),
+        ('B1', 'B1 - Intermediate'),
+        ('B2', 'B2 - Upper Intermediate'),
+        ('C1', 'C1 - Advanced'),
+        ('C2', 'C2 - Proficient'),
+        ('Native', 'Native'),
+    ]
+    
+    name = models.CharField(max_length=50, verbose_name="Idioma", 
+                           help_text="Ej: English, Español, Français")
+    proficiency = models.CharField(max_length=10, choices=PROFICIENCY_LEVELS, 
+                                  verbose_name="Nivel de dominio")
+    order = models.PositiveIntegerField(default=0, verbose_name="Orden de visualización",
+                                       help_text="Orden en que aparecerá en el CV")
+    
+    class Meta:
+        verbose_name = "Idioma"
+        verbose_name_plural = "Idiomas"
+        ordering = ['order', 'name']
+    
+    def __str__(self):
+        return f"{self.name} ({self.proficiency})"
+
+
 class Category(models.Model):
     """Modelo para categorías de posts del blog"""
     name = models.CharField(max_length=50, unique=True, verbose_name="Nombre")
@@ -675,6 +757,11 @@ class BlogPost(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
+        
+        # Optimize blog featured image before saving
+        if self.featured_image:
+            optimize_uploaded_image(self.featured_image, image_type='blog', quality='medium')
+        
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):

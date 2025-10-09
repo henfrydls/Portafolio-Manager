@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from .models import (
     Profile, Technology, Project, Experience, Education,
-    Skill, BlogPost, Contact, PageVisit, Category, ProjectType
+    Skill, Language, BlogPost, Contact, PageVisit, Category, ProjectType
 )
 
 
@@ -18,30 +18,55 @@ class TechnologyInline(admin.TabularInline):
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    """Administración del perfil personal"""
-    list_display = ('name', 'title', 'email', 'location', 'show_web_resume', 'updated_at')
+    """Administración del perfil personal (Singleton)"""
+    list_display = ('name', 'title', 'email', 'location', 'show_web_resume', 'cv_status', 'updated_at')
     list_filter = ('show_web_resume', 'created_at', 'updated_at')
     search_fields = ('name', 'title', 'email', 'location')
     readonly_fields = ('created_at', 'updated_at', 'profile_image_preview')
     
+    def has_add_permission(self, request):
+        """Prevent adding more than one profile"""
+        return not Profile.objects.exists()
+    
+    def has_delete_permission(self, request, obj=None):
+        """Prevent deletion of the profile"""
+        return False
+    
     fieldsets = (
-        ('Información Personal', {
+        ('Personal Information / Información Personal', {
             'fields': ('name', 'title', 'bio', 'profile_image', 'profile_image_preview')
         }),
-        ('Contacto', {
+        ('Contact / Contacto', {
             'fields': ('email', 'phone', 'location')
         }),
-        ('Enlaces Sociales', {
+        ('Social Links / Enlaces Sociales', {
             'fields': ('linkedin_url', 'github_url', 'medium_url')
         }),
-        ('Currículum', {
-            'fields': ('resume_pdf', 'show_web_resume')
+        ('Resume / Currículum', {
+            'fields': ('resume_pdf', 'resume_pdf_es', 'show_web_resume'),
+            'description': 'Upload your resume in both languages. The system will automatically show the appropriate version based on the visitor\'s language. / Sube tu currículum en ambos idiomas. El sistema mostrará automáticamente la versión apropiada según el idioma del visitante.'
         }),
-        ('Metadatos', {
+        ('Metadata / Metadatos', {
             'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',)
         })
     )
+    
+    def cv_status(self, obj):
+        """Shows which CV versions are available"""
+        status = []
+        if obj.resume_pdf:
+            status.append('<span style="color: #28a745;">✓ EN</span>')
+        else:
+            status.append('<span style="color: #dc3545;">✗ EN</span>')
+        
+        if obj.resume_pdf_es:
+            status.append('<span style="color: #28a745;">✓ ES</span>')
+        else:
+            status.append('<span style="color: #dc3545;">✗ ES</span>')
+        
+        return format_html(' | '.join(status))
+    cv_status.short_description = "CV Status"
     
     def profile_image_preview(self, obj):
         """Muestra preview de la imagen de perfil"""
@@ -384,6 +409,25 @@ class SkillAdmin(admin.ModelAdmin):
     proficiency_bar.short_description = "Nivel Visual"
 
 
+@admin.register(Language)
+class LanguageAdmin(admin.ModelAdmin):
+    """Administración de idiomas"""
+    list_display = ('name', 'proficiency', 'order')
+    list_filter = ('proficiency',)
+    search_fields = ('name',)
+    ordering = ('order', 'name')
+    list_editable = ('order',)
+    
+    fieldsets = (
+        ('Información del Idioma', {
+            'fields': ('name', 'proficiency')
+        }),
+        ('Configuración', {
+            'fields': ('order',)
+        })
+    )
+
+
 @admin.register(ProjectType)
 class ProjectTypeAdmin(admin.ModelAdmin):
     """Administración de tipos de proyectos"""
@@ -605,7 +649,7 @@ class PageVisitAdmin(admin.ModelAdmin):
     delete_old_visits.short_description = "Eliminar visitas antiguas (>6 meses)"
 
 
-# Personalización del sitio de administración
-admin.site.site_header = "Administración"
-admin.site.site_title = "Admin"
-admin.site.index_title = "Panel de Administración del Portafolio"
+# Personalización del sitio de administración / Admin site customization
+admin.site.site_header = "Portfolio Administration / Administración del Portafolio"
+admin.site.site_title = "Portfolio Admin"
+admin.site.index_title = "Portfolio Management Panel / Panel de Gestión del Portafolio"

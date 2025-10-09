@@ -2,8 +2,7 @@
 {% load static %}
 {% load simple_i18n %}
 
-{% block title %}{{ profile.name|default:"Your Name" }}{% if profile %} - {{ profile.title }}{% endif %}{%
-endblock %}
+{% block title %}{{ profile.name|default:"Your Name" }}{% if profile %} - {{ profile.title }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="portfolio-layout">
@@ -123,7 +122,7 @@ endblock %}
                     <a href="{% url 'portfolio:post-detail' post.slug %}" class="recent-post-card">
                         <div class="recent-post-image">
                             {% if post.featured_image %}
-                            <img src="{{ post.featured_image.url }}" alt="{{ post.title }}">
+                            <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" class="recent-post-img" loading="lazy">
                             {% else %}
                             <div class="recent-post-placeholder">
                                 <i class="fas fa-newspaper"></i>
@@ -161,15 +160,13 @@ endblock %}
                             <!-- Image Container -->
                             <div class="featured-image">
                                 {% if item.image %}
-                                <img src="{{ item.image.url }}" alt="{{ item.title }}" loading="lazy">
+                                <img src="{{ item.image.url }}" alt="{{ item.title }}" class="featured-img" loading="lazy">
                                 {% else %}
                                 <div class="featured-placeholder">
                                     <i
                                         class="fas fa-{% if item.type == 'project' %}laptop-code{% else %}edit{% endif %}"></i>
                                 </div>
                                 {% endif %}
-
-
                             </div>
 
                             <!-- Content -->
@@ -201,23 +198,23 @@ endblock %}
                                     {% if item.type == 'project' %}
                                     {% if item.featured_link_type == 'github' %}
                                     <i class="fab fa-github"></i>
-                                    <span>View Code</span>
+                                    <span>{% trans "View Code" %}</span>
                                     {% elif item.featured_link_type == 'demo' %}
                                     <i class="fas fa-external-link-alt"></i>
-                                    <span>Live Demo</span>
+                                    <span>{% trans "Live Demo" %}</span>
                                     {% elif item.featured_link_type == 'pdf' %}
                                     <i class="fas fa-file-pdf"></i>
-                                    <span>View PDF</span>
+                                    <span>{% trans "View PDF" %}</span>
                                     {% elif item.featured_link_type == 'post' %}
                                     <i class="fas fa-arrow-right"></i>
-                                    <span>Read More</span>
+                                    <span>{% trans "Read More" %}</span>
                                     {% else %}
                                     <i class="fas fa-arrow-right"></i>
-                                    <span>View Project</span>
+                                    <span>{% trans "View Project" %}</span>
                                     {% endif %}
                                     {% else %}
                                     <i class="fas fa-arrow-right"></i>
-                                    <span>Read Article</span>
+                                    <span>{% trans "Read Article" %}</span>
                                     {% endif %}
                                 </div>
                             </div>
@@ -309,7 +306,7 @@ endblock %}
 
                                 {% if project.is_private_project %}
                                 <span class="private-badge">
-                                    <i class="fas fa-lock"></i> Private
+                                    <i class="fas fa-lock"></i> {% trans "Private" %}
                                 </span>
                                 {% endif %}
                             </div>
@@ -325,25 +322,25 @@ endblock %}
                         {% if projects_page_obj.has_previous %}
                         <button onclick="loadProjectsPage({{ projects_page_obj.previous_page_number }})"
                             class="pagination-btn-simple pagination-btn-ajax">
-                            ← Previous
+                            ← {% trans "Previous" %}
                         </button>
                         {% endif %}
 
                         <span class="pagination-info-simple">
-                            Page <span id="current-page">{{ projects_page_obj.number }}</span> of {{ projects_paginator.num_pages }}
+                            {% trans "Page" %} <span id="current-page">{{ projects_page_obj.number }}</span> {% trans "of" %} {{ projects_paginator.num_pages }}
                         </span>
 
                         {% if projects_page_obj.has_next %}
                         <button onclick="loadProjectsPage({{ projects_page_obj.next_page_number }})"
                             class="pagination-btn-simple pagination-btn-ajax">
-                            Next →
+                            {% trans "Next" %} →
                         </button>
                         {% endif %}
                     </div>
 
                     <!-- Loading indicator -->
                     <div id="projects-loading" class="projects-loading" style="display: none;">
-                        <i class="fas fa-spinner fa-spin"></i> Loading projects...
+                        <i class="fas fa-spinner fa-spin"></i> {% trans "Loading projects..." %}
                     </div>
                 </div>
                 {% endif %}
@@ -557,7 +554,7 @@ endblock %}
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('loading');
             }
-            if (btnText) btnText.textContent = 'Send Message';
+            if (btnText) btnText.textContent = '{% trans "Send Message" %}';
             if (btnIcon) btnIcon.className = 'fas fa-paper-plane btn-icon';
 
             // Clear validation states
@@ -639,7 +636,7 @@ endblock %}
                     // Show loading state
                     submitBtn.disabled = true;
                     submitBtn.classList.add('loading');
-                    btnText.textContent = 'Sending...';
+                    btnText.textContent = '{% trans "Sending..." %}';
                     btnIcon.className = 'fas fa-spinner fa-spin btn-icon';
 
                     // Add a subtle animation to the modal content
@@ -2914,4 +2911,18 @@ endblock %}
 </script>
 {% endblock %}
 
+{% block structured_data %}
+<!-- Person Structured Data -->
+{% if person_structured_data %}
+<script type="application/ld+json">
+{{ person_structured_data|safe }}
+</script>
+{% endif %}
+
+<!-- Website Structured Data -->
+{% if website_structured_data %}
+<script type="application/ld+json">
+{{ website_structured_data|safe }}
+</script>
+{% endif %}
 {% endblock %}

@@ -1,479 +1,365 @@
-# henfrydls.com - Personal Portfolio
+# Django Portfolio - Professional Portfolio Website
 
-[🇪🇸 Español](#español) | [🇺🇸 English](#english)
+A professional Django-based portfolio website featuring a modern design, comprehensive admin panel, and bilingual support. Perfect for developers, designers, and professionals who want to showcase their work online.
+
+> **⚠️ Important**: All content and configuration must be set through environment variables and the admin panel.
+
+## ✨ Features
+
+- **Modern Portfolio Design** with fixed sidebar layout and responsive design
+- **Comprehensive Admin Panel** for content management with analytics dashboard
+- **Blog System** with Medium-style posts, categories, and rich content editing
+- **Project Showcase** with technology filtering and public/private visibility
+- **Resume Management** with web version and PDF download
+- **Contact System** with secure forms and email notifications
+- **Analytics Tracking** with visit statistics and performance metrics
+- **Bilingual Support** (English/Spanish) with custom translation system
+- **SEO Optimization** with meta tags, sitemaps, and structured data
+- **Security Features** including CSRF protection, file validation, and rate limiting
+
+## 🛠️ Technologies
+
+- **Backend**: Django 5.2 LTS
+- **Database**: SQLite (development)
+- **Frontend**: HTML5, CSS3, JavaScript, Bootstrap 5
+- **Static Files**: WhiteNoise for efficient static file serving
+- **Email**: Django Email Backend with SMTP support
+- **Image Processing**: Pillow for image optimization
+- **Security**: Django security middleware and custom protections
+
+## 📋 Prerequisites
+
+- Python 3.10 or higher
+- pip (Python package manager)
+- Git
+- Code editor (VS Code recommended)
+
+## 🚀 Quick Start
+
+### 1. Clone and Setup
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd portfolio
+
+# Create virtual environment
+python -m venv .venv
+
+# Activate virtual environment
+# On Windows:
+.venv\Scripts\activate
+# On macOS/Linux:
+source .venv/bin/activate
+
+# Install dependencies
+pip install -r requirements/development.txt
+```
+
+### 2. Configure Environment
+
+```bash
+# Copy environment template
+cp .env.example .env
+
+# Edit .env file with your settings
+# At minimum, set:
+# - SECRET_KEY (generate a new one)
+# - DEBUG=True (for development)
+# - ALLOWED_HOSTS=localhost,127.0.0.1
+```
+
+### 3. Initialize Database
+
+```bash
+# Run migrations
+python manage.py migrate
+
+# Create superuser
+python manage.py createsuperuser
+
+# Collect static files
+python manage.py collectstatic --noinput
+```
+
+### 4. Run Development Server
+
+```bash
+# Start the development server
+python manage.py runserver
+
+# Access the application:
+# - Portfolio: http://127.0.0.1:8000/
+# - Admin Panel: http://127.0.0.1:8000/admin/
+```
+
+## 📝 Initial Setup
+
+After running the server, configure your portfolio:
+
+1. **Login to Admin Panel**: http://127.0.0.1:8000/admin/
+2. **Create Profile**: Add your personal information
+3. **Add Projects**: Showcase your work
+4. **Write Blog Posts**: Share your thoughts
+5. **Configure Skills**: List your expertise
+6. **Add Experience**: Your work history
+
+See [Admin Usage Guide](docs/ADMIN_USAGE.md) for detailed instructions.
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Key environment variables in `.env`:
+
+```env
+# Django Settings
+SECRET_KEY=your-secret-key-here
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Database (SQLite by default)
+# No configuration needed for development
+
+# Email Configuration (optional)
+EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
+DEFAULT_FROM_EMAIL=your-email@gmail.com
+
+# Security (for production)
+SECURE_SSL_REDIRECT=False
+SESSION_COOKIE_SECURE=False
+CSRF_COOKIE_SECURE=False
+```
+
+See [Configuration Guide](docs/CONFIGURATION_GUIDE.md) for all options.
+
+## 📧 Email Configuration
+
+For contact form functionality, configure email settings:
+
+1. **Development**: Uses console backend (emails printed to console)
+2. **Production**: Configure SMTP settings in `.env`
+
+See [Email Setup Guide](docs/EMAIL_SETUP.md) for detailed instructions.
+
+## 🎨 Customization
+
+### Adding Content
+
+All content is managed through the admin panel:
+- **Profile**: Personal information and social links
+- **Projects**: Portfolio items with images and descriptions
+- **Blog Posts**: Articles and tutorials
+- **Skills**: Technical skills and proficiency levels
+- **Experience**: Work history
+- **Education**: Academic background and certifications
+
+### Bilingual Support
+
+The site supports English and Spanish:
+- **Language Switcher**: Top-right corner for easy language switching
+- **Translatable UI**: All interface text is translatable
+- **Multilingual CVs**: Upload separate PDF resumes for English and Spanish
+  - System automatically serves the correct CV based on visitor's language
+  - Falls back to available CV if requested language is not available
+  - Manage both versions through the admin panel
+- **Automatic Detection**: Language preference is detected and applied automatically
+
+## 🗂️ Project Structure
+
+```
+portfolio/
+├── config/                     # Django settings
+│   ├── settings/
+│   │   ├── base.py            # Base settings
+│   │   └── development.py     # Development settings
+│   ├── urls.py                # URL configuration
+│   └── wsgi.py                # WSGI configuration
+│
+├── portfolio/                  # Main application
+│   ├── models.py              # Database models
+│   ├── views.py               # View logic
+│   ├── admin.py               # Admin configuration
+│   ├── forms.py               # Form definitions
+│   └── templatetags/          # Custom template tags
+│
+├── templates/                  # HTML templates
+│   ├── base.html              # Base template
+│   └── portfolio/             # App templates
+│
+├── static/                     # Static files (CSS, JS, images)
+├── media/                      # User-uploaded files
+├── locale/                     # Translation files
+├── requirements/               # Dependencies
+│   ├── base.txt               # Base dependencies
+│   └── development.txt        # Development dependencies
+│
+├── docs/                       # Documentation
+├── .env.example               # Environment variables template
+├── manage.py                  # Django management script
+└── README.md                  # This file
+```
+
+## 🧪 Development
+
+### Running Tests
+
+```bash
+# Run all tests
+python manage.py test
+
+# Run specific app tests
+python manage.py test portfolio
+
+# Run with coverage
+coverage run --source='.' manage.py test
+coverage report
+```
+
+### Database Management
+
+```bash
+# Create migrations
+python manage.py makemigrations
+
+# Apply migrations
+python manage.py migrate
+
+# Reset database (careful!)
+python manage.py flush
+
+# Create superuser
+python manage.py createsuperuser
+```
+
+### Static Files
+
+```bash
+# Collect static files
+python manage.py collectstatic
+
+# Clear collected static files
+python manage.py collectstatic --clear
+```
+
+### Translation Verification
+
+```bash
+# Verify all translations are complete
+python verify_translations.py
+```
+
+## 📚 Documentation
+
+### Getting Started
+1. **[SETUP.md](SETUP.md)** - Complete installation guide
+   - Prerequisites and requirements
+   - Step-by-step installation
+   - Initial configuration
+   - Troubleshooting
+
+2. **[docs/CONFIGURATION_GUIDE.md](docs/CONFIGURATION_GUIDE.md)** - System configuration
+   - Environment variables
+   - Settings configuration
+   - Security settings
+
+### User Guides
+3. **[docs/ADMIN_USAGE.md](docs/ADMIN_USAGE.md)** - Admin panel guide
+   - Content management
+   - Profile setup
+   - Projects and blog management
+   - Skills and experience
+
+4. **[docs/EMAIL_SETUP.md](docs/EMAIL_SETUP.md)** - Email configuration
+   - SMTP setup
+   - Email testing
+   - Troubleshooting
+
+5. **[docs/MULTILINGUAL_CV.md](docs/MULTILINGUAL_CV.md)** - CV feature
+   - Upload CVs in multiple languages
+   - Automatic language detection
+   - Admin interface
+
+### Maintenance Tools
+- **verify_translations.py** - Verify translation completeness
+  ```bash
+  python verify_translations.py
+  ```
+
+## 🔒 Security
+
+### Development
+- DEBUG mode enabled
+- Console email backend
+- Permissive CORS settings
+
+### Production Considerations
+- Set `DEBUG=False`
+- Configure proper `ALLOWED_HOSTS`
+- Use strong `SECRET_KEY`
+- Enable HTTPS settings
+- Configure real email backend
+- Set up proper database (PostgreSQL recommended)
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Port already in use**:
+```bash
+# Use different port
+python manage.py runserver 8001
+```
+
+**Static files not loading**:
+```bash
+# Collect static files
+python manage.py collectstatic --noinput
+```
+
+**Database errors**:
+```bash
+# Reset migrations (development only!)
+python manage.py migrate --run-syncdb
+```
+
+**Translation issues**:
+```bash
+# Verify translations
+python verify_translations.py
+```
+
+**Template syntax errors**:
+```bash
+# If you see "Invalid block tag" errors:
+# - Check that template tags are not split across multiple lines
+# - Ensure {% if %}, {% for %}, {% trans %} tags are properly closed
+# - Django template tags must be on single lines or properly indented
+```
+
+## 📄 License
+
+This project is open source and available under the MIT License.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📞 Support
+
+For questions, issues, or contributions:
+- **Documentation**: Check the `docs/` folder for detailed guides
+- **Issues**: Create an issue on your GitHub repository
+- **Django Community**: https://forum.djangoproject.com/
 
 ---
 
-## English
-
-Personal portfolio website for Henfry de los Santos built with Django.
-
-### Features
-
-- **Single-page portfolio** inspired by Matt Deitke's design with fixed sidebar layout
-- **Fixed profile sidebar** with personal information, contact details, and navigation
-- **Recent posts section** with clickable Medium-like blog articles
-- **Featured Work section** showcasing major projects and achievements
-- **Projects section** displaying all development work and technologies
-- **Medium-style blog detail pages** with professional typography and responsive design
-- **Bilingual support** (English/Spanish) with custom translation system
-- **Contact form** with email notifications and confirmations
-- **Custom error pages** (404, 500, 403) with professional design
-- **Admin panel** for content management with analytics
-- **Management commands** for setup, maintenance, and troubleshooting
-- **Responsive design** optimized for desktop and mobile devices
-
-### Design Inspiration
-
-This portfolio is inspired by **Matt Deitke's website** design, featuring:
-- **Fixed sidebar layout** with profile information always visible
-- **Clean typography** using Montserrat font family
-- **Minimalist aesthetic** with consistent spacing and neutral colors
-- **Professional color scheme** with #fafafa background and #0085ff accent color
-
-### Technologies
-
-- **Backend**: Django 5.2
-- **Database**: SQLite (development) / PostgreSQL (production ready)
-- **Frontend**: HTML5, CSS3, JavaScript, Montserrat Typography
-- **Design System**: Matt Deitke-inspired layout with Medium-style blog posts
-- **Internationalization**: Custom template tags for bilingual support
-- **Content Processing**: Markdown with syntax highlighting
-- **Static Files**: WhiteNoise
-- **Email**: Django Email Backend
-
-### Quick Start
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd henfrydls-portfolio
-   ```
-
-2. **Set up environment**
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
-
-3. **Configure environment variables**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your settings (see Email Setup section)
-   ```
-
-4. **Set up database**
-   ```bash
-   python manage.py migrate
-   python manage.py createsuperuser
-   ```
-
-5. **Test email configuration (optional)**
-   ```bash
-   python manage.py test_email
-   ```
-
-6. **Run development server**
-   ```bash
-   python manage.py runserver
-   ```
-
-### Email Configuration
-
-The portfolio includes contact form functionality with email notifications. See [Email Setup Guide](docs/EMAIL_SETUP.md) for detailed configuration instructions.
-
-**Quick email setup:**
-1. Configure SMTP settings in `.env` file
-2. Set your profile email in admin dashboard
-3. Test configuration: `python manage.py test_email`
-
-### Management Commands
-
-The portfolio includes useful management commands for setup and maintenance. See [Management Commands Guide](docs/MANAGEMENT_COMMANDS.md) for complete documentation.
-
-**Essential commands:**
-```bash
-# Verify configuration
-python manage.py check_env
-
-# Test email setup
-python manage.py test_email
-
-# Populate sample data
-python manage.py populate_sample_data
-
-# Regular maintenance
-python manage.py cleanup_old_visits
-```
-
-**Supported providers:** Gmail, Outlook, Yahoo, Custom SMTP
-
-2. **Set up virtual environment**
-   ```bash
-   python -m venv .venv
-   
-   # Windows
-   .venv\Scripts\activate
-   
-   # Linux/Mac
-   source .venv/bin/activate
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements/development.txt
-   ```
-
-4. **Set up environment variables**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configurations
-   ```
-
-5. **Run migrations**
-   ```bash
-   python manage.py migrate --settings=config.settings.development
-   ```
-
-6. **Create superuser**
-   ```bash
-   python manage.py createsuperuser --settings=config.settings.development
-   ```
-
-7. **Start development server**
-   ```bash
-   python manage.py runserver --settings=config.settings.development
-   ```
-
-8. **Access the application**
-   - Website: http://127.0.0.1:8000/
-   - Admin panel: http://127.0.0.1:8000/admin/
-
-### URL Structure
-
-- `/` - Single-page portfolio homepage
-- `/post/<slug>/` - Medium-style blog post detail pages
-- `/admin-dashboard/` - Admin dashboard (protected)
-- `/admin-analytics/` - Analytics dashboard (protected)
-- `/admin/` - Django admin panel
-
-**Main sections accessible via anchors:**
-- `/#about` - About section
-- `/#recent` - Recent posts
-- `/#featured` - Featured work
-- `/#projects` - All projects
-
-### Production Deployment
-
-1. **Install production dependencies**
-   ```bash
-   pip install -r requirements/production.txt
-   ```
-
-2. **Set production environment variables**
-   ```bash
-   export DJANGO_SETTINGS_MODULE=config.settings.production
-   export SECRET_KEY=your-production-secret-key
-   export EMAIL_HOST_USER=your-email@gmail.com
-   export EMAIL_HOST_PASSWORD=your-app-password
-   ```
-
-3. **Run migrations and collect static files**
-   ```bash
-   python manage.py migrate --settings=config.settings.production
-   python manage.py collectstatic --settings=config.settings.production
-   ```
-
-4. **Run with Gunicorn**
-   ```bash
-   gunicorn config.wsgi:application --settings=config.settings.production
-   ```
-
----
-
-## Español
-
-Portafolio web personal de Henfry de los Santos desarrollado con Django.
-
-### Características
-
-- **Portafolio de una sola página** inspirado en el diseño de Matt Deitke con barra lateral fija
-- **Barra lateral de perfil fija** con información personal, detalles de contacto y navegación
-- **Sección Recent** con artículos de blog clickeables estilo Medium
-- **Sección Featured Work** mostrando proyectos principales y logros
-- **Sección Projects** mostrando todo el trabajo de desarrollo y tecnologías
-- **Páginas de detalle de blog estilo Medium** con tipografía profesional y diseño responsivo
-- **Soporte bilingüe** (Inglés/Español) con sistema de traducción personalizado
-- **Modal de contacto reutilizable** con validación de formularios e interfaz consciente del idioma
-- **Panel de administración** para gestión de contenido
-- **Diseño responsivo** optimizado para escritorio y móvil
-
-### Tecnologías
-
-- **Backend**: Django 5.2
-- **Base de Datos**: SQLite (desarrollo) / PostgreSQL (listo para producción)
-- **Frontend**: HTML5, CSS3, JavaScript, Tipografía Montserrat
-- **Internacionalización**: Template tags personalizados para soporte bilingüe
-- **Procesamiento de Contenido**: Markdown con resaltado de sintaxis
-- **Archivos Estáticos**: WhiteNoise
-- **Email**: Django Email Backend
-
-### Inicio Rápido
-
-#### Requisitos Previos
-
-- Python 3.10 o superior
-- pip (gestor de paquetes de Python)
-
-#### Configuración del Entorno de Desarrollo
-
-1. **Clonar el repositorio**
-   ```bash
-   git clone <repository-url>
-   cd henfrydls-portfolio
-   ```
-
-2. **Crear y activar entorno virtual**
-   ```bash
-   python -m venv .venv
-   
-   # En Windows
-   .venv\Scripts\activate
-   
-   # En Linux/Mac
-   source .venv/bin/activate
-   ```
-
-3. **Instalar dependencias**
-   ```bash
-   pip install -r requirements/development.txt
-   ```
-
-4. **Configurar variables de entorno**
-   ```bash
-   cp .env.example .env
-   # Editar .env con tus configuraciones
-   ```
-
-5. **Ejecutar migraciones**
-   ```bash
-   python manage.py migrate --settings=config.settings.development
-   ```
-
-6. **Crear superusuario**
-   ```bash
-   python manage.py createsuperuser --settings=config.settings.development
-   ```
-
-7. **Ejecutar servidor de desarrollo**
-   ```bash
-   python manage.py runserver --settings=config.settings.development
-   ```
-
-8. **Acceder a la aplicación**
-   - Sitio web: http://127.0.0.1:8000/
-   - Panel de administración: http://127.0.0.1:8000/admin/
-
-### Estructura de URLs
-
-- `/` - Portafolio de una sola página
-- `/post/<slug>/` - Páginas de detalle de blog estilo Medium
-- `/admin-dashboard/` - Dashboard de admin (protegido)
-- `/admin-analytics/` - Dashboard de análiticas (protegido)
-- `/admin/` - Panel de administración de Django
-
-**Secciones principales accesibles via anchors:**
-- `/#about` - Sección Acerca de
-- `/#recent` - Posts recientes
-- `/#featured` - Trabajo destacado
-- `/#projects` - Todos los proyectos
-
-### Configuración de Producción
-
-1. **Instalar dependencias de producción**
-   ```bash
-   pip install -r requirements/production.txt
-   ```
-
-2. **Configurar variables de entorno de producción**
-   ```bash
-   export DJANGO_SETTINGS_MODULE=config.settings.production
-   export SECRET_KEY=your-production-secret-key
-   export EMAIL_HOST_USER=your-email@gmail.com
-   export EMAIL_HOST_PASSWORD=your-app-password
-   ```
-
-3. **Ejecutar migraciones y recopilar archivos estáticos**
-   ```bash
-   python manage.py migrate --settings=config.settings.production
-   python manage.py collectstatic --settings=config.settings.production
-   ```
-
-4. **Ejecutar con Gunicorn**
-   ```bash
-   gunicorn config.wsgi:application --settings=config.settings.production
-   ```
-
-### Estructura del Proyecto
-
-```
-portfolio_managment/
-├── .venv/                      # Entorno virtual
-├── config/                     # Configuración Django
-│   ├── settings/              # Settings modulares
-│   ├── urls.py               # URLs principales
-│   └── wsgi.py               # WSGI configuration
-├── portfolio/                  # Aplicación principal
-│   ├── models.py             # Modelos de datos
-│   ├── views.py              # Vistas
-│   ├── urls.py               # URLs de la app
-│   ├── admin.py              # Configuración admin
-│   ├── forms.py              # Formularios
-│   └── utils.py              # Utilidades
-├── static/                     # Archivos estáticos
-├── media/                      # Archivos subidos
-├── templates/                  # Templates HTML
-├── requirements/               # Dependencias por entorno
-└── manage.py                   # Script de gestión Django
-```
-
-### Comandos Útiles
-
-```bash
-# Ejecutar tests
-python manage.py test --settings=config.settings.development
-
-# Crear migraciones
-python manage.py makemigrations --settings=config.settings.development
-
-# Shell de Django
-python manage.py shell --settings=config.settings.development
-
-# Recopilar archivos estáticos
-python manage.py collectstatic --settings=config.settings.development
-
-# Poblar tecnologías predefinidas
-python manage.py populate_technologies --settings=config.settings.development
-
-# Actualizar tecnologías existentes
-python manage.py populate_technologies --update --settings=config.settings.development
-
-# Poblar solo una categoría específica
-python manage.py populate_technologies --category frontend --settings=config.settings.development
-
-# Verificar configuración del sistema
-python manage.py check --settings=config.settings.development
-```
-
-### Modelos de Datos
-
-El proyecto incluye los siguientes modelos principales:
-
-- **Profile**: Información personal y configuración del portafolio
-- **Project**: Proyectos con soporte para visibilidad pública/privada
-- **Technology**: Tecnologías con más de 50 opciones predefinidas, iconos automáticos y colores oficiales
-- **Experience**: Historial laboral
-- **Education**: Educación formal, cursos online, certificaciones
-- **Skill**: Habilidades técnicas con niveles de competencia y barras visuales
-- **BlogPost**: Sistema de blog con múltiples tipos de contenido y gestión avanzada
-- **Contact**: Mensajes del formulario de contacto con estado de lectura
-- **PageVisit**: Tracking básico de visitas con middleware personalizado
-
-### 🎨 Sistema de Tecnologías Avanzado
-
-El modelo Technology incluye funcionalidades avanzadas:
-
-#### Tecnologías Predefinidas (50+)
-- **Lenguajes**: Python, JavaScript, Java, PHP, Swift, Rust, Go, C++, C#, Ruby, Kotlin, TypeScript
-- **Frontend**: React, Vue.js, Angular, HTML, CSS, Sass, Bootstrap, Tailwind CSS
-- **Backend**: Django, Flask, Node.js, Express.js, Laravel, Spring Boot, FastAPI
-- **Bases de Datos**: PostgreSQL, MySQL, MongoDB, Redis, SQLite
-- **DevOps**: Docker, Kubernetes, AWS, Google Cloud, Azure, Git, GitHub, GitLab
-- **Herramientas**: Linux, Ubuntu, Windows, macOS, VS Code, Figma, Slack, Trello
-
-#### Comandos de Gestión
-```bash
-# Poblar todas las tecnologías predefinidas
-python manage.py populate_technologies --settings=config.settings.development
-
-# Actualizar tecnologías existentes con sugerencias
-python manage.py populate_technologies --update --settings=config.settings.development
-
-# Poblar solo una categoría específica
-python manage.py populate_technologies --category languages --settings=config.settings.development
-```
-
-#### Funcionalidades del Admin
-- **Sugerencias Automáticas**: Iconos y colores basados en el nombre de la tecnología
-- **Aplicación Masiva**: Acciones para aplicar sugerencias a múltiples tecnologías
-- **Vista Previa Visual**: Iconos y colores mostrados en tiempo real
-- **Enlaces de Referencia**: Links directos a Font Awesome, Devicon y Simple Icons
-
-### 📊 Middleware de Tracking
-
-Sistema de tracking personalizado que incluye:
-
-- **Exclusión Inteligente**: Automáticamente excluye rutas admin, archivos estáticos y bots conocidos
-- **Información Capturada**: URL, título de página, IP, user agent, timestamp
-- **Limpieza Automática**: Eliminación periódica de registros antiguos (configurable)
-- **Configuración Flexible**: Personalizable a través de settings de Django
-
-### 🌐 Sistema de Internacionalización y Modal de Contacto
-
-#### Modal de Contacto Refactorizado
-- **Componentes Reutilizables**: Modal HTML, CSS y JavaScript separados en includes
-- **DRY Implementation**: Eliminación de ~650+ líneas de código duplicado
-- **Funcionalidad Preservada**: Mantenimiento de paginación AJAX y validación de formularios
-- **Interfaz Bilingüe**: Ocultación automática del selector de idioma durante la interacción
-
-#### Sistema de Template Tags Personalizados
-- **simple_i18n.py**: Sistema de traducción ligero para contenido estático
-- **markdown_extras.py**: Procesamiento de contenido Markdown con extensiones
-- **Soporte Completo**: Traducciones en inglés y español para toda la interfaz
-
-#### Estructura de Archivos
-```
-templates/portfolio/includes/
-├── contact_modal.html          # HTML del modal con traducciones
-├── contact_modal_css.html      # Estilos CSS completos
-└── contact_modal_js.html       # JavaScript con funcionalidad completa
-```
-
-### Contribución
-
-Este es un proyecto personal, pero si encuentras algún bug o tienes sugerencias, no dudes en crear un issue.
-
-### Licencia
-
-Este proyecto es de uso personal y educativo.
-
-### Contacto
-
-- **Email**: henfry@henfrydls.com
-- **GitHub**: https://github.com/henfrydls
-- **LinkedIn**: https://linkedin.com/in/henfrydls
-
----
-
-## Project Status
-
-✅ **Models**: Data models implemented  
-🔄 **Views**: In development  
-🔄 **Templates**: In development  
-🔄 **Admin**: In development  
-🔄 **Tests**: Pending  
-
-### Contributing
-
-This is a personal project, but if you find any bugs or have suggestions, feel free to create an issue.
-
-### License
-
-This project is for personal and educational use.
-
-### Contact
-
-- **Email**: henfry@henfrydls.com
-- **GitHub**: https://github.com/henfrydls
-- **LinkedIn**: https://linkedin.com/in/henfrydls
+**Version**: 1.0  
+**Django**: 5.2 LTS  
+**Python**: 3.10+  
+**Status**: Production Ready

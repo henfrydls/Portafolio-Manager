@@ -85,4 +85,16 @@ urlpatterns = [
     path('manage/ajax/toggle-blog-featured/', views.ToggleBlogPostFeaturedView.as_view(), name='ajax-toggle-blog-featured'),
     path('manage/ajax/quick-publish-blog/', views.QuickPublishBlogPostView.as_view(), name='ajax-quick-publish-blog'),
     path('manage/ajax/test-email/', views.EmailTestView.as_view(), name='ajax-test-email'),
+    
+    # Language Management API
+    path('admin-panel/languages/list/', views.LanguageListAPIView.as_view(), name='api-language-list'),
+    path('admin-panel/languages/<int:pk>/', views.LanguageDetailAPIView.as_view(), name='api-language-detail'),
+    path('admin-panel/languages/create/', views.LanguageCreateAPIView.as_view(), name='api-language-create'),
+    path('admin-panel/languages/<int:pk>/update/', views.LanguageUpdateAPIView.as_view(), name='api-language-update'),
+    path('admin-panel/languages/<int:pk>/delete/', views.LanguageDeleteAPIView.as_view(), name='api-language-delete'),
+    
+    # SEO URLs
+    path('robots.txt', views.robots_txt, name='robots-txt'),
+    path('.well-known/security.txt', views.security_txt, name='security-txt'),
+    path('manifest.json', views.manifest_json, name='manifest-json'),
 ]

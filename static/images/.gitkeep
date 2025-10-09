@@ -1,1 +1,7 @@
-# Static images will be placed here
+# Placeholder for SEO images
+# Add the following images for complete SEO setup:
+# - default-og-image.jpg (1200x630px for Open Graph)
+# - favicon.ico (32x32px)
+# - apple-touch-icon.png (180x180px)
+# - icon-192x192.png (192x192px for PWA)
+# - icon-512x512.png (512x512px for PWA)

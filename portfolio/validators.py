@@ -204,14 +204,63 @@ def validate_filename(filename):
         raise ValidationError('Nombre de archivo reservado del sistema')
 
 
+@deconstructible
+class ProfileImageValidator(ImageValidator):
+    """
+    Specialized validator for profile images that enforces square aspect ratio.
+    """
+    def __init__(self):
+        super().__init__(
+            max_size=3 * 1024 * 1024,  # 3MB
+            max_width=2000,
+            max_height=2000,
+            min_width=200,
+            min_height=200
+        )
+    
+    def __call__(self, file):
+        # Skip validation if file is None or empty
+        if not file:
+            return
+
+        # Check if this is an existing file that doesn't need validation
+        if hasattr(file, 'url') and not hasattr(file, 'content_type'):
+            return
+
+        # Run base validation first
+        super().__call__(file)
+
+        # Additional profile image validation - check for square aspect ratio
+        try:
+            if hasattr(file, 'seek'):
+                file.seek(0)
+
+            with Image.open(file) as img:
+                width, height = img.size
+                
+                # Calculate aspect ratio tolerance (allow 5% difference)
+                aspect_ratio = width / height
+                tolerance = 0.05
+                
+                if not (1 - tolerance <= aspect_ratio <= 1 + tolerance):
+                    raise ValidationError(
+                        'La imagen de perfil debe ser cuadrada (misma anchura y altura). '
+                        f'Dimensiones actuales: {width}x{height}px. '
+                        'Recomendación: Use una imagen de 250x250px o mayor con proporción 1:1.'
+                    )
+
+            if hasattr(file, 'seek'):
+                file.seek(0)
+
+        except ValidationError:
+            raise
+        except Exception as e:
+            if hasattr(file, 'content_type') or hasattr(file, 'seek'):
+                raise ValidationError('El archivo no es una imagen válida')
+
+
 # Pre-configured validators for common use cases
-profile_image_validator = ImageValidator(
-    max_size=2 * 1024 * 1024,  # 2MB
-    max_width=2000,
-    max_height=2000,
-    min_width=100,
-    min_height=100
-)
+profile_image_validator = ProfileImageValidator()
 
 project_image_validator = ImageValidator(
     max_size=3 * 1024 * 1024,  # 3MB

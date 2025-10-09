@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block admin_content %}
-<div style="display: grid; grid-template-columns: 1fr 300px; gap: 32px;">
+<div style="max-width: 1200px; margin: 0 auto;">
     <div class="content-card">
         <div class="card-header-custom">
             <div>
@@ -22,6 +22,14 @@
         
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
+            
+            <!-- Form-wide error alert (compact style) -->
+            {% if form.errors %}
+            <div class="alert alert-error" style="background: #FFEBEE; border-left: 4px solid #dc3545; padding: 12px 16px; border-radius: 6px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-exclamation-circle" style="color: #dc3545; font-size: 16px;"></i>
+                <span style="font-size: 13px; color: #D32F2F; font-weight: 500;">Error al actualizar el perfil. Revisa los campos.</span>
+            </div>
+            {% endif %}
             
             <!-- Basic Information -->
             <div style="margin-bottom: 32px;">
@@ -160,21 +168,46 @@
                         {{ form.resume_pdf.label }}
                     </label>
                     {{ form.resume_pdf }}
-                    <div class="form-text-custom">Archivo PDF de tu currículum para descarga</div>
+                    <div class="form-text-custom">Upload your resume in English (PDF format)</div>
                     {% if form.resume_pdf.errors %}
                         <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">{{ form.resume_pdf.errors.0 }}</div>
                     {% endif %}
                     {% if object.resume_pdf %}
                         <div style="margin-top: 8px; display: flex; align-items: center; gap: 12px;">
                             <div>
-                                <small style="color: #6B6B6B;">Archivo actual:</small>
+                                <small style="color: #6B6B6B;">Current file:</small>
                                 <a href="{{ object.resume_pdf.url }}" target="_blank" style="color: #1976D2; text-decoration: none; margin-left: 8px;">
-                                    <i class="fas fa-file-pdf"></i> Ver CV actual
+                                    <i class="fas fa-file-pdf"></i> View English CV
                                 </a>
                             </div>
                             <button type="button" id="delete-resume-btn"
                                     style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                                <i class="fas fa-trash"></i> Remove CV
+                                <i class="fas fa-trash"></i> Remove
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label for="{{ form.resume_pdf_es.id_for_label }}" class="form-label-custom">
+                        {{ form.resume_pdf_es.label }}
+                    </label>
+                    {{ form.resume_pdf_es }}
+                    <div class="form-text-custom">Sube tu currículum en español (formato PDF)</div>
+                    {% if form.resume_pdf_es.errors %}
+                        <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">{{ form.resume_pdf_es.errors.0 }}</div>
+                    {% endif %}
+                    {% if object.resume_pdf_es %}
+                        <div style="margin-top: 8px; display: flex; align-items: center; gap: 12px;">
+                            <div>
+                                <small style="color: #6B6B6B;">Archivo actual:</small>
+                                <a href="{{ object.resume_pdf_es.url }}" target="_blank" style="color: #1976D2; text-decoration: none; margin-left: 8px;">
+                                    <i class="fas fa-file-pdf"></i> Ver CV en Español
+                                </a>
+                            </div>
+                            <button type="button" id="delete-resume-es-btn"
+                                    style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                <i class="fas fa-trash"></i> Eliminar
                             </button>
                         </div>
                     {% endif %}
@@ -192,90 +225,98 @@
                         <div style="color: #dc3545; font-size: 12px; margin-top: 4px;">{{ form.show_web_resume.errors.0 }}</div>
                     {% endif %}
                 </div>
+
+                <div style="background: #FFF3CD; padding: 12px; border-radius: 6px; border-left: 4px solid #FFC107; margin-top: 16px;">
+                    <p style="font-size: 13px; color: #856404; margin: 0;">
+                        <i class="fas fa-info-circle" style="margin-right: 4px;"></i>
+                        <strong>Nota:</strong> El sistema detecta automáticamente el idioma del usuario y muestra el CV correspondiente. Si solo tienes un CV, se mostrará ese independientemente del idioma.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Languages Section -->
+            <div style="margin-bottom: 32px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin: 0;">Idiomas</h3>
+                    <button type="button" id="add-language-btn" class="btn-primary-custom" style="padding: 6px 12px; font-size: 13px;">
+                        <i class="fas fa-plus"></i> Agregar Idioma
+                    </button>
+                </div>
+                
+                <div id="languages-list" style="display: flex; flex-direction: column; gap: 12px;">
+                    <!-- Languages will be loaded here -->
+                </div>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 24px; border-top: 1px solid #F2F2F2;">
                 <a href="{% url 'portfolio:admin-dashboard' %}" class="btn-secondary-custom">
                     <i class="fas fa-times"></i>Cancel
                 </a>
-                <button type="submit" class="btn-primary-custom">
+                <button type="submit" class="btn-primary-custom" id="save-profile-btn">
                     <i class="fas fa-save"></i>Save Changes
                 </button>
             </div>
         </form>
     </div>
+</div>
 
-    <div>
-        <div class="content-card">
-            <div class="card-header-custom">
-                <div>
-                    <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin: 0;">Vista Previa</h3>
-                </div>
+<!-- Add Language Modal (moved outside the main form to avoid conflicts) -->
+<div id="language-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 8px; padding: 24px; max-width: 500px; width: 90%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h4 style="font-size: 18px; font-weight: 600; color: #242424; margin: 0;">Agregar/Editar Idioma</h4>
+            <button type="button" id="close-modal-btn" style="background: none; border: none; font-size: 24px; color: #6B6B6B; cursor: pointer; padding: 0; line-height: 1;">×</button>
+        </div>
+        
+        <form id="language-form">
+            <input type="hidden" id="language-id" name="language_id">
+            
+            <div style="margin-bottom: 16px;">
+                <label class="form-label-custom">Idioma</label>
+                <input type="text" id="language-name" name="name" class="form-control-custom" placeholder="Ej: English, Español, Français">
             </div>
             
-            {% if object %}
-            <div style="text-align: center;">
-                {% if object.profile_image %}
-                    <img src="{{ object.profile_image.url }}" alt="{{ object.name }}" 
-                         style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%; margin-bottom: 16px;">
-                {% else %}
-                    <div style="width: 80px; height: 80px; background: #F2F2F2; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-user" style="color: #6B6B6B; font-size: 24px;"></i>
-                    </div>
-                {% endif %}
-                
-                <h4 style="font-size: 16px; font-weight: 600; color: #242424; margin-bottom: 4px;">{{ object.name }}</h4>
-                <p style="font-size: 14px; color: #6B6B6B; margin-bottom: 12px;">{{ object.title }}</p>
-                <p style="font-size: 12px; color: #6B6B6B; line-height: 1.4; margin-bottom: 16px;">{{ object.bio|truncatewords:20 }}</p>
-                
-                <div style="display: flex; justify-content: center; gap: 12px;">
-                    {% if object.linkedin_url %}
-                        <a href="{{ object.linkedin_url }}" target="_blank" style="color: #0077B5; font-size: 18px;">
-                            <i class="fab fa-linkedin"></i>
-                        </a>
-                    {% endif %}
-                    {% if object.github_url %}
-                        <a href="{{ object.github_url }}" target="_blank" style="color: #333; font-size: 18px;">
-                            <i class="fab fa-github"></i>
-                        </a>
-                    {% endif %}
-                    {% if object.medium_url %}
-                        <a href="{{ object.medium_url }}" target="_blank" style="color: #12100E; font-size: 18px;">
-                            <i class="fab fa-medium"></i>
-                        </a>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
-        </div>
-
-        <div class="content-card" style="margin-top: 24px;">
-            <div class="card-header-custom">
-                <div>
-                    <h3 style="font-size: 18px; font-weight: 600; color: #242424; margin: 0;">Consejos</h3>
-                </div>
+            <div style="margin-bottom: 16px;">
+                <label class="form-label-custom">Nivel de Dominio</label>
+                <select id="language-proficiency" name="proficiency" class="form-control-custom">
+                    <option value="">Selecciona un nivel</option>
+                    <option value="A1">A1 - Beginner</option>
+                    <option value="A2">A2 - Elementary</option>
+                    <option value="B1">B1 - Intermediate</option>
+                    <option value="B2">B2 - Upper Intermediate</option>
+                    <option value="C1">C1 - Advanced</option>
+                    <option value="C2">C2 - Proficient</option>
+                    <option value="Native">Native</option>
+                </select>
             </div>
             
-            <div style="background: #E3F2FD; padding: 16px; border-radius: 6px; margin-bottom: 16px;">
-                <h4 style="font-size: 14px; font-weight: 600; color: #1976D2; margin-bottom: 8px;">
-                    <i class="fas fa-lightbulb" style="margin-right: 4px;"></i>Consejos:
-                </h4>
-                <ul style="font-size: 12px; color: #1976D2; margin: 0; padding-left: 16px;">
-                    <li>Usa una foto profesional de alta calidad</li>
-                    <li>Mantén tu bio concisa pero descriptiva</li>
-                    <li>Actualiza tus enlaces sociales regularmente</li>
-                    <li>El CV en PDF debe estar actualizado</li>
-                </ul>
+            <div style="margin-bottom: 20px;">
+                <label class="form-label-custom">Orden de visualización</label>
+                <input type="number" id="language-order" name="order" class="form-control-custom" value="0" min="0">
+                <div class="form-text-custom">Orden en que aparecerá en el CV (menor número = primero)</div>
             </div>
-        </div>
+            
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" id="cancel-language-btn" class="btn-secondary-custom">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="submit" class="btn-primary-custom">
+                    <i class="fas fa-save"></i> Guardar
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+{{ block.super }}
 <script>
+console.log('Profile form JavaScript loading...');
+
 // Add form-control-custom class to form fields
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOMContentLoaded fired');
     const formFields = document.querySelectorAll('input[type="text"], input[type="email"], input[type="url"], textarea, select');
     formFields.forEach(field => {
         if (!field.classList.contains('form-check-input')) {
@@ -289,23 +330,269 @@ document.addEventListener('DOMContentLoaded', function() {
         input.classList.add('form-control-custom');
     });
 
-    // Handle delete resume button
+    // Handle delete resume button (English)
     const deleteResumeBtn = document.getElementById('delete-resume-btn');
     if (deleteResumeBtn) {
         deleteResumeBtn.addEventListener('click', function() {
-            if (confirm('¿Estás seguro de que quieres eliminar el CV actual? Esta acción no se puede deshacer.')) {
+            if (confirm('Are you sure you want to delete the English CV? This action cannot be undone.')) {
                 // Add a hidden input to mark resume for deletion
-                const form = document.querySelector('form');
-                const deleteInput = document.createElement('input');
-                deleteInput.type = 'hidden';
-                deleteInput.name = 'delete_resume';
-                deleteInput.value = 'true';
-                form.appendChild(deleteInput);
+                const form = document.querySelector('form[enctype="multipart/form-data"]');
+                if (form) {
+                    const deleteInput = document.createElement('input');
+                    deleteInput.type = 'hidden';
+                    deleteInput.name = 'delete_resume';
+                    deleteInput.value = 'true';
+                    form.appendChild(deleteInput);
 
-                // Submit the form
-                form.submit();
+                    // Submit the form
+                    form.submit();
+                }
             }
         });
+    }
+
+    // Handle delete resume button (Spanish)
+    const deleteResumeEsBtn = document.getElementById('delete-resume-es-btn');
+    if (deleteResumeEsBtn) {
+        deleteResumeEsBtn.addEventListener('click', function() {
+            if (confirm('¿Estás seguro de que quieres eliminar el CV en Español? Esta acción no se puede deshacer.')) {
+                // Add a hidden input to mark Spanish resume for deletion
+                const form = document.querySelector('form[enctype="multipart/form-data"]');
+                if (form) {
+                    const deleteInput = document.createElement('input');
+                    deleteInput.type = 'hidden';
+                    deleteInput.name = 'delete_resume_es';
+                    deleteInput.value = 'true';
+                    form.appendChild(deleteInput);
+
+                    // Submit the form
+                    form.submit();
+                }
+            }
+        });
+    }
+
+    // Language Management
+    const languageModal = document.getElementById('language-modal');
+    const languageForm = document.getElementById('language-form');
+    const languagesList = document.getElementById('languages-list');
+    const addLanguageBtn = document.getElementById('add-language-btn');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const cancelLanguageBtn = document.getElementById('cancel-language-btn');
+
+    // Load languages
+    function loadLanguages() {
+        fetch('/admin-panel/languages/list/')
+            .then(response => response.json())
+            .then(data => {
+                languagesList.innerHTML = '';
+                if (data.languages.length === 0) {
+                    languagesList.innerHTML = '<div style="padding: 16px; text-align: center; color: #6B6B6B; background: #f8f8f8; border-radius: 6px;">No hay idiomas agregados. Haz clic en "Agregar Idioma" para comenzar.</div>';
+                } else {
+                    data.languages.forEach(lang => {
+                        const langCard = document.createElement('div');
+                        langCard.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #f8f8f8; border-radius: 6px; border: 1px solid #F2F2F2;';
+                        langCard.innerHTML = `
+                            <div>
+                                <div style="font-size: 14px; font-weight: 500; color: #242424; margin-bottom: 4px;">
+                                    <i class="fas fa-language" style="margin-right: 6px; color: #1976D2;"></i>
+                                    ${lang.name}
+                                </div>
+                                <div style="font-size: 12px; color: #6B6B6B;">
+                                    Nivel: <strong>${lang.proficiency}</strong> • Orden: ${lang.order}
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="edit-language-btn" data-id="${lang.id}" 
+                                        style="background: #1976D2; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button type="button" class="delete-language-btn" data-id="${lang.id}" 
+                                        style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </div>
+                        `;
+                        languagesList.appendChild(langCard);
+                    });
+
+                    // Add event listeners to edit and delete buttons
+                    document.querySelectorAll('.edit-language-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const langId = this.dataset.id;
+                            editLanguage(langId);
+                        });
+                    });
+
+                    document.querySelectorAll('.delete-language-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const langId = this.dataset.id;
+                            deleteLanguage(langId);
+                        });
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading languages:', error);
+                languagesList.innerHTML = '<div style="padding: 16px; text-align: center; color: #dc3545; background: #f8d7da; border-radius: 6px;">Error al cargar los idiomas.</div>';
+            });
+    }
+
+    // Open modal for adding language
+    if (addLanguageBtn) {
+        addLanguageBtn.addEventListener('click', function() {
+            document.getElementById('language-id').value = '';
+            document.getElementById('language-name').value = '';
+            document.getElementById('language-proficiency').value = '';
+            document.getElementById('language-order').value = '0';
+            if (languageModal) {
+                languageModal.style.display = 'flex';
+            }
+        });
+    }
+
+    // Close modal
+    function closeModal() {
+        if (languageModal) {
+            languageModal.style.display = 'none';
+        }
+    }
+
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeModal);
+    }
+    
+    if (cancelLanguageBtn) {
+        cancelLanguageBtn.addEventListener('click', closeModal);
+    }
+
+    // Close modal when clicking outside
+    if (languageModal) {
+        languageModal.addEventListener('click', function(e) {
+            if (e.target === languageModal) {
+                closeModal();
+            }
+        });
+    }
+
+    // Edit language
+    function editLanguage(langId) {
+        fetch(`/admin-panel/languages/${langId}/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('language-id').value = data.id;
+                document.getElementById('language-name').value = data.name;
+                document.getElementById('language-proficiency').value = data.proficiency;
+                document.getElementById('language-order').value = data.order;
+                languageModal.style.display = 'flex';
+            })
+            .catch(error => {
+                console.error('Error loading language:', error);
+                alert('Error al cargar el idioma.');
+            });
+    }
+
+    // Delete language
+    function deleteLanguage(langId) {
+        if (!confirm('¿Estás seguro de que quieres eliminar este idioma?')) {
+            return;
+        }
+
+        fetch(`/admin-panel/languages/${langId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadLanguages();
+            } else {
+                alert('Error al eliminar el idioma.');
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting language:', error);
+            alert('Error al eliminar el idioma.');
+        });
+    }
+
+    // Submit language form
+    if (languageForm) {
+        languageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const langId = document.getElementById('language-id').value;
+            const formData = {
+                name: document.getElementById('language-name').value,
+                proficiency: document.getElementById('language-proficiency').value,
+                order: document.getElementById('language-order').value
+            };
+
+            const url = langId ? `/admin-panel/languages/${langId}/update/` : '/admin-panel/languages/create/';
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeModal();
+                    loadLanguages();
+                } else {
+                    alert('Error al guardar el idioma: ' + (data.error || 'Error desconocido'));
+                }
+            })
+            .catch(error => {
+                console.error('Error saving language:', error);
+                alert('Error al guardar el idioma.');
+            });
+        });
+    }
+
+    // Load languages on page load
+    loadLanguages();
+
+    // Debug: Check form submission - use enctype to get the correct form
+    const mainForm = document.querySelector('form[enctype="multipart/form-data"]');
+    const saveBtn = document.getElementById('save-profile-btn');
+    
+    console.log('Main form:', mainForm);
+    console.log('Save button:', saveBtn);
+    
+    if (saveBtn && mainForm) {
+        // Ensure the button submits the correct form
+        saveBtn.addEventListener('click', function(e) {
+            console.log('Save button clicked!');
+            e.preventDefault(); // Prevent default to handle manually
+            
+            console.log('Form validity:', mainForm.checkValidity());
+            
+            if (!mainForm.checkValidity()) {
+                console.log('Form has validation errors');
+                mainForm.reportValidity();
+            } else {
+                console.log('Form is valid, submitting manually...');
+                // Manually submit the form
+                mainForm.submit();
+            }
+        });
+    }
+    
+    if (mainForm) {
+        mainForm.addEventListener('submit', function(e) {
+            console.log('Form submit event fired! Form will be submitted now.');
+            // Don't prevent default - let it submit normally
+        });
+    } else {
+        console.error('Main form not found!');
     }
 });
 </script>
