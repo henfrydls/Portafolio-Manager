@@ -1,0 +1,114 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+{% load simple_i18n %}
+
+{% block admin_title %}
+    {% if object %}{% trans "Edit Knowledge Base" %}{% else %}{% trans "New Knowledge Base" %}{% endif %}
+{% endblock %}
+{% block admin_subtitle %}
+    {% if object %}
+        {% trans "Update the metadata used to highlight this knowledge area across the site." %}
+    {% else %}
+        {% trans "Register a new technology, methodology, or domain expertise." %}
+    {% endif %}
+{% endblock %}
+
+{% block admin_actions %}
+<a href="{% url 'portfolio:admin-knowledgebase-list' %}" class="btn-secondary-custom">
+    <i class="fas fa-arrow-left"></i>{% trans "Back to Knowledge Bases" %}
+</a>
+{% endblock %}
+
+{% block admin_content %}
+{% include "portfolio/admin/includes/auto_translation_status.html" %}
+<div class="content-card">
+    <div class="card-header-custom">
+        <div>
+            <h2 class="card-title-custom">
+                {% if object %}{% trans "Edit Knowledge Base" %}{% else %}{% trans "New Knowledge Base" %}{% endif %}
+            </h2>
+            <p class="card-subtitle-custom">
+                {% if object %}
+                    {% trans "Keep identifiers and styling consistent to ensure a cohesive presentation." %}
+                {% else %}
+                    {% trans "Provide a clear identifier and visual style for this knowledge entry." %}
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    {% include "portfolio/admin/includes/editing_language_notice.html" %}
+
+    <form method="post" class="form-custom">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="form-error">{{ form.non_field_errors.0 }}</div>
+        {% endif %}
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label-custom" for="{{ form.name.id_for_label }}">
+                    {{ form.name.label }}
+                    <span class="required">*</span>
+                </label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <div class="form-error">{{ form.name.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label-custom" for="{{ form.identifier.id_for_label }}">
+                    {{ form.identifier.label }}
+                    <span class="required">*</span>
+                </label>
+                {{ form.identifier }}
+                <div class="form-help">{% trans "Used internally and in URLs. Prefer lowercase with hyphens." %}</div>
+                {% if form.identifier.errors %}
+                    <div class="form-error">{{ form.identifier.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label-custom" for="{{ form.icon.id_for_label }}">
+                    {{ form.icon.label }}
+                </label>
+                {{ form.icon }}
+                <div class="form-help">
+                    {% trans "Font Awesome or Devicon CSS classes (e.g.," %} <code>fab fa-python</code>).
+                </div>
+                {% if form.icon.errors %}
+                    <div class="form-error">{{ form.icon.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label-custom" for="{{ form.color.id_for_label }}">
+                    {{ form.color.label }}
+                </label>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    {{ form.color }}
+                    <span style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid #e0e0e0; display: inline-block; background: {{ form.color.value|default:'#000000' }};"></span>
+                </div>
+                <div class="form-help">{% trans "Hex color used for badges and highlights." %}</div>
+                {% if form.color.errors %}
+                    <div class="form-error">{{ form.color.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary-custom">
+                <i class="fas fa-save"></i>
+                {% if object %}{% trans "Save Changes" %}{% else %}{% trans "Create Knowledge Base" %}{% endif %}
+            </button>
+            <a href="{% url 'portfolio:admin-knowledgebase-list' %}" class="btn-secondary-custom">
+                <i class="fas fa-times"></i>{% trans "Cancel" %}
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

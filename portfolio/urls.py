@@ -46,7 +46,25 @@ urlpatterns = [
     path('manage/projects/create/', views.ProjectCreateView.as_view(), name='admin-project-create'),
     path('manage/projects/<int:pk>/edit/', views.ProjectUpdateView.as_view(), name='admin-project-edit'),
     path('manage/projects/<int:pk>/delete/', views.ProjectDeleteView.as_view(), name='admin-project-delete'),
-    
+
+    # Catalog Management - Categories
+    path('manage/catalogs/categories/', views.CategoryListAdminView.as_view(), name='admin-category-list'),
+    path('manage/catalogs/categories/create/', views.CategoryCreateView.as_view(), name='admin-category-create'),
+    path('manage/catalogs/categories/<int:pk>/edit/', views.CategoryUpdateView.as_view(), name='admin-category-edit'),
+    path('manage/catalogs/categories/<int:pk>/delete/', views.CategoryDeleteView.as_view(), name='admin-category-delete'),
+
+    # Catalog Management - Project Types
+    path('manage/catalogs/project-types/', views.ProjectTypeListAdminView.as_view(), name='admin-projecttype-list'),
+    path('manage/catalogs/project-types/create/', views.ProjectTypeCreateView.as_view(), name='admin-projecttype-create'),
+    path('manage/catalogs/project-types/<int:pk>/edit/', views.ProjectTypeUpdateView.as_view(), name='admin-projecttype-edit'),
+    path('manage/catalogs/project-types/<int:pk>/delete/', views.ProjectTypeDeleteView.as_view(), name='admin-projecttype-delete'),
+
+    # Catalog Management - Knowledge Bases
+    path('manage/catalogs/knowledge-bases/', views.KnowledgeBaseListAdminView.as_view(), name='admin-knowledgebase-list'),
+    path('manage/catalogs/knowledge-bases/create/', views.KnowledgeBaseCreateView.as_view(), name='admin-knowledgebase-create'),
+    path('manage/catalogs/knowledge-bases/<int:pk>/edit/', views.KnowledgeBaseUpdateView.as_view(), name='admin-knowledgebase-edit'),
+    path('manage/catalogs/knowledge-bases/<int:pk>/delete/', views.KnowledgeBaseDeleteView.as_view(), name='admin-knowledgebase-delete'),
+
     # Blog Post Management
     path('manage/blog/', views.BlogPostListAdminView.as_view(), name='admin-blog-list'),
     path('manage/blog/create/', views.BlogPostCreateView.as_view(), name='admin-blog-create'),

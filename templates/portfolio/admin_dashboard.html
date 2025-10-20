@@ -518,6 +518,19 @@
                 </div>
             </div>
         </a>
+        <a href="{% url 'portfolio:admin-category-list' %}" class="action-btn">
+            <div class="action-btn-header">
+                <i class="fas fa-tags"></i>
+                <div class="action-btn-content">
+                    <div class="action-btn-title">{% trans "Manage Catalogs" %}</div>
+                    <div class="action-meta">
+                        {{ stats.total_categories }} {% trans "categories" %}
+                        • {{ stats.total_project_types }} {% trans "project types" %}
+                        • {{ stats.total_knowledge_bases }} {% trans "knowledge bases" %}
+                    </div>
+                </div>
+            </div>
+        </a>
         <a href="{% url 'portfolio:admin-profile-edit' %}" class="action-btn">
             <div class="action-btn-header">
                 <i class="fas fa-user-edit"></i>
@@ -739,7 +752,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Gráfico de visitas
+// Visits chart
         const chartCanvas = document.getElementById('visitsChart');
 
         if (!chartCanvas) {
@@ -759,7 +772,7 @@
         return;
     }
 
-    // Destruir gráfico existente si existe
+    // Destroy existing chart if present
     if (window.visitsChartInstance) {
         window.visitsChartInstance.destroy();
     }
@@ -828,7 +841,7 @@
     });
 });
 
-    // Función para probar configuración de email
+    // Function to test email configuration
     function testEmailConfiguration() {
         const btn = document.getElementById('email-test-btn');
         const originalContent = btn.innerHTML;
@@ -856,7 +869,7 @@
         })
             .then(response => response.json())
             .then(data => {
-                // Restaurar botón
+                // Restore button content
                 btn.innerHTML = originalContent;
                 btn.disabled = false;
 
@@ -872,7 +885,7 @@
                 </div>
             `;
 
-                    // Restaurar después de 3 segundos
+                    // Restore after 3 seconds
                     setTimeout(() => {
                         btn.innerHTML = originalContent;
                     }, 3000);
@@ -887,7 +900,7 @@
                 </div>
             `;
 
-                    // Restaurar después de 5 segundos
+                    // Restore after 5 seconds
                     setTimeout(() => {
                         btn.innerHTML = originalContent;
                     }, 5000);

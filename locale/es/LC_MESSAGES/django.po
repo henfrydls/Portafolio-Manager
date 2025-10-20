@@ -1,12 +1,12 @@
 # Spanish translation for Portfolio
 # Copyright (C) 2024
 # This file is distributed under the same license as the Portfolio package.
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Portfolio\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-12 11:35-0400\n"
+"POT-Creation-Date: 2025-10-20 00:05-0400\n"
 "PO-Revision-Date: 2024-09-27 00:00+0000\n"
 "Last-Translator: Portfolio Team\n"
 "Language-Team: Spanish\n"
@@ -16,277 +16,288 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: portfolio/forms.py:264
+#: portfolio/forms.py:266
 msgid "Your name"
 msgstr "Tu nombre"
 
-#: portfolio/forms.py:265
+#: portfolio/forms.py:267
 msgid "Your professional title (e.g., Full Stack Developer)."
 msgstr "Tu título profesional (ej: Desarrollador Full Stack)."
 
-#: portfolio/forms.py:266
+#: portfolio/forms.py:268
 msgid "Update your biography to introduce yourself."
 msgstr "Actualiza tu biografía para presentarte."
 
-#: portfolio/forms.py:267
+#: portfolio/forms.py:269
 #, fuzzy
 #| msgid "Contact"
 msgid "contact@example.com"
 msgstr "contacto@ejemplo.com"
 
-#: portfolio/forms.py:268
+#: portfolio/forms.py:270
 msgid "Phone number (optional)"
 msgstr "Número de teléfono (opcional)"
 
-#: portfolio/forms.py:269
+#: portfolio/forms.py:271
 msgid "City, Country"
 msgstr "Ciudad, País"
 
-#: portfolio/forms.py:270
+#: portfolio/forms.py:272
 msgid "https://www.linkedin.com/in/username"
 msgstr "https://www.linkedin.com/in/usuario"
 
-#: portfolio/forms.py:271
+#: portfolio/forms.py:273
 msgid "https://github.com/username"
 msgstr "https://github.com/usuario"
 
-#: portfolio/forms.py:272
+#: portfolio/forms.py:274
 msgid "https://medium.com/@username"
 msgstr "https://medium.com/@usuario"
 
 # Common labels
-#: portfolio/forms.py:279 templates/portfolio/includes/contact_modal.html:87
+#: portfolio/forms.py:281 templates/portfolio/includes/contact_modal.html:87
 msgid "Name"
 msgstr "Nombre"
 
-#: portfolio/forms.py:280
+#: portfolio/forms.py:282
 msgid "Professional title"
 msgstr "Título profesional"
 
-#: portfolio/forms.py:281
+#: portfolio/forms.py:283
 msgid "Biography"
 msgstr "Biografía"
 
-#: portfolio/forms.py:282 templates/portfolio/blog_detail.html:96
+#: portfolio/forms.py:284 templates/portfolio/blog_detail.html:96
 #: templates/portfolio/contact.html:126
 #: templates/portfolio/includes/contact_modal.html:31
 #: templates/portfolio/includes/contact_modal.html:91
 msgid "Email"
 msgstr "Correo electrónico"
 
-#: portfolio/forms.py:283
+#: portfolio/forms.py:285
 msgid "Phone"
 msgstr "Teléfono"
 
-#: portfolio/forms.py:284 templates/portfolio/contact.html:183
+#: portfolio/forms.py:286 templates/portfolio/contact.html:183
 #, fuzzy
 #| msgid "Education"
 msgid "Location"
 msgstr "Ubicación"
 
-#: portfolio/forms.py:285
+#: portfolio/forms.py:287
 msgid "LinkedIn URL"
 msgstr "URL de LinkedIn"
 
-#: portfolio/forms.py:286
+#: portfolio/forms.py:288
 msgid "GitHub URL"
 msgstr "URL de GitHub"
 
-#: portfolio/forms.py:287
+#: portfolio/forms.py:289
 msgid "Medium URL"
 msgstr "URL de Medium"
 
-#: portfolio/forms.py:288
+#: portfolio/forms.py:290
 msgid "PDF resume (English)"
 msgstr "CV en PDF (Inglés)"
 
-#: portfolio/forms.py:289
+#: portfolio/forms.py:291
 msgid "PDF resume (Spanish)"
 msgstr "CV en PDF (Español)"
 
-#: portfolio/forms.py:290
+#: portfolio/forms.py:292
 msgid "Display web resume on the site"
 msgstr "Mostrar CV web en el sitio"
 
-#: portfolio/views.py:126
+#: portfolio/views.py:152
 #, python-format
 msgid "%(language)s content ready (base)"
 msgstr ""
 
-#: portfolio/views.py:129
+#: portfolio/views.py:155
 #, python-format
 msgid "%(language)s content missing (base)"
 msgstr ""
 
-#: portfolio/views.py:134
+#: portfolio/views.py:160
 #, python-format
 msgid "%(language)s translation ready"
 msgstr ""
 
-#: portfolio/views.py:141
+#: portfolio/views.py:167
 #, python-format
 msgid "%(language)s auto-translation failed: %(error)s"
 msgstr ""
 
-#: portfolio/views.py:146
+#: portfolio/views.py:172
 #, fuzzy, python-format
 #| msgid "Auto-translation enabled"
 msgid "%(language)s auto-translation failed"
 msgstr "Traducción automática activada"
 
-#: portfolio/views.py:149
+#: portfolio/views.py:175
 #, fuzzy, python-format
 #| msgid "Auto-translation enabled"
 msgid "%(language)s auto-translation pending"
 msgstr "Traducción automática activada"
 
-#: portfolio/views.py:152 portfolio/views.py:155
+#: portfolio/views.py:178 portfolio/views.py:181
 #, python-format
 msgid "%(language)s translation missing"
 msgstr ""
 
 #: templates/403.html:4 templates/403.html:14
-msgid "Acceso denegado"
+#, fuzzy
+#| msgid "Acceso denegado"
+msgid "Access Denied"
 msgstr "Acceso denegado"
 
 #: templates/403.html:17
-msgid "No tienes permisos para acceder a esta página."
-msgstr "No tienes permisos para acceder a esta página."
+msgid "You don't have permission to access this page."
+msgstr ""
 
 #: templates/403.html:23 templates/404.html:23 templates/500.html:23
-msgid "Ir al inicio"
-msgstr "Ir al inicio"
+#, fuzzy
+#| msgid "Back to home"
+msgid "Go to Home"
+msgstr "Volver al inicio"
 
 #: templates/403.html:28
-msgid "Iniciar sesión"
-msgstr "Iniciar sesión"
+msgid "Sign In"
+msgstr ""
 
 #: templates/403.html:33 templates/404.html:27
-msgid "Volver atrás"
-msgstr "Volver atrás"
+msgid "Go Back"
+msgstr ""
 
 #: templates/403.html:41
-msgid "¿Necesitas acceso?"
-msgstr "¿Necesitas acceso?"
+msgid "Need Access?"
+msgstr ""
 
 #: templates/403.html:43
 msgid ""
-"Esta página requiere autenticación. Si eres el administrador del sitio, "
-"puedes iniciar sesión para acceder al panel de administración."
+"This page requires authentication. If you are the site administrator, you "
+"can sign in to access the admin panel."
 msgstr ""
-"Esta página requiere autenticación. Si eres el administrador del sitio, "
-"puedes iniciar sesión para acceder al panel de administración."
 
 #: templates/403.html:48
-msgid "Iniciar sesión como administrador"
-msgstr "Iniciar sesión como administrador"
+#, fuzzy
+#| msgid "Contactar al administrador"
+msgid "Sign in as administrator"
+msgstr "Contactar al administrador"
 
 #: templates/403.html:54
-msgid "Permisos insuficientes"
-msgstr "Permisos insuficientes"
+msgid "Insufficient Permissions"
+msgstr ""
 
 #: templates/403.html:56
-msgid "Estás autenticado como"
-msgstr "Estás autenticado como"
+msgid "You are authenticated as"
+msgstr ""
 
 #: templates/403.html:56
-msgid "pero no tienes los permisos necesarios para acceder a esta página."
-msgstr "pero no tienes los permisos necesarios para acceder a esta página."
+msgid "but you don't have the necessary permissions to access this page."
+msgstr ""
 
 #: templates/403.html:60
 msgid ""
-"Si crees que esto es un error, verifica tus permisos en el panel de "
-"administración."
+"If you believe this is an error, verify your permissions in the admin panel."
 msgstr ""
-"Si crees que esto es un error, verifica tus permisos en el panel de "
-"administración."
 
 #: templates/403.html:67 templates/404.html:32
-msgid "¿Qué puedes hacer?"
-msgstr "¿Qué puedes hacer?"
+msgid "What can you do?"
+msgstr ""
 
 #: templates/403.html:69 templates/404.html:34 templates/500.html:35
-msgid "Visitar la página principal"
-msgstr "Visitar la página principal"
+msgid "Visit the home page"
+msgstr ""
 
 #: templates/403.html:70
-msgid "Ver los proyectos públicos"
-msgstr "Ver los proyectos públicos"
+#, fuzzy
+#| msgid "Projects"
+msgid "View public projects"
+msgstr "Proyectos"
 
 #: templates/403.html:71
-msgid "Revisar el currículum"
-msgstr "Revisar el currículum"
+msgid "Review the resume"
+msgstr ""
 
 #: templates/403.html:72
-msgid "Contactar al administrador"
+#, fuzzy
+#| msgid "Contactar al administrador"
+msgid "Contact the administrator"
 msgstr "Contactar al administrador"
 
 #: templates/403.html:74
-msgid "Cerrar sesión"
-msgstr "Cerrar sesión"
+msgid "Sign out"
+msgstr ""
 
 #: templates/404.html:4 templates/404.html:14
-msgid "Página no encontrada"
-msgstr "Página no encontrada"
+msgid "Page Not Found"
+msgstr ""
 
 #: templates/404.html:17
-msgid "Lo sentimos, la página que buscas no existe o ha sido movida."
-msgstr "Lo sentimos, la página que buscas no existe o ha sido movida."
+msgid "Sorry, the page you are looking for doesn't exist or has been moved."
+msgstr ""
 
 #: templates/404.html:35
-msgid "Ver mis proyectos"
-msgstr "Ver mis proyectos"
+#, fuzzy
+#| msgid "Projects"
+msgid "View my projects"
+msgstr "Proyectos"
 
 #: templates/404.html:36
-msgid "Revisar mi currículum"
-msgstr "Revisar mi currículum"
+msgid "Review my resume"
+msgstr ""
 
 #: templates/404.html:37
-msgid "Leer el blog"
+#, fuzzy
+#| msgid "Leer el blog"
+msgid "Read the blog"
 msgstr "Leer el blog"
 
 #: templates/404.html:38
 #, fuzzy
 #| msgid "Contact"
-msgid "Contactarme"
-msgstr "Contactarme"
+msgid "Contact me"
+msgstr "Contacto"
 
 #: templates/500.html:4
-msgid "Error del servidor"
-msgstr "Error del servidor"
+msgid "Server Error"
+msgstr ""
 
 #: templates/500.html:14
-msgid "Error interno del servidor"
-msgstr "Error interno del servidor"
+msgid "Internal Server Error"
+msgstr ""
 
 #: templates/500.html:17
-msgid ""
-"Algo salió mal en nuestro servidor. Estamos trabajando para solucionarlo."
+msgid "Something went wrong on our server. We're working to fix it."
 msgstr ""
-"Algo salió mal en nuestro servidor. Estamos trabajando para solucionarlo."
 
 #: templates/500.html:27
-msgid "Intentar de nuevo"
-msgstr "Intentar de nuevo"
+msgid "Try Again"
+msgstr ""
 
 #: templates/500.html:33
-msgid "¿Qué puedes hacer mientras tanto?"
-msgstr "¿Qué puedes hacer mientras tanto?"
+msgid "What can you do in the meantime?"
+msgstr ""
 
 #: templates/500.html:36
-msgid "Reportar este problema"
+#, fuzzy
+#| msgid "Reportar este problema"
+msgid "Report this problem"
 msgstr "Reportar este problema"
 
 #: templates/500.html:37
-msgid "Esperar unos minutos e intentar de nuevo"
-msgstr "Esperar unos minutos e intentar de nuevo"
+msgid "Wait a few minutes and try again"
+msgstr ""
 
 #: templates/500.html:42
-msgid "¿Necesitas ayuda?"
-msgstr "¿Necesitas ayuda?"
+msgid "Need Help?"
+msgstr ""
 
 #: templates/500.html:44
-msgid "Si el problema persiste, puedes contactarme directamente:"
+#, fuzzy
+#| msgid "Si el problema persiste, puedes contactarme directamente:"
+msgid "If the problem persists, you can contact me directly:"
 msgstr "Si el problema persiste, puedes contactarme directamente:"
 
 # Common UI strings
@@ -296,85 +307,261 @@ msgstr "Si el problema persiste, puedes contactarme directamente:"
 msgid "Dashboard"
 msgstr "Panel de Control"
 
-#: templates/portfolio/admin/base_admin.html:558
+#: templates/portfolio/admin/base_admin.html:559
 #: templates/portfolio/analytics.html:432
 #, fuzzy
 #| msgid "Contact"
 msgid "Context"
 msgstr "Contexto"
 
-#: templates/portfolio/admin/base_admin.html:559
+#: templates/portfolio/admin/base_admin.html:560
+#: templates/portfolio/admin/category_list.html:5
+#: templates/portfolio/admin/knowledgebase_list.html:5
+#: templates/portfolio/admin/projecttype_list.html:5
 #: templates/portfolio/analytics.html:433
+msgid "Catalogs"
+msgstr "Catálogos"
+
+#: templates/portfolio/admin/base_admin.html:561
+#: templates/portfolio/analytics.html:434
 msgid "Inbox"
 msgstr "Bandeja de entrada"
 
-#: templates/portfolio/admin/base_admin.html:560
-#: templates/portfolio/analytics.html:434
+#: templates/portfolio/admin/base_admin.html:562
+#: templates/portfolio/analytics.html:435
 msgid "Profile"
 msgstr "Perfil"
 
-#: templates/portfolio/admin/base_admin.html:561
-#: templates/portfolio/analytics.html:435
+#: templates/portfolio/admin/base_admin.html:563
+#: templates/portfolio/analytics.html:436
 msgid "CV"
 msgstr "CV"
 
-#: templates/portfolio/admin/base_admin.html:562
-#: templates/portfolio/admin_dashboard.html:534
-#: templates/portfolio/analytics.html:436
-#: templates/portfolio/analytics.html:459
+#: templates/portfolio/admin/base_admin.html:564
+#: templates/portfolio/admin_dashboard.html:547
+#: templates/portfolio/analytics.html:437
+#: templates/portfolio/analytics.html:458
 msgid "Analytics"
 msgstr "Analíticas"
 
-#: templates/portfolio/admin/base_admin.html:563
+#: templates/portfolio/admin/base_admin.html:565
 #: templates/portfolio/admin/includes/editing_language_notice.html:13
 #: templates/portfolio/admin/project_form.html:216
-#: templates/portfolio/analytics.html:437
 msgid "Settings"
 msgstr "Configuración"
 
-#: templates/portfolio/admin/base_admin.html:564
+#: templates/portfolio/admin/base_admin.html:566
+#: templates/portfolio/admin_dashboard.html:556
 #: templates/portfolio/analytics.html:438
-msgid "Admin"
-msgstr "Administración"
-
-#: templates/portfolio/admin/base_admin.html:565
-#: templates/portfolio/admin_dashboard.html:543
-#: templates/portfolio/analytics.html:439
 msgid "View Site"
 msgstr "Ver sitio"
 
-#: templates/portfolio/admin/base_admin.html:574
+#: templates/portfolio/admin/base_admin.html:576
 #: templates/portfolio/admin/blogpost_list.html:106
 #: templates/portfolio/admin_dashboard.html:464
-#: templates/portfolio/analytics.html:446
+#: templates/portfolio/analytics.html:445
 msgid "Blog Posts"
 msgstr "Entradas de Blog"
 
-#: templates/portfolio/admin/base_admin.html:575
+#: templates/portfolio/admin/base_admin.html:577
+#: templates/portfolio/admin/knowledgebase_list.html:55
 #: templates/portfolio/admin/project_list.html:96
-#: templates/portfolio/analytics.html:447
+#: templates/portfolio/admin/projecttype_list.html:61
+#: templates/portfolio/analytics.html:446
 #: templates/portfolio/blog_detail.html:24
 #: templates/portfolio/blog_list.html:19
 #: templates/portfolio/project_list.html:5
 msgid "Projects"
 msgstr "Proyectos"
 
-#: templates/portfolio/admin/base_admin.html:587
+#: templates/portfolio/admin/base_admin.html:583
+#: templates/portfolio/admin/category_list.html:5
+#: templates/portfolio/admin/category_list.html:46
+#, fuzzy
+#| msgid "Category"
+msgid "Categories"
+msgstr "Categorías"
+
+#: templates/portfolio/admin/base_admin.html:584
+#: templates/portfolio/admin/projecttype_list.html:5
+#: templates/portfolio/admin/projecttype_list.html:46
+#, fuzzy
+#| msgid "Projects"
+msgid "Project Types"
+msgstr "Tipos de Proyecto"
+
+#: templates/portfolio/admin/base_admin.html:585
+#: templates/portfolio/admin/knowledgebase_list.html:5
+#: templates/portfolio/admin/knowledgebase_list.html:38
+msgid "Knowledge Bases"
+msgstr "Bases de Conocimiento"
+
+#: templates/portfolio/admin/base_admin.html:597
 #: templates/portfolio/auth/login.html:174
 msgid "Administration"
 msgstr "Administración"
 
-#: templates/portfolio/admin/base_admin.html:588
+#: templates/portfolio/admin/base_admin.html:598
 msgid "Manage your content"
 msgstr "Gestiona tu contenido"
 
-#: templates/portfolio/admin/base_admin.html:653
+#: templates/portfolio/admin/base_admin.html:663
 #: templates/portfolio/admin/blogpost_list.html:328
 #: templates/portfolio/admin/contact_list.html:208
 #: templates/portfolio/admin/project_list.html:309
-#: templates/portfolio/admin_dashboard.html:905
+#: templates/portfolio/admin_dashboard.html:918
 msgid "Connection error"
 msgstr "Error de conexión"
+
+# Actions
+#: templates/portfolio/admin/blogpost_confirm_delete.html:5
+#, fuzzy
+#| msgid "Create"
+msgid "Delete Post"
+msgstr "Crear"
+
+#: templates/portfolio/admin/blogpost_confirm_delete.html:9
+#: templates/portfolio/admin/blogpost_form.html:61
+msgid "Back to Blog"
+msgstr "Volver al Blog"
+
+#: templates/portfolio/admin/blogpost_confirm_delete.html:19
+#: templates/portfolio/admin/category_confirm_delete.html:19
+#: templates/portfolio/admin/contact_confirm_delete.html:19
+#: templates/portfolio/admin/education_confirm_delete.html:18
+#: templates/portfolio/admin/experience_confirm_delete.html:18
+#: templates/portfolio/admin/knowledgebase_confirm_delete.html:19
+#: templates/portfolio/admin/project_confirm_delete.html:19
+#: templates/portfolio/admin/projecttype_confirm_delete.html:19
+#: templates/portfolio/admin/skill_confirm_delete.html:18
+msgid "Confirm Deletion"
+msgstr ""
+
+#: templates/portfolio/admin/blogpost_confirm_delete.html:24
+#: templates/portfolio/admin/contact_confirm_delete.html:24
+#: templates/portfolio/admin/project_confirm_delete.html:24
+#, fuzzy
+#| msgid "attention"
+msgid "Attention!"
+msgstr "atención"
+
+#: templates/portfolio/admin/blogpost_confirm_delete.html:25
+msgid "This action cannot be undone. The post will be permanently deleted."
+msgstr ""
+
+#: templates/portfolio/admin/blogpost_confirm_delete.html:46
+#: templates/portfolio/admin/education_confirm_delete.html:32
+#, fuzzy
+#| msgid "Type"
+msgid "Type:"
+msgstr "Tipo"
+
+#: templates/portfolio/admin/blogpost_confirm_delete.html:47
+#: templates/portfolio/admin/contact_confirm_delete.html:41
+#: templates/portfolio/admin/project_confirm_delete.html:65
+#, fuzzy
+#| msgid "Status"
+msgid "Status:"
+msgstr "Estado"
+
+#: templates/portfolio/admin/blogpost_confirm_delete.html:51
+#: templates/portfolio/admin/project_confirm_delete.html:75
+#, fuzzy
+#| msgid "Featured"
+msgid "Featured:"
+msgstr "Destacado"
+
+#: templates/portfolio/admin/blogpost_confirm_delete.html:53
+#: templates/portfolio/admin/project_confirm_delete.html:78
+msgid "Yes"
+msgstr ""
+
+#: templates/portfolio/admin/blogpost_confirm_delete.html:55
+#: templates/portfolio/admin/project_confirm_delete.html:81
+msgid "No"
+msgstr ""
+
+# Actions
+#: templates/portfolio/admin/blogpost_confirm_delete.html:59
+#: templates/portfolio/admin/blogpost_form.html:201
+#: templates/portfolio/admin/project_confirm_delete.html:89
+#: templates/portfolio/project_detail.html:78
+#, fuzzy
+#| msgid "Create"
+msgid "Created:"
+msgstr "Crear"
+
+#: templates/portfolio/admin/blogpost_confirm_delete.html:60
+#: templates/portfolio/admin/blogpost_form.html:202
+#: templates/portfolio/admin/project_confirm_delete.html:93
+#, fuzzy
+#| msgid "Update"
+msgid "Updated:"
+msgstr "Actualizar"
+
+#: templates/portfolio/admin/blogpost_confirm_delete.html:62
+#: templates/portfolio/admin/blogpost_form.html:203
+#, fuzzy
+#| msgid "Published"
+msgid "Published:"
+msgstr "Publicado"
+
+#: templates/portfolio/admin/blogpost_confirm_delete.html:64
+#, fuzzy
+#| msgid "Read Article"
+msgid "Reading time:"
+msgstr "Leer artículo"
+
+#: templates/portfolio/admin/blogpost_confirm_delete.html:70
+msgid "Tags:"
+msgstr ""
+
+#: templates/portfolio/admin/blogpost_confirm_delete.html:86
+#: templates/portfolio/admin/blogpost_form.html:209
+#: templates/portfolio/admin/category_confirm_delete.html:46
+#: templates/portfolio/admin/category_form.html:116
+#: templates/portfolio/admin/contact_confirm_delete.html:68
+#: templates/portfolio/admin/education_confirm_delete.html:62
+#: templates/portfolio/admin/education_form.html:180
+#: templates/portfolio/admin/experience_confirm_delete.html:57
+#: templates/portfolio/admin/experience_form.html:133
+#: templates/portfolio/admin/knowledgebase_confirm_delete.html:55
+#: templates/portfolio/admin/knowledgebase_form.html:109
+#: templates/portfolio/admin/profile_form.html:492
+#: templates/portfolio/admin/profile_form.html:596
+#: templates/portfolio/admin/project_confirm_delete.html:130
+#: templates/portfolio/admin/project_form.html:270
+#: templates/portfolio/admin/projecttype_confirm_delete.html:46
+#: templates/portfolio/admin/projecttype_form.html:116
+#: templates/portfolio/admin/site_configuration.html:127
+#: templates/portfolio/admin/skill_confirm_delete.html:65
+#: templates/portfolio/admin/skill_form.html:117
+#: templates/portfolio/auth/password_change.html:250
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: templates/portfolio/admin/blogpost_confirm_delete.html:89
+#: templates/portfolio/admin/project_confirm_delete.html:133
+#, fuzzy
+#| msgid "Edit"
+msgid "Edit instead"
+msgstr "Editar"
+
+#: templates/portfolio/admin/blogpost_confirm_delete.html:94
+msgid "Yes, delete post"
+msgstr ""
+
+#: templates/portfolio/admin/blogpost_confirm_delete.html:108
+#, fuzzy
+#| msgid ""
+#| "Are you sure you want to delete the English CV? This action cannot be "
+#| "undone."
+msgid ""
+"Are you absolutely sure you want to delete this post? This action cannot be "
+"undone."
+msgstr ""
+"¿Estás seguro de que quieres eliminar el CV en inglés? Esta acción no se "
+"puede deshacer."
 
 #: templates/portfolio/admin/blogpost_form.html:7
 #: templates/portfolio/admin/blogpost_form.html:88
@@ -388,10 +575,6 @@ msgstr "Editar"
 #: templates/portfolio/admin/blogpost_list.html:58
 msgid "New Post"
 msgstr "Nueva entrada"
-
-#: templates/portfolio/admin/blogpost_form.html:61
-msgid "Back to Blog"
-msgstr "Volver al Blog"
 
 #: templates/portfolio/admin/blogpost_form.html:65
 msgid "View Post"
@@ -441,38 +624,6 @@ msgstr "Enlaces de referencia"
 #| msgid "Published"
 msgid "Publishing"
 msgstr "Publicado"
-
-# Actions
-#: templates/portfolio/admin/blogpost_form.html:201
-#: templates/portfolio/project_detail.html:78
-#, fuzzy
-#| msgid "Create"
-msgid "Created:"
-msgstr "Crear"
-
-#: templates/portfolio/admin/blogpost_form.html:202
-#, fuzzy
-#| msgid "Update"
-msgid "Updated:"
-msgstr "Actualizar"
-
-#: templates/portfolio/admin/blogpost_form.html:203
-#, fuzzy
-#| msgid "Published"
-msgid "Published:"
-msgstr "Publicado"
-
-#: templates/portfolio/admin/blogpost_form.html:209
-#: templates/portfolio/admin/education_form.html:180
-#: templates/portfolio/admin/experience_form.html:133
-#: templates/portfolio/admin/profile_form.html:492
-#: templates/portfolio/admin/profile_form.html:596
-#: templates/portfolio/admin/project_form.html:270
-#: templates/portfolio/admin/site_configuration.html:127
-#: templates/portfolio/admin/skill_form.html:117
-#: templates/portfolio/auth/password_change.html:250
-msgid "Cancel"
-msgstr "Cancelar"
 
 #: templates/portfolio/admin/blogpost_form.html:212
 #: templates/portfolio/admin/blogpost_form.html:215
@@ -558,29 +709,35 @@ msgstr "Título, contenido..."
 
 #: templates/portfolio/admin/blogpost_list.html:72
 #: templates/portfolio/admin/blogpost_list.html:124
+#: templates/portfolio/admin/category_list.html:23
+#: templates/portfolio/admin/category_list.html:60
 #: templates/portfolio/admin/contact_list.html:18
 #: templates/portfolio/admin/education_list.html:35
 #: templates/portfolio/admin/experience_list.html:23
 #: templates/portfolio/admin/experience_list.html:60
 #: templates/portfolio/admin/project_list.html:114
+#: templates/portfolio/admin/projecttype_list.html:23
+#: templates/portfolio/admin/projecttype_list.html:60
 #: templates/portfolio/project_detail.html:81
 msgid "Status"
 msgstr "Estado"
 
 #: templates/portfolio/admin/blogpost_list.html:74
+#: templates/portfolio/admin/category_list.html:25
 #: templates/portfolio/admin/education_list.html:37
+#: templates/portfolio/admin/projecttype_list.html:25
 msgid "All statuses"
 msgstr "Todos los estados"
 
 #: templates/portfolio/admin/blogpost_list.html:75
 #: templates/portfolio/admin/blogpost_list.html:165
-#: templates/portfolio/admin_dashboard.html:697
+#: templates/portfolio/admin_dashboard.html:710
 msgid "Draft"
 msgstr "Borrador"
 
 #: templates/portfolio/admin/blogpost_list.html:76
 #: templates/portfolio/admin/blogpost_list.html:161
-#: templates/portfolio/admin_dashboard.html:695
+#: templates/portfolio/admin_dashboard.html:708
 msgid "Published"
 msgstr "Publicado"
 
@@ -590,6 +747,7 @@ msgid "Archived"
 msgstr "Archivado"
 
 #: templates/portfolio/admin/blogpost_list.html:81
+#: templates/portfolio/admin/category_list.html:59
 #: templates/portfolio/admin/skill_list.html:24
 #: templates/portfolio/admin/skill_list.html:70
 msgid "Category"
@@ -601,19 +759,25 @@ msgid "All categories"
 msgstr "Todas las categorías"
 
 #: templates/portfolio/admin/blogpost_list.html:91
+#: templates/portfolio/admin/category_list.html:32
 #: templates/portfolio/admin/contact_list.html:27
 #: templates/portfolio/admin/education_list.html:44
 #: templates/portfolio/admin/experience_list.html:32
+#: templates/portfolio/admin/knowledgebase_list.html:24
 #: templates/portfolio/admin/project_list.html:81
+#: templates/portfolio/admin/projecttype_list.html:32
 #: templates/portfolio/admin/skill_list.html:44
 msgid "Filter"
 msgstr "Filtrar"
 
 #: templates/portfolio/admin/blogpost_list.html:96
+#: templates/portfolio/admin/category_list.html:37
 #: templates/portfolio/admin/contact_list.html:32
 #: templates/portfolio/admin/education_list.html:49
 #: templates/portfolio/admin/experience_list.html:37
+#: templates/portfolio/admin/knowledgebase_list.html:29
 #: templates/portfolio/admin/project_list.html:86
+#: templates/portfolio/admin/projecttype_list.html:37
 #: templates/portfolio/admin/skill_list.html:49
 msgid "Clear"
 msgstr "Limpiar"
@@ -623,10 +787,13 @@ msgid "posts shown"
 msgstr "entradas mostradas"
 
 #: templates/portfolio/admin/blogpost_list.html:107
+#: templates/portfolio/admin/category_list.html:49
 #: templates/portfolio/admin/contact_list.html:48
 #: templates/portfolio/admin/education_list.html:60
 #: templates/portfolio/admin/experience_list.html:48
+#: templates/portfolio/admin/knowledgebase_list.html:41
 #: templates/portfolio/admin/project_list.html:97
+#: templates/portfolio/admin/projecttype_list.html:49
 #: templates/portfolio/admin/skill_list.html:60
 msgid "Total:"
 msgstr "Total:"
@@ -644,6 +811,7 @@ msgstr "Entrada"
 
 #: templates/portfolio/admin/blogpost_list.html:123
 #: templates/portfolio/admin/education_list.html:24
+#: templates/portfolio/admin/projecttype_list.html:59
 msgid "Type"
 msgstr "Tipo"
 
@@ -669,10 +837,13 @@ msgid "Date"
 msgstr "Fecha"
 
 #: templates/portfolio/admin/blogpost_list.html:128
+#: templates/portfolio/admin/category_list.html:64
 #: templates/portfolio/admin/contact_list.html:62
 #: templates/portfolio/admin/education_list.html:74
 #: templates/portfolio/admin/experience_list.html:61
+#: templates/portfolio/admin/knowledgebase_list.html:56
 #: templates/portfolio/admin/project_list.html:118
+#: templates/portfolio/admin/projecttype_list.html:64
 #: templates/portfolio/admin/skill_list.html:74
 #, fuzzy
 #| msgid "Education"
@@ -702,10 +873,13 @@ msgid "View"
 msgstr "Ver"
 
 #: templates/portfolio/admin/blogpost_list.html:222
+#: templates/portfolio/admin/category_list.html:109
 #: templates/portfolio/admin/education_list.html:146
 #: templates/portfolio/admin/experience_list.html:104
+#: templates/portfolio/admin/knowledgebase_list.html:99
 #: templates/portfolio/admin/profile_form.html:810
 #: templates/portfolio/admin/project_list.html:209
+#: templates/portfolio/admin/projecttype_list.html:109
 #: templates/portfolio/admin/skill_list.html:129
 msgid "Edit"
 msgstr "Editar"
@@ -717,13 +891,16 @@ msgid "Publish"
 msgstr "Publicado"
 
 #: templates/portfolio/admin/blogpost_list.html:232
+#: templates/portfolio/admin/category_list.html:112
 #: templates/portfolio/admin/contact_list.html:115
 #: templates/portfolio/admin/education_list.html:150
 #: templates/portfolio/admin/experience_list.html:108
+#: templates/portfolio/admin/knowledgebase_list.html:102
 #: templates/portfolio/admin/profile_form.html:360
 #: templates/portfolio/admin/profile_form.html:408
 #: templates/portfolio/admin/profile_form.html:818
 #: templates/portfolio/admin/project_list.html:213
+#: templates/portfolio/admin/projecttype_list.html:112
 #: templates/portfolio/admin/skill_list.html:133
 msgid "Delete"
 msgstr "Eliminar"
@@ -748,22 +925,28 @@ msgid "Create Post"
 msgstr "Crear"
 
 #: templates/portfolio/admin/blogpost_list.html:273
+#: templates/portfolio/admin/category_list.html:152
 #: templates/portfolio/admin/contact_list.html:153
 #: templates/portfolio/admin/education_list.html:191
 #: templates/portfolio/admin/experience_list.html:149
+#: templates/portfolio/admin/knowledgebase_list.html:142
 #: templates/portfolio/admin/project_list.html:254
+#: templates/portfolio/admin/projecttype_list.html:152
 #: templates/portfolio/admin/skill_list.html:174
-#: templates/portfolio/analytics.html:581
+#: templates/portfolio/analytics.html:580
 #: templates/portfolio/blog_list.html:155 templates/portfolio/home.html:235
 #: templates/portfolio/home.html:330
 msgid "Page"
 msgstr "Página"
 
 #: templates/portfolio/admin/blogpost_list.html:273
+#: templates/portfolio/admin/category_list.html:152
 #: templates/portfolio/admin/contact_list.html:153
 #: templates/portfolio/admin/education_list.html:191
 #: templates/portfolio/admin/experience_list.html:149
+#: templates/portfolio/admin/knowledgebase_list.html:142
 #: templates/portfolio/admin/project_list.html:254
+#: templates/portfolio/admin/projecttype_list.html:152
 #: templates/portfolio/admin/skill_list.html:174
 #: templates/portfolio/blog_list.html:155 templates/portfolio/home.html:235
 #: templates/portfolio/home.html:330
@@ -773,6 +956,284 @@ msgstr "de"
 #: templates/portfolio/admin/blogpost_list.html:365
 msgid "Are you sure you want to publish this post?"
 msgstr "¿Estás seguro de que quieres publicar esta entrada?"
+
+#: templates/portfolio/admin/category_confirm_delete.html:5
+#: templates/portfolio/admin/category_confirm_delete.html:43
+#, fuzzy
+#| msgid "Category"
+msgid "Delete Category"
+msgstr "Categoría"
+
+#: templates/portfolio/admin/category_confirm_delete.html:6
+msgid "Confirm removal of this blog category."
+msgstr ""
+
+#: templates/portfolio/admin/category_confirm_delete.html:10
+#: templates/portfolio/admin/category_form.html:18
+#, fuzzy
+#| msgid "Category"
+msgid "Back to Categories"
+msgstr "Categoría"
+
+#: templates/portfolio/admin/category_confirm_delete.html:21
+#: templates/portfolio/admin/knowledgebase_confirm_delete.html:21
+#: templates/portfolio/admin/projecttype_confirm_delete.html:21
+msgid "This action cannot be undone."
+msgstr ""
+
+#: templates/portfolio/admin/category_confirm_delete.html:27
+#, fuzzy
+#| msgid "Are you sure you want to delete this language?"
+msgid "You are about to delete the category"
+msgstr "¿Estás seguro de que quieres eliminar este idioma?"
+
+#: templates/portfolio/admin/category_confirm_delete.html:37
+msgid ""
+"Associated posts will remain published but will lose this category reference."
+msgstr ""
+
+#: templates/portfolio/admin/category_form.html:6
+#: templates/portfolio/admin/category_form.html:28
+#, fuzzy
+#| msgid "Category"
+msgid "Edit Category"
+msgstr "Categoría"
+
+#: templates/portfolio/admin/category_form.html:6
+#: templates/portfolio/admin/category_form.html:28
+#: templates/portfolio/admin/category_list.html:10
+#, fuzzy
+#| msgid "Category"
+msgid "New Category"
+msgstr "Categoría"
+
+#: templates/portfolio/admin/category_form.html:10
+#, fuzzy
+#| msgid "Update the details for this skill entry."
+msgid "Update the details for this blog category."
+msgstr "Actualiza los detalles de esta entrada de habilidad."
+
+#: templates/portfolio/admin/category_form.html:12
+msgid "Create a category to group related blog posts."
+msgstr ""
+
+#: templates/portfolio/admin/category_form.html:32
+msgid "Adjust the metadata and translations for this category."
+msgstr ""
+
+#: templates/portfolio/admin/category_form.html:34
+#, fuzzy
+#| msgid "Brief summary that will appear in post lists"
+msgid "Provide the information that will appear in the blog filters."
+msgstr "Resumen breve que aparecerá en listas de entradas"
+
+#: templates/portfolio/admin/category_form.html:66
+msgid "Leave blank to generate it automatically from the name."
+msgstr ""
+
+#: templates/portfolio/admin/category_form.html:78
+#, fuzzy
+#| msgid "Short description displayed on project cards."
+msgid "Optional description displayed in admin lists."
+msgstr "Descripción corta mostrada en las tarjetas de proyectos."
+
+#: templates/portfolio/admin/category_form.html:90
+msgid "Lower numbers appear first in listings."
+msgstr ""
+
+#: templates/portfolio/admin/category_form.html:102
+msgid "Visible in filters and blog pages"
+msgstr ""
+
+#: templates/portfolio/admin/category_form.html:113
+#: templates/portfolio/admin/knowledgebase_form.html:106
+#: templates/portfolio/admin/profile_form.html:498
+#: templates/portfolio/admin/projecttype_form.html:113
+msgid "Save Changes"
+msgstr "Guardar cambios"
+
+#: templates/portfolio/admin/category_form.html:113
+#, fuzzy
+#| msgid "Category"
+msgid "Create Category"
+msgstr "Categoría"
+
+#: templates/portfolio/admin/category_list.html:6
+msgid "Organize your blog content by managing categories"
+msgstr ""
+
+#: templates/portfolio/admin/category_list.html:18
+#, fuzzy
+#| msgid "Category"
+msgid "Search categories"
+msgstr "Categoría"
+
+#: templates/portfolio/admin/category_list.html:20
+#: templates/portfolio/admin/projecttype_list.html:20
+#, fuzzy
+#| msgid "Description"
+msgid "Name or description"
+msgstr "Descripción"
+
+#: templates/portfolio/admin/category_list.html:26
+#: templates/portfolio/admin/category_list.html:86
+#: templates/portfolio/admin/projecttype_list.html:26
+#: templates/portfolio/admin/projecttype_list.html:86
+#, fuzzy
+#| msgid "Education"
+msgid "Active"
+msgstr "Educación"
+
+#: templates/portfolio/admin/category_list.html:27
+#: templates/portfolio/admin/category_list.html:90
+#: templates/portfolio/admin/projecttype_list.html:27
+#: templates/portfolio/admin/projecttype_list.html:90
+msgid "Inactive"
+msgstr ""
+
+#: templates/portfolio/admin/category_list.html:48
+#, fuzzy
+#| msgid "Category"
+msgid "categories shown"
+msgstr "Categoría"
+
+#: templates/portfolio/admin/category_list.html:61
+#: templates/portfolio/blog_detail.html:35
+#: templates/portfolio/blog_list.html:30 templates/portfolio/blog_list.html:39
+msgid "Posts"
+msgstr "Entradas"
+
+#: templates/portfolio/admin/category_list.html:62
+#: templates/portfolio/admin/projecttype_list.html:62
+msgid "Order"
+msgstr ""
+
+#: templates/portfolio/admin/category_list.html:63
+#: templates/portfolio/admin/projecttype_list.html:63
+#, fuzzy
+#| msgid "Update"
+msgid "Updated"
+msgstr "Actualizar"
+
+#: templates/portfolio/admin/category_list.html:125
+#, fuzzy
+#| msgid "Category"
+msgid "No categories yet"
+msgstr "Categoría"
+
+#: templates/portfolio/admin/category_list.html:128
+#, fuzzy
+#| msgid "No records found with the applied filters."
+msgid "No categories found with the applied filters."
+msgstr "No se encontraron registros con los filtros aplicados."
+
+#: templates/portfolio/admin/category_list.html:130
+#, fuzzy
+#| msgid "Start by creating your first blog post."
+msgid "Start by creating your first blog category."
+msgstr "Comienza creando tu primera entrada de blog."
+
+#: templates/portfolio/admin/category_list.html:134
+#, fuzzy
+#| msgid "Category"
+msgid "Add Category"
+msgstr "Categoría"
+
+#: templates/portfolio/admin/contact_confirm_delete.html:5
+#, fuzzy
+#| msgid "Recent Messages"
+msgid "Delete Message"
+msgstr "Mensajes recientes"
+
+#: templates/portfolio/admin/contact_confirm_delete.html:9
+#, fuzzy
+#| msgid "Contact"
+msgid "Back to Messages"
+msgstr "Contacto"
+
+#: templates/portfolio/admin/contact_confirm_delete.html:25
+msgid "This action cannot be undone. The message will be permanently deleted."
+msgstr ""
+
+#: templates/portfolio/admin/contact_confirm_delete.html:30
+msgid "Message to delete:"
+msgstr ""
+
+#: templates/portfolio/admin/contact_confirm_delete.html:35
+msgid "From:"
+msgstr ""
+
+#: templates/portfolio/admin/contact_confirm_delete.html:36
+#: templates/portfolio/email/contact_notification.html:77
+#: templates/portfolio/email/contact_notification.txt:9
+#, fuzzy
+#| msgid "Email"
+msgid "Email:"
+msgstr "Correo electrónico"
+
+#: templates/portfolio/admin/contact_confirm_delete.html:37
+#: templates/portfolio/email/contact_confirmation.html:76
+#: templates/portfolio/email/contact_confirmation.txt:10
+#: templates/portfolio/email/contact_notification.html:78
+#: templates/portfolio/email/contact_notification.txt:10
+#, fuzzy
+#| msgid "Subject"
+msgid "Subject:"
+msgstr "Asunto"
+
+#: templates/portfolio/admin/contact_confirm_delete.html:40
+#: templates/portfolio/email/contact_notification.html:91
+#: templates/portfolio/email/contact_notification.txt:18
+#, fuzzy
+#| msgid "Date"
+msgid "Date:"
+msgstr "Fecha"
+
+#: templates/portfolio/admin/contact_confirm_delete.html:43
+#: templates/portfolio/admin/contact_list.html:22
+msgid "Read"
+msgstr "Leídos"
+
+#: templates/portfolio/admin/contact_confirm_delete.html:45
+#: templates/portfolio/admin/contact_list.html:21
+msgid "Unread"
+msgstr "No leídos"
+
+#: templates/portfolio/admin/contact_confirm_delete.html:53
+#: templates/portfolio/email/contact_confirmation.html:77
+#: templates/portfolio/email/contact_confirmation.txt:12
+#: templates/portfolio/email/contact_notification.html:82
+#, fuzzy
+#| msgid "Message"
+msgid "Message:"
+msgstr "Mensaje"
+
+#: templates/portfolio/admin/contact_confirm_delete.html:71
+#, fuzzy
+#| msgid "View full"
+msgid "View full message"
+msgstr "Ver completo"
+
+#: templates/portfolio/admin/contact_confirm_delete.html:74
+msgid "Reply before deleting"
+msgstr ""
+
+#: templates/portfolio/admin/contact_confirm_delete.html:79
+#, fuzzy
+#| msgid "No recent messages"
+msgid "Yes, delete message"
+msgstr "Sin mensajes recientes"
+
+#: templates/portfolio/admin/contact_confirm_delete.html:93
+#, fuzzy
+#| msgid ""
+#| "Are you sure you want to delete the English CV? This action cannot be "
+#| "undone."
+msgid ""
+"Are you sure you want to delete this message? This action cannot be undone."
+msgstr ""
+"¿Estás seguro de que quieres eliminar el CV en inglés? Esta acción no se "
+"puede deshacer."
 
 #: templates/portfolio/admin/contact_list.html:5
 #, fuzzy
@@ -795,14 +1256,6 @@ msgstr "Nombre, correo, asunto..."
 #: templates/portfolio/admin/contact_list.html:20
 msgid "All messages"
 msgstr "Todos los mensajes"
-
-#: templates/portfolio/admin/contact_list.html:21
-msgid "Unread"
-msgstr "No leídos"
-
-#: templates/portfolio/admin/contact_list.html:22
-msgid "Read"
-msgstr "Leídos"
 
 #: templates/portfolio/admin/contact_list.html:43
 #: templates/portfolio/admin_dashboard.html:475
@@ -918,6 +1371,7 @@ msgid "skills in"
 msgstr "habilidades en"
 
 #: templates/portfolio/admin/cv_hub.html:56
+#: templates/portfolio/admin_dashboard.html:527
 #, fuzzy
 #| msgid "Category"
 msgid "categories"
@@ -939,10 +1393,90 @@ msgid "View Public CV"
 msgstr "Publicado"
 
 #: templates/portfolio/admin/cv_hub.html:80
-#: templates/portfolio/admin_dashboard.html:525
-#: templates/portfolio/analytics.html:449
+#: templates/portfolio/admin_dashboard.html:538
+#: templates/portfolio/analytics.html:448
 msgid "Edit Profile"
 msgstr "Editar perfil"
+
+#: templates/portfolio/admin/education_confirm_delete.html:5
+#, fuzzy
+#| msgid "Education"
+msgid "Delete Education"
+msgstr "Educación"
+
+#: templates/portfolio/admin/education_confirm_delete.html:6
+#, fuzzy
+#| msgid "Update the details for this education record."
+msgid "Confirm removal of this education record"
+msgstr "Actualiza los detalles de este registro de educación."
+
+#: templates/portfolio/admin/education_confirm_delete.html:10
+#: templates/portfolio/admin/education_form.html:14
+#, fuzzy
+#| msgid "Education"
+msgid "Back to Education"
+msgstr "Educación"
+
+#: templates/portfolio/admin/education_confirm_delete.html:19
+#: templates/portfolio/admin/experience_confirm_delete.html:19
+#: templates/portfolio/admin/skill_confirm_delete.html:19
+msgid "This action cannot be undone"
+msgstr ""
+
+#: templates/portfolio/admin/education_confirm_delete.html:30
+#, fuzzy
+#| msgid "Institution"
+msgid "Institution:"
+msgstr "Institución"
+
+#: templates/portfolio/admin/education_confirm_delete.html:31
+msgid "Field of study:"
+msgstr ""
+
+#: templates/portfolio/admin/education_confirm_delete.html:33
+#: templates/portfolio/admin/experience_confirm_delete.html:31
+#, fuzzy
+#| msgid "Period"
+msgid "Period:"
+msgstr "Período"
+
+#: templates/portfolio/admin/education_confirm_delete.html:36
+#: templates/portfolio/admin/education_list.html:120
+#: templates/portfolio/admin/experience_confirm_delete.html:34
+#: templates/portfolio/admin/experience_list.html:84
+#: templates/portfolio/resume.html:114 templates/portfolio/resume.html:188
+msgid "Present"
+msgstr "Presente"
+
+#: templates/portfolio/admin/education_confirm_delete.html:42
+msgid "Credential ID:"
+msgstr ""
+
+#: templates/portfolio/admin/education_confirm_delete.html:45
+#: templates/portfolio/admin/experience_confirm_delete.html:40
+#: templates/portfolio/admin/project_confirm_delete.html:48
+#, fuzzy
+#| msgid "Description"
+msgid "Description:"
+msgstr "Descripción"
+
+#: templates/portfolio/admin/education_confirm_delete.html:52
+#, fuzzy
+#| msgid ""
+#| "Are you sure you want to delete the Spanish CV? This action cannot be "
+#| "undone."
+msgid ""
+"Are you sure you want to delete this education record? This action cannot be "
+"undone."
+msgstr ""
+"¿Estás seguro de que quieres eliminar el CV en español? Esta acción no se "
+"puede deshacer."
+
+#: templates/portfolio/admin/education_confirm_delete.html:59
+#, fuzzy
+#| msgid "Education"
+msgid "Yes, Delete Education"
+msgstr "Educación"
 
 #: templates/portfolio/admin/education_form.html:6
 #: templates/portfolio/admin/education_form.html:24
@@ -966,12 +1500,6 @@ msgstr "Actualiza los detalles de esta entrada de educación."
 #: templates/portfolio/admin/education_form.html:9
 msgid "Add a new education record to your resume."
 msgstr "Agrega un nuevo registro de educación a tu currículum."
-
-#: templates/portfolio/admin/education_form.html:14
-#, fuzzy
-#| msgid "Education"
-msgid "Back to Education"
-msgstr "Educación"
 
 #: templates/portfolio/admin/education_form.html:27
 msgid "Update the details for this education record."
@@ -1102,12 +1630,6 @@ msgstr "Período"
 msgid "Formal"
 msgstr "Formal"
 
-#: templates/portfolio/admin/education_list.html:120
-#: templates/portfolio/admin/experience_list.html:84
-#: templates/portfolio/resume.html:114 templates/portfolio/resume.html:188
-msgid "Present"
-msgstr "Presente"
-
 #: templates/portfolio/admin/education_list.html:141
 msgid "View Certificate"
 msgstr "Ver certificado"
@@ -1130,6 +1652,49 @@ msgstr "Comienza agregando tu primera formación académica."
 msgid "Add Education"
 msgstr "Educación"
 
+#: templates/portfolio/admin/experience_confirm_delete.html:5
+#, fuzzy
+#| msgid "Experience"
+msgid "Delete Experience"
+msgstr "Experiencia"
+
+#: templates/portfolio/admin/experience_confirm_delete.html:6
+#, fuzzy
+#| msgid "Update the details of this work experience."
+msgid "Confirm removal of this work experience"
+msgstr "Actualiza los detalles de esta experiencia laboral."
+
+#: templates/portfolio/admin/experience_confirm_delete.html:10
+#: templates/portfolio/admin/experience_form.html:14
+#, fuzzy
+#| msgid "Experience"
+msgid "Back to Experiences"
+msgstr "Experiencia"
+
+#: templates/portfolio/admin/experience_confirm_delete.html:30
+#, fuzzy
+#| msgid "Company"
+msgid "Company:"
+msgstr "Empresa"
+
+#: templates/portfolio/admin/experience_confirm_delete.html:47
+#, fuzzy
+#| msgid ""
+#| "Are you sure you want to delete the English CV? This action cannot be "
+#| "undone."
+msgid ""
+"Are you sure you want to delete this work experience? This action cannot be "
+"undone."
+msgstr ""
+"¿Estás seguro de que quieres eliminar el CV en inglés? Esta acción no se "
+"puede deshacer."
+
+#: templates/portfolio/admin/experience_confirm_delete.html:54
+#, fuzzy
+#| msgid "Experience"
+msgid "Yes, Delete Experience"
+msgstr "Experiencia"
+
 #: templates/portfolio/admin/experience_form.html:6
 #: templates/portfolio/admin/experience_form.html:24
 #, fuzzy
@@ -1151,12 +1716,6 @@ msgstr "Actualiza los detalles de esta experiencia laboral."
 #: templates/portfolio/admin/experience_form.html:9
 msgid "Add a new work experience entry to your resume."
 msgstr "Agrega una nueva entrada de experiencia laboral a tu currículum."
-
-#: templates/portfolio/admin/experience_form.html:14
-#, fuzzy
-#| msgid "Experience"
-msgid "Back to Experiences"
-msgstr "Experiencia"
 
 #: templates/portfolio/admin/experience_form.html:27
 msgid "Update the details for this work experience entry."
@@ -1365,6 +1924,136 @@ msgstr ""
 msgid "To change the editing language or translation targets visit"
 msgstr "Para cambiar el idioma de edición o los idiomas de destino visita"
 
+#: templates/portfolio/admin/knowledgebase_confirm_delete.html:5
+#: templates/portfolio/admin/knowledgebase_confirm_delete.html:52
+msgid "Delete Knowledge Base"
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_confirm_delete.html:6
+msgid "Confirm removal of this knowledge entry."
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_confirm_delete.html:10
+#: templates/portfolio/admin/knowledgebase_form.html:18
+#, fuzzy
+#| msgid "Projects"
+msgid "Back to Knowledge Bases"
+msgstr "Proyectos"
+
+#: templates/portfolio/admin/knowledgebase_confirm_delete.html:27
+#, fuzzy
+#| msgid "Are you sure you want to delete this language?"
+msgid "You are about to delete the knowledge base"
+msgstr "¿Estás seguro de que quieres eliminar este idioma?"
+
+#: templates/portfolio/admin/knowledgebase_confirm_delete.html:46
+msgid ""
+"Projects linked to this knowledge base will remain, but the association will "
+"be removed."
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_form.html:6
+#: templates/portfolio/admin/knowledgebase_form.html:28
+msgid "Edit Knowledge Base"
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_form.html:6
+#: templates/portfolio/admin/knowledgebase_form.html:28
+#: templates/portfolio/admin/knowledgebase_list.html:10
+msgid "New Knowledge Base"
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_form.html:10
+msgid ""
+"Update the metadata used to highlight this knowledge area across the site."
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_form.html:12
+msgid "Register a new technology, methodology, or domain expertise."
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_form.html:32
+msgid ""
+"Keep identifiers and styling consistent to ensure a cohesive presentation."
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_form.html:34
+msgid "Provide a clear identifier and visual style for this knowledge entry."
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_form.html:67
+msgid "Used internally and in URLs. Prefer lowercase with hyphens."
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_form.html:81
+msgid "Font Awesome or Devicon CSS classes (e.g.,"
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_form.html:96
+msgid "Hex color used for badges and highlights."
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_form.html:106
+msgid "Create Knowledge Base"
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_list.html:6
+msgid ""
+"Curate the technologies, methodologies, and areas of expertise linked to "
+"your projects."
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_list.html:18
+msgid "Search knowledge bases"
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_list.html:20
+msgid "Name or identifier"
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_list.html:40
+#, fuzzy
+#| msgid "Projects"
+msgid "entries shown"
+msgstr "Proyectos"
+
+#: templates/portfolio/admin/knowledgebase_list.html:51
+msgid "Knowledge Base"
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_list.html:52
+msgid "Identifier"
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_list.html:53
+msgid "Icon"
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_list.html:54
+msgid "Color"
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_list.html:83
+msgid "Autodetected"
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_list.html:115
+msgid "No knowledge bases yet"
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_list.html:118
+msgid "No entries matched your search."
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_list.html:120
+msgid ""
+"Start by registering the technologies and domains you want to highlight."
+msgstr ""
+
+#: templates/portfolio/admin/knowledgebase_list.html:124
+msgid "Add Knowledge Base"
+msgstr ""
+
 #: templates/portfolio/admin/profile_form.html:8
 #, fuzzy
 #| msgid "Projects"
@@ -1454,10 +2143,6 @@ msgstr "Idioma"
 msgid "Add Language"
 msgstr "Idioma"
 
-#: templates/portfolio/admin/profile_form.html:498
-msgid "Save Changes"
-msgstr "Guardar cambios"
-
 #: templates/portfolio/admin/profile_form.html:520
 msgid "Add / Edit Language"
 msgstr "Agregar / Editar idioma"
@@ -1539,6 +2224,80 @@ msgstr "Error al guardar idioma."
 msgid "Unknown error"
 msgstr "Error desconocido"
 
+#: templates/portfolio/admin/project_confirm_delete.html:5
+#, fuzzy
+#| msgid "Projects"
+msgid "Delete Project"
+msgstr "Proyectos"
+
+#: templates/portfolio/admin/project_confirm_delete.html:9
+#: templates/portfolio/admin/project_form.html:11
+#, fuzzy
+#| msgid "Projects"
+msgid "Back to Projects"
+msgstr "Proyectos"
+
+#: templates/portfolio/admin/project_confirm_delete.html:26
+msgid ""
+"This action cannot be undone. The project will be permanently deleted along "
+"with all its associated information."
+msgstr ""
+
+#: templates/portfolio/admin/project_confirm_delete.html:53
+#, fuzzy
+#| msgid "Technologies"
+msgid "Technologies:"
+msgstr "Tecnologías"
+
+#: templates/portfolio/admin/project_confirm_delete.html:58
+#, fuzzy
+#| msgid "Technologies"
+msgid "No technologies assigned"
+msgstr "Tecnologías"
+
+#: templates/portfolio/admin/project_confirm_delete.html:68
+#: templates/portfolio/admin/project_list.html:75
+#: templates/portfolio/admin/project_list.html:155
+#, fuzzy
+#| msgid "Published"
+msgid "Public"
+msgstr "Publicado"
+
+#: templates/portfolio/admin/project_confirm_delete.html:70
+#: templates/portfolio/admin/project_list.html:76
+#: templates/portfolio/admin/project_list.html:159
+#: templates/portfolio/home.html:309
+msgid "Private"
+msgstr "Privado"
+
+#: templates/portfolio/admin/project_confirm_delete.html:101
+#, fuzzy
+#| msgid "Links"
+msgid "Links:"
+msgstr "Enlaces"
+
+#: templates/portfolio/admin/project_confirm_delete.html:123
+#, fuzzy
+#| msgid "Are you sure you want to delete this language?"
+msgid "Are you sure you want to delete the project"
+msgstr "¿Estás seguro de que quieres eliminar este idioma?"
+
+#: templates/portfolio/admin/project_confirm_delete.html:136
+#, fuzzy
+#| msgid "Projects"
+msgid "Yes, Delete Project"
+msgstr "Proyectos"
+
+#: templates/portfolio/admin/project_confirm_delete.html:152
+#, fuzzy
+#| msgid ""
+#| "Are you sure you want to delete the English CV? This action cannot be "
+#| "undone."
+msgid "Are you completely sure? This action cannot be undone."
+msgstr ""
+"¿Estás seguro de que quieres eliminar el CV en inglés? Esta acción no se "
+"puede deshacer."
+
 #: templates/portfolio/admin/project_form.html:6
 #: templates/portfolio/admin/project_form.html:23
 #, fuzzy
@@ -1553,12 +2312,6 @@ msgstr "Proyectos"
 #, fuzzy
 #| msgid "Projects"
 msgid "New Project"
-msgstr "Proyectos"
-
-#: templates/portfolio/admin/project_form.html:11
-#, fuzzy
-#| msgid "Projects"
-msgid "Back to Projects"
 msgstr "Proyectos"
 
 #: templates/portfolio/admin/project_form.html:50
@@ -1680,19 +2433,6 @@ msgstr "Visibilidad"
 msgid "All visibilities"
 msgstr "Todas las visibilidades"
 
-#: templates/portfolio/admin/project_list.html:75
-#: templates/portfolio/admin/project_list.html:155
-#, fuzzy
-#| msgid "Published"
-msgid "Public"
-msgstr "Publicado"
-
-#: templates/portfolio/admin/project_list.html:76
-#: templates/portfolio/admin/project_list.html:159
-#: templates/portfolio/home.html:309
-msgid "Private"
-msgstr "Privado"
-
 #: templates/portfolio/admin/project_list.html:97
 #, fuzzy
 #| msgid "Projects"
@@ -1728,6 +2468,128 @@ msgstr "No se encontraron proyectos con los filtros aplicados."
 #: templates/portfolio/admin/project_list.html:231
 msgid "Start by creating your first project."
 msgstr "Comienza creando tu primer proyecto."
+
+#: templates/portfolio/admin/projecttype_confirm_delete.html:5
+#: templates/portfolio/admin/projecttype_confirm_delete.html:43
+#, fuzzy
+#| msgid "Projects"
+msgid "Delete Project Type"
+msgstr "Proyectos"
+
+#: templates/portfolio/admin/projecttype_confirm_delete.html:6
+msgid "Confirm removal of this project classification."
+msgstr ""
+
+#: templates/portfolio/admin/projecttype_confirm_delete.html:10
+#: templates/portfolio/admin/projecttype_form.html:18
+#, fuzzy
+#| msgid "Projects"
+msgid "Back to Project Types"
+msgstr "Proyectos"
+
+#: templates/portfolio/admin/projecttype_confirm_delete.html:27
+msgid "You are about to delete the project type"
+msgstr ""
+
+#: templates/portfolio/admin/projecttype_confirm_delete.html:37
+msgid ""
+"Existing projects will remain available but will lose this type association."
+msgstr ""
+
+#: templates/portfolio/admin/projecttype_form.html:6
+#: templates/portfolio/admin/projecttype_form.html:28
+#, fuzzy
+#| msgid "Projects"
+msgid "Edit Project Type"
+msgstr "Proyectos"
+
+#: templates/portfolio/admin/projecttype_form.html:6
+#: templates/portfolio/admin/projecttype_form.html:28
+#: templates/portfolio/admin/projecttype_list.html:10
+#, fuzzy
+#| msgid "Projects"
+msgid "New Project Type"
+msgstr "Proyectos"
+
+#: templates/portfolio/admin/projecttype_form.html:10
+msgid "Adjust this classification to keep your project catalog organized."
+msgstr ""
+
+#: templates/portfolio/admin/projecttype_form.html:12
+msgid "Create a project type to group similar initiatives."
+msgstr ""
+
+#: templates/portfolio/admin/projecttype_form.html:32
+msgid "Update the labels and metadata associated with this type."
+msgstr ""
+
+#: templates/portfolio/admin/projecttype_form.html:34
+msgid "Define how this type should appear in the admin and frontend filters."
+msgstr ""
+
+#: templates/portfolio/admin/projecttype_form.html:66
+msgid "Leave blank to auto-generate from the name."
+msgstr ""
+
+#: templates/portfolio/admin/projecttype_form.html:78
+msgid "Optional description used in admin overviews."
+msgstr ""
+
+#: templates/portfolio/admin/projecttype_form.html:90
+msgid "Lower values appear first in listings."
+msgstr ""
+
+#: templates/portfolio/admin/projecttype_form.html:102
+#, fuzzy
+#| msgid "Start by creating your first project."
+msgid "Available when creating or filtering projects"
+msgstr "Comienza creando tu primer proyecto."
+
+#: templates/portfolio/admin/projecttype_form.html:113
+#, fuzzy
+#| msgid "Projects"
+msgid "Create Project Type"
+msgstr "Proyectos"
+
+#: templates/portfolio/admin/projecttype_list.html:6
+msgid "Define the high-level buckets used to classify projects."
+msgstr ""
+
+#: templates/portfolio/admin/projecttype_list.html:18
+#, fuzzy
+#| msgid "Projects"
+msgid "Search project types"
+msgstr "Proyectos"
+
+#: templates/portfolio/admin/projecttype_list.html:48
+#, fuzzy
+#| msgid "posts shown"
+msgid "types shown"
+msgstr "entradas mostradas"
+
+#: templates/portfolio/admin/projecttype_list.html:125
+#, fuzzy
+#| msgid "Projects"
+msgid "No project types yet"
+msgstr "Proyectos"
+
+#: templates/portfolio/admin/projecttype_list.html:128
+#, fuzzy
+#| msgid "No projects found with the applied filters."
+msgid "No project types found with the applied filters."
+msgstr "No se encontraron proyectos con los filtros aplicados."
+
+#: templates/portfolio/admin/projecttype_list.html:130
+#, fuzzy
+#| msgid "Start by creating your first project."
+msgid "Start by defining the main categories for your projects."
+msgstr "Comienza creando tu primer proyecto."
+
+#: templates/portfolio/admin/projecttype_list.html:134
+#, fuzzy
+#| msgid "Projects"
+msgid "Add Project Type"
+msgstr "Proyectos"
 
 #: templates/portfolio/admin/site_configuration.html:4
 msgid "Site Configuration"
@@ -1784,6 +2646,69 @@ msgstr ""
 msgid "Save Configuration"
 msgstr "Guardar configuración"
 
+# Actions
+#: templates/portfolio/admin/skill_confirm_delete.html:5
+#, fuzzy
+#| msgid "Create"
+msgid "Delete Skill"
+msgstr "Crear"
+
+#: templates/portfolio/admin/skill_confirm_delete.html:6
+msgid "Confirm removal of this technical skill"
+msgstr ""
+
+#: templates/portfolio/admin/skill_confirm_delete.html:10
+#: templates/portfolio/admin/skill_form.html:14
+#, fuzzy
+#| msgid "Skills"
+msgid "Back to Skills"
+msgstr "Habilidades"
+
+#: templates/portfolio/admin/skill_confirm_delete.html:30
+#, fuzzy
+#| msgid "Category"
+msgid "Category:"
+msgstr "Categoría"
+
+#: templates/portfolio/admin/skill_confirm_delete.html:31
+msgid "Level:"
+msgstr ""
+
+#: templates/portfolio/admin/skill_confirm_delete.html:32
+#, fuzzy
+#| msgid "Experience"
+msgid "Experience:"
+msgstr "Experiencia"
+
+#: templates/portfolio/admin/skill_confirm_delete.html:32
+#: templates/portfolio/admin/skill_list.html:109
+msgid "year"
+msgstr ""
+
+#: templates/portfolio/admin/skill_confirm_delete.html:36
+#, fuzzy
+#| msgid "In progress"
+msgid "Progress:"
+msgstr "En progreso"
+
+#: templates/portfolio/admin/skill_confirm_delete.html:55
+#, fuzzy
+#| msgid ""
+#| "Are you sure you want to delete the English CV? This action cannot be "
+#| "undone."
+msgid ""
+"Are you sure you want to delete this skill? This action cannot be undone."
+msgstr ""
+"¿Estás seguro de que quieres eliminar el CV en inglés? Esta acción no se "
+"puede deshacer."
+
+# Actions
+#: templates/portfolio/admin/skill_confirm_delete.html:62
+#, fuzzy
+#| msgid "Create"
+msgid "Yes, Delete Skill"
+msgstr "Crear"
+
 #: templates/portfolio/admin/skill_form.html:6
 #: templates/portfolio/admin/skill_form.html:23
 #, fuzzy
@@ -1806,12 +2731,6 @@ msgstr "Actualiza los detalles de esta habilidad."
 #: templates/portfolio/admin/skill_form.html:9
 msgid "Add a new skill to your resume."
 msgstr "Agrega una nueva habilidad a tu currículum."
-
-#: templates/portfolio/admin/skill_form.html:14
-#, fuzzy
-#| msgid "Skills"
-msgid "Back to Skills"
-msgstr "Habilidades"
 
 #: templates/portfolio/admin/skill_form.html:26
 msgid "Update the details for this skill entry."
@@ -1960,10 +2879,6 @@ msgstr "Experiencia"
 msgid "Progress"
 msgstr "En progreso"
 
-#: templates/portfolio/admin/skill_list.html:109
-msgid "year"
-msgstr ""
-
 #: templates/portfolio/admin/skill_list.html:146
 msgid "No skills registered"
 msgstr ""
@@ -2003,7 +2918,7 @@ msgid "this week"
 msgstr "esta semana"
 
 #: templates/portfolio/admin_dashboard.html:467
-#: templates/portfolio/admin_dashboard.html:561
+#: templates/portfolio/admin_dashboard.html:574
 #, fuzzy
 #| msgid "Published"
 msgid "published"
@@ -2020,7 +2935,7 @@ msgid "unread messages"
 msgstr "mensajes no leídos"
 
 #: templates/portfolio/admin_dashboard.html:482
-#: templates/portfolio/admin_dashboard.html:583
+#: templates/portfolio/admin_dashboard.html:596
 msgid "All messages read"
 msgstr "Todos los mensajes leídos"
 
@@ -2044,274 +2959,290 @@ msgstr "Crea un nuevo artículo o tutorial"
 msgid "Add a new project to portfolio"
 msgstr "Agrega un nuevo proyecto al portafolio"
 
-#: templates/portfolio/admin_dashboard.html:526
+#: templates/portfolio/admin_dashboard.html:525
+#, fuzzy
+#| msgid "Manage Blog Posts"
+msgid "Manage Catalogs"
+msgstr "Gestionar entradas de blog"
+
+#: templates/portfolio/admin_dashboard.html:528
+#, fuzzy
+#| msgid "Projects"
+msgid "project types"
+msgstr "Proyectos"
+
+#: templates/portfolio/admin_dashboard.html:529
+msgid "knowledge bases"
+msgstr ""
+
+#: templates/portfolio/admin_dashboard.html:539
 msgid "Update personal information"
 msgstr "Actualiza información personal"
 
-#: templates/portfolio/admin_dashboard.html:535
+#: templates/portfolio/admin_dashboard.html:548
 msgid "View detailed site statistics"
 msgstr "Ver estadísticas detalladas del sitio"
 
-#: templates/portfolio/admin_dashboard.html:544
+#: templates/portfolio/admin_dashboard.html:557
 msgid "Open public portfolio"
 msgstr "Abrir portafolio público"
 
-#: templates/portfolio/admin_dashboard.html:553
+#: templates/portfolio/admin_dashboard.html:566
 msgid "Content Management"
 msgstr "Gestión de contenido"
 
-#: templates/portfolio/admin_dashboard.html:559
+#: templates/portfolio/admin_dashboard.html:572
 msgid "Manage Blog Posts"
 msgstr "Gestionar entradas de blog"
 
-#: templates/portfolio/admin_dashboard.html:560
+#: templates/portfolio/admin_dashboard.html:573
 msgid "posts total"
 msgstr "entradas totales"
 
-#: templates/portfolio/admin_dashboard.html:569
+#: templates/portfolio/admin_dashboard.html:582
 #, fuzzy
 #| msgid "Projects"
 msgid "Manage Projects"
 msgstr "Proyectos"
 
-#: templates/portfolio/admin_dashboard.html:570
+#: templates/portfolio/admin_dashboard.html:583
 msgid "View, edit and organize projects"
 msgstr "Ver, editar y organizar proyectos"
 
-#: templates/portfolio/admin_dashboard.html:578
+#: templates/portfolio/admin_dashboard.html:591
 msgid "Message Inbox"
 msgstr "Bandeja de mensajes"
 
-#: templates/portfolio/admin_dashboard.html:581
+#: templates/portfolio/admin_dashboard.html:594
 msgid "unread message"
 msgstr "mensaje no leído"
 
-#: templates/portfolio/admin_dashboard.html:583
+#: templates/portfolio/admin_dashboard.html:596
 msgid "total"
 msgstr "total"
 
-#: templates/portfolio/admin_dashboard.html:597
+#: templates/portfolio/admin_dashboard.html:610
 msgid "Advanced Management"
 msgstr "Gestión avanzada"
 
-#: templates/portfolio/admin_dashboard.html:603
+#: templates/portfolio/admin_dashboard.html:616
 msgid "Test Email Configuration"
 msgstr "Probar configuración de correo"
 
-#: templates/portfolio/admin_dashboard.html:604
+#: templates/portfolio/admin_dashboard.html:617
 msgid "Send a test email to verify settings"
 msgstr "Envía un correo de prueba para verificar la configuración"
 
-#: templates/portfolio/admin_dashboard.html:634
-#: templates/portfolio/analytics.html:567
+#: templates/portfolio/admin_dashboard.html:647
+#: templates/portfolio/analytics.html:566
 msgid "Unread Messages"
 msgstr "Mensajes no leídos"
 
-#: templates/portfolio/admin_dashboard.html:637
+#: templates/portfolio/admin_dashboard.html:650
 msgid "message"
 msgstr "mensaje"
 
-#: templates/portfolio/admin_dashboard.html:637
+#: templates/portfolio/admin_dashboard.html:650
 msgid "need"
 msgstr "necesita"
 
-#: templates/portfolio/admin_dashboard.html:637
+#: templates/portfolio/admin_dashboard.html:650
 msgid "attention"
 msgstr "atención"
 
-#: templates/portfolio/admin_dashboard.html:639
+#: templates/portfolio/admin_dashboard.html:652
 msgid "No unread messages"
 msgstr "Sin mensajes no leídos"
 
-#: templates/portfolio/admin_dashboard.html:654
+#: templates/portfolio/admin_dashboard.html:667
 msgid "Recent Messages"
 msgstr "Mensajes recientes"
 
-#: templates/portfolio/admin_dashboard.html:675
+#: templates/portfolio/admin_dashboard.html:688
 msgid "No recent messages"
 msgstr "Sin mensajes recientes"
 
-#: templates/portfolio/admin_dashboard.html:676
+#: templates/portfolio/admin_dashboard.html:689
 msgid "New contact messages will appear here"
 msgstr "Los nuevos mensajes de contacto aparecerán aquí"
 
 # Actions
-#: templates/portfolio/admin_dashboard.html:682
+#: templates/portfolio/admin_dashboard.html:695
 #, fuzzy
 #| msgid "Create"
 msgid "Recent Posts"
 msgstr "Crear"
 
-#: templates/portfolio/admin_dashboard.html:705
+#: templates/portfolio/admin_dashboard.html:718
 msgid "No recent posts"
 msgstr "Sin entradas recientes"
 
-#: templates/portfolio/admin_dashboard.html:706
+#: templates/portfolio/admin_dashboard.html:719
 msgid "New blog posts will appear here"
 msgstr "Las nuevas entradas de blog aparecerán aquí"
 
-#: templates/portfolio/admin_dashboard.html:714
+#: templates/portfolio/admin_dashboard.html:727
 msgid "Analytics Overview"
 msgstr "Resumen de analíticas"
 
-#: templates/portfolio/admin_dashboard.html:717
+#: templates/portfolio/admin_dashboard.html:730
 msgid "Most Visited Pages (30 days)"
 msgstr "Páginas más visitadas (30 días)"
 
-#: templates/portfolio/admin_dashboard.html:724
+#: templates/portfolio/admin_dashboard.html:737
 msgid "visits"
 msgstr "visitas"
 
-#: templates/portfolio/admin_dashboard.html:729
+#: templates/portfolio/admin_dashboard.html:742
 msgid "No visit data"
 msgstr "Sin datos de visitas"
 
-#: templates/portfolio/admin_dashboard.html:730
+#: templates/portfolio/admin_dashboard.html:743
 msgid "Page visit analytics will appear here"
 msgstr "Las analíticas de visitas de página aparecerán aquí"
 
-#: templates/portfolio/admin_dashboard.html:772
+#: templates/portfolio/admin_dashboard.html:785
 msgid "Visits per day"
 msgstr "Visitas por día"
 
-#: templates/portfolio/admin_dashboard.html:841
+#: templates/portfolio/admin_dashboard.html:854
 msgid "Sending test email..."
 msgstr "Enviando correo de prueba..."
 
-#: templates/portfolio/admin_dashboard.html:842
+#: templates/portfolio/admin_dashboard.html:855
 msgid "Please wait..."
 msgstr "Por favor espera..."
 
-#: templates/portfolio/admin_dashboard.html:869
+#: templates/portfolio/admin_dashboard.html:882
 msgid "Email sent successfully!"
 msgstr "¡Correo enviado exitosamente!"
 
-#: templates/portfolio/admin_dashboard.html:884
+#: templates/portfolio/admin_dashboard.html:897
 msgid "Email test failed"
 msgstr "Falló la prueba de correo"
 
-#: templates/portfolio/admin_dashboard.html:906
+#: templates/portfolio/admin_dashboard.html:919
 msgid "Please check your connection and try again"
 msgstr "Por favor verifica tu conexión e intenta de nuevo"
 
-#: templates/portfolio/analytics.html:448
+#: templates/portfolio/analytics.html:447
 msgid "CV Manager"
 msgstr "Gestor de CV"
 
-#: templates/portfolio/analytics.html:460
+#: templates/portfolio/analytics.html:459
 msgid "Detailed insights into your portfolio performance and visitor behavior"
 msgstr ""
 "Información detallada sobre el rendimiento de tu portafolio y el "
 "comportamiento de los visitantes"
 
-#: templates/portfolio/analytics.html:467
+#: templates/portfolio/analytics.html:466
 msgid "Total Visits"
 msgstr "Visitas totales"
 
-#: templates/portfolio/analytics.html:468
+#: templates/portfolio/analytics.html:467
 msgid "All time"
 msgstr "Todo el tiempo"
 
-#: templates/portfolio/analytics.html:473
+#: templates/portfolio/analytics.html:472
 msgid "Today"
 msgstr "Hoy"
 
-#: templates/portfolio/analytics.html:474
+#: templates/portfolio/analytics.html:473
 msgid "yesterday"
 msgstr "ayer"
 
-#: templates/portfolio/analytics.html:479
+#: templates/portfolio/analytics.html:478
 msgid "This Week"
 msgstr "Esta semana"
 
-#: templates/portfolio/analytics.html:485
+#: templates/portfolio/analytics.html:484
 #, fuzzy
 #| msgid "Category"
 msgid "No change"
 msgstr "Categoría"
 
-#: templates/portfolio/analytics.html:491
+#: templates/portfolio/analytics.html:490
 msgid "Last 30 Days"
 msgstr "Últimos 30 días"
 
-#: templates/portfolio/analytics.html:492
+#: templates/portfolio/analytics.html:491
 msgid "in 90 days"
 msgstr "en 90 días"
 
-#: templates/portfolio/analytics.html:499
+#: templates/portfolio/analytics.html:498
 msgid "Daily Visits"
 msgstr "Visitas diarias"
 
-#: templates/portfolio/analytics.html:500
+#: templates/portfolio/analytics.html:499
 msgid "Visit trends over the last 30 days"
 msgstr "Tendencias de visitas en los últimos 30 días"
 
-#: templates/portfolio/analytics.html:512
+#: templates/portfolio/analytics.html:511
 msgid "Hourly Distribution"
 msgstr "Distribución por hora"
 
-#: templates/portfolio/analytics.html:513
+#: templates/portfolio/analytics.html:512
 msgid "Visits by hour of day (last 7 days)"
 msgstr "Visitas por hora del día (últimos 7 días)"
 
-#: templates/portfolio/analytics.html:523
+#: templates/portfolio/analytics.html:522
 msgid "Browsers"
 msgstr "Navegadores"
 
-#: templates/portfolio/analytics.html:524
+#: templates/portfolio/analytics.html:523
 msgid "Most used browsers (last 30 days)"
 msgstr "Navegadores más usados (últimos 30 días)"
 
-#: templates/portfolio/analytics.html:537
+#: templates/portfolio/analytics.html:536
 #, fuzzy
 #| msgid "Information"
 msgid "Content Creation"
 msgstr "Información"
 
-#: templates/portfolio/analytics.html:538
+#: templates/portfolio/analytics.html:537
 msgid "Blog posts published by month"
 msgstr "Entradas de blog publicadas por mes"
 
-#: templates/portfolio/analytics.html:548
+#: templates/portfolio/analytics.html:547
 msgid "Content Overview"
 msgstr "Resumen de contenido"
 
-#: templates/portfolio/analytics.html:549
+#: templates/portfolio/analytics.html:548
 msgid "Current content statistics"
 msgstr "Estadísticas actuales de contenido"
 
-#: templates/portfolio/analytics.html:555
+#: templates/portfolio/analytics.html:554
 #, fuzzy
 #| msgid "Published"
 msgid "Published Posts"
 msgstr "Publicado"
 
-#: templates/portfolio/analytics.html:559
+#: templates/portfolio/analytics.html:558
 #, fuzzy
 #| msgid "Projects"
 msgid "Public Projects"
 msgstr "Proyectos"
 
 # Actions
-#: templates/portfolio/analytics.html:563
+#: templates/portfolio/analytics.html:562
 #, fuzzy
 #| msgid "Create"
 msgid "Draft Posts"
 msgstr "Crear"
 
-#: templates/portfolio/analytics.html:576
+#: templates/portfolio/analytics.html:575
 msgid "Most Visited Pages"
 msgstr "Páginas más visitadas"
 
-#: templates/portfolio/analytics.html:582
+#: templates/portfolio/analytics.html:581
 msgid "Visits"
 msgstr "Visitas"
 
-#: templates/portfolio/analytics.html:602
+#: templates/portfolio/analytics.html:601
 msgid "No visit data available"
 msgstr "No hay datos de visitas disponibles"
 
-#: templates/portfolio/analytics.html:603
+#: templates/portfolio/analytics.html:602
 msgid "Page visit analytics will appear here once you have traffic"
 msgstr ""
 "Las analíticas de visitas de página aparecerán aquí una vez que tengas "
@@ -2372,11 +3303,6 @@ msgstr "Destacado"
 #: templates/portfolio/blog_list.html:20 templates/portfolio/home.html:88
 msgid "Contact"
 msgstr "Contacto"
-
-#: templates/portfolio/blog_detail.html:35
-#: templates/portfolio/blog_list.html:30 templates/portfolio/blog_list.html:39
-msgid "Posts"
-msgstr "Entradas"
 
 #: templates/portfolio/blog_detail.html:50
 #: templates/portfolio/blog_detail.html:239
@@ -2647,6 +3573,133 @@ msgstr ""
 #: templates/portfolio/contact.html:285
 msgid "View My Work"
 msgstr "Ver mi trabajo"
+
+#: templates/portfolio/email/contact_confirmation.html:6
+#, fuzzy
+#| msgid "Save Configuration"
+msgid "Message Received - Confirmation"
+msgstr "Guardar configuración"
+
+#: templates/portfolio/email/contact_confirmation.html:67
+msgid "Message received!"
+msgstr ""
+
+#: templates/portfolio/email/contact_confirmation.html:68
+#, python-format
+msgid "Thank you for contacting me, %(name)s"
+msgstr ""
+
+#: templates/portfolio/email/contact_confirmation.html:71
+#: templates/portfolio/email/contact_confirmation.txt:4
+#, python-format
+msgid "Hello %(name)s,"
+msgstr ""
+
+#: templates/portfolio/email/contact_confirmation.html:73
+msgid ""
+"I have received your message and will respond as soon as possible. Here is a "
+"summary of what you sent me:"
+msgstr ""
+
+#: templates/portfolio/email/contact_confirmation.html:81
+#: templates/portfolio/email/contact_confirmation.txt:15
+msgid ""
+"I typically respond within 24-48 hours. If your inquiry is urgent, feel free "
+"to contact me directly through my social media."
+msgstr ""
+
+#: templates/portfolio/email/contact_confirmation.html:101
+#: templates/portfolio/email/contact_confirmation.txt:25
+msgid "This is an automated confirmation message."
+msgstr ""
+
+#: templates/portfolio/email/contact_confirmation.txt:1
+msgid "MESSAGE RECEIVED!"
+msgstr ""
+
+#: templates/portfolio/email/contact_confirmation.txt:6
+msgid ""
+"Thank you for contacting me. I have received your message and will respond "
+"as soon as possible."
+msgstr ""
+
+#: templates/portfolio/email/contact_confirmation.txt:8
+msgid "YOUR MESSAGE SUMMARY:"
+msgstr ""
+
+#: templates/portfolio/email/contact_notification.html:6
+#, fuzzy
+#| msgid "Contact"
+msgid "New Contact Message"
+msgstr "Contacto"
+
+#: templates/portfolio/email/contact_notification.html:70
+#, fuzzy
+#| msgid "Contact"
+msgid "New contact message"
+msgstr "Contacto"
+
+#: templates/portfolio/email/contact_notification.html:71
+msgid "You have received a new message from your portfolio website"
+msgstr ""
+
+#: templates/portfolio/email/contact_notification.html:75
+#, fuzzy
+#| msgid "Information"
+msgid "Contact information:"
+msgstr "Información"
+
+# Common labels
+#: templates/portfolio/email/contact_notification.html:76
+#: templates/portfolio/email/contact_notification.txt:8
+#, fuzzy
+#| msgid "Name"
+msgid "Name:"
+msgstr "Nombre"
+
+#: templates/portfolio/email/contact_notification.html:87
+msgid "Reply directly"
+msgstr ""
+
+#: templates/portfolio/email/contact_notification.html:92
+#: templates/portfolio/email/contact_notification.txt:19
+msgid "IP:"
+msgstr ""
+
+#: templates/portfolio/email/contact_notification.html:93
+#: templates/portfolio/email/contact_notification.txt:20
+msgid "User Agent:"
+msgstr ""
+
+#: templates/portfolio/email/contact_notification.html:95
+#: templates/portfolio/email/contact_notification.txt:23
+msgid "This message was sent from your portfolio website contact form."
+msgstr ""
+
+#: templates/portfolio/email/contact_notification.txt:1
+msgid "NEW CONTACT MESSAGE"
+msgstr ""
+
+#: templates/portfolio/email/contact_notification.txt:4
+msgid "You have received a new message from your portfolio website."
+msgstr ""
+
+#: templates/portfolio/email/contact_notification.txt:6
+msgid "CONTACT INFORMATION:"
+msgstr ""
+
+#: templates/portfolio/email/contact_notification.txt:12
+msgid "MESSAGE:"
+msgstr ""
+
+#: templates/portfolio/email/contact_notification.txt:16
+msgid "METADATA:"
+msgstr ""
+
+#: templates/portfolio/email/contact_notification.txt:24
+#, python-format
+msgid "To reply, simply respond to this email or write directly to: %(email)s"
+msgstr ""
 
 #: templates/portfolio/home.html:83 templates/portfolio/home.html:100
 msgid "About"
@@ -2933,28 +3986,101 @@ msgstr "Currículum profesional"
 msgid "Show Less"
 msgstr "Mostrar menos"
 
-#~ msgid "Remove"
-#~ msgstr "Remover"
+#~ msgid "No tienes permisos para acceder a esta página."
+#~ msgstr "No tienes permisos para acceder a esta página."
 
-#~ msgid "Back"
-#~ msgstr "Volver"
+#~ msgid "Ir al inicio"
+#~ msgstr "Ir al inicio"
 
-#~ msgid "Submit"
-#~ msgstr "Enviar"
+#~ msgid "Iniciar sesión"
+#~ msgstr "Iniciar sesión"
 
-# Messages
-#~ msgid "Welcome"
-#~ msgstr "Bienvenido"
+#~ msgid "Volver atrás"
+#~ msgstr "Volver atrás"
 
-#~ msgid "Success"
-#~ msgstr "Éxito"
+#~ msgid "¿Necesitas acceso?"
+#~ msgstr "¿Necesitas acceso?"
 
-#~ msgid "Warning"
-#~ msgstr "Advertencia"
+#~ msgid ""
+#~ "Esta página requiere autenticación. Si eres el administrador del sitio, "
+#~ "puedes iniciar sesión para acceder al panel de administración."
+#~ msgstr ""
+#~ "Esta página requiere autenticación. Si eres el administrador del sitio, "
+#~ "puedes iniciar sesión para acceder al panel de administración."
 
-#~ msgid "Title"
-#~ msgstr "Título"
+#~ msgid "Iniciar sesión como administrador"
+#~ msgstr "Iniciar sesión como administrador"
 
-# Navigation
-#~ msgid "Switch to"
-#~ msgstr "Cambiar a"
+#~ msgid "Permisos insuficientes"
+#~ msgstr "Permisos insuficientes"
+
+#~ msgid "Estás autenticado como"
+#~ msgstr "Estás autenticado como"
+
+#~ msgid "pero no tienes los permisos necesarios para acceder a esta página."
+#~ msgstr "pero no tienes los permisos necesarios para acceder a esta página."
+
+#~ msgid ""
+#~ "Si crees que esto es un error, verifica tus permisos en el panel de "
+#~ "administración."
+#~ msgstr ""
+#~ "Si crees que esto es un error, verifica tus permisos en el panel de "
+#~ "administración."
+
+#~ msgid "¿Qué puedes hacer?"
+#~ msgstr "¿Qué puedes hacer?"
+
+#~ msgid "Visitar la página principal"
+#~ msgstr "Visitar la página principal"
+
+#~ msgid "Ver los proyectos públicos"
+#~ msgstr "Ver los proyectos públicos"
+
+#~ msgid "Revisar el currículum"
+#~ msgstr "Revisar el currículum"
+
+#~ msgid "Cerrar sesión"
+#~ msgstr "Cerrar sesión"
+
+#~ msgid "Página no encontrada"
+#~ msgstr "Página no encontrada"
+
+#~ msgid "Lo sentimos, la página que buscas no existe o ha sido movida."
+#~ msgstr "Lo sentimos, la página que buscas no existe o ha sido movida."
+
+#~ msgid "Ver mis proyectos"
+#~ msgstr "Ver mis proyectos"
+
+#~ msgid "Revisar mi currículum"
+#~ msgstr "Revisar mi currículum"
+
+#, fuzzy
+#~| msgid "Contact"
+#~ msgid "Contactarme"
+#~ msgstr "Contactarme"
+
+#~ msgid "Error del servidor"
+#~ msgstr "Error del servidor"
+
+#~ msgid "Error interno del servidor"
+#~ msgstr "Error interno del servidor"
+
+#~ msgid ""
+#~ "Algo salió mal en nuestro servidor. Estamos trabajando para solucionarlo."
+#~ msgstr ""
+#~ "Algo salió mal en nuestro servidor. Estamos trabajando para solucionarlo."
+
+#~ msgid "Intentar de nuevo"
+#~ msgstr "Intentar de nuevo"
+
+#~ msgid "¿Qué puedes hacer mientras tanto?"
+#~ msgstr "¿Qué puedes hacer mientras tanto?"
+
+#~ msgid "Esperar unos minutos e intentar de nuevo"
+#~ msgstr "Esperar unos minutos e intentar de nuevo"
+
+#~ msgid "¿Necesitas ayuda?"
+#~ msgstr "¿Necesitas ayuda?"
+
+#~ msgid "Admin"
+#~ msgstr "Administración"

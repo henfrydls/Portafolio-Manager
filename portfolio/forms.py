@@ -4,6 +4,7 @@ Forms for the portfolio application with enhanced security.
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.html import escape
+from django.utils.text import slugify
 from django.utils import translation
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
@@ -14,6 +15,7 @@ from .models import (
     Project,
     KnowledgeBase,
     ProjectType,
+    Category,
     BlogPost,
     Experience,
     Education,
@@ -449,6 +451,109 @@ class SecureBlogPostForm(TranslatableModelForm):
         language_code = getattr(self, 'language_code', None) or translation.get_language() or settings.LANGUAGE_CODE
         self.instance.set_current_language(language_code)
         return super().save(commit=commit)
+
+
+# Catalog Management Forms
+class SecureCategoryForm(TranslatableModelForm):
+    """Category form with translation awareness."""
+
+    def __init__(self, *args, **kwargs):
+        language_code = kwargs.pop('language_code', None)
+        if language_code:
+            self.language_code = language_code
+        super().__init__(*args, **kwargs)
+
+    class Meta:
+        model = Category
+        fields = ['name', 'description', 'slug', 'is_active', 'order']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+            'slug': forms.TextInput(attrs={'placeholder': 'innovacion-digital'}),
+            'order': forms.NumberInput(attrs={'min': 0}),
+        }
+
+    def clean_slug(self):
+        slug = self.cleaned_data.get('slug')
+        name = self.cleaned_data.get('name')
+        if not slug and name:
+            slug = slugify(name)
+        return slug
+
+    def save(self, commit=True):
+        language_code = getattr(self, 'language_code', None) or translation.get_language() or settings.LANGUAGE_CODE
+        self.instance.set_current_language(language_code)
+        if not self.instance.slug:
+            self.instance.slug = slugify(self.instance.safe_translation_getter('name') or self.cleaned_data.get('name', ''))
+        return super().save(commit=commit)
+
+
+class SecureProjectTypeForm(TranslatableModelForm):
+    """ProjectType form aligned with admin style."""
+
+    def __init__(self, *args, **kwargs):
+        language_code = kwargs.pop('language_code', None)
+        if language_code:
+            self.language_code = language_code
+        super().__init__(*args, **kwargs)
+
+    class Meta:
+        model = ProjectType
+        fields = ['name', 'description', 'slug', 'is_active', 'order']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+            'slug': forms.TextInput(attrs={'placeholder': 'innovation'}),
+            'order': forms.NumberInput(attrs={'min': 0}),
+        }
+
+    def clean_slug(self):
+        slug = self.cleaned_data.get('slug')
+        name = self.cleaned_data.get('name')
+        if not slug and name:
+            slug = slugify(name)
+        return slug
+
+    def save(self, commit=True):
+        language_code = getattr(self, 'language_code', None) or translation.get_language() or settings.LANGUAGE_CODE
+        self.instance.set_current_language(language_code)
+        if not self.instance.slug:
+            self.instance.slug = slugify(self.instance.safe_translation_getter('name') or self.cleaned_data.get('name', ''))
+        return super().save(commit=commit)
+
+
+class SecureKnowledgeBaseForm(TranslatableModelForm):
+    """KnowledgeBase form with helpful defaults."""
+
+    def __init__(self, *args, **kwargs):
+        language_code = kwargs.pop('language_code', None)
+        if language_code:
+            self.language_code = language_code
+        super().__init__(*args, **kwargs)
+        self.fields['identifier'].help_text = self.fields['identifier'].help_text or 'Stable identifier used internally.'
+
+    class Meta:
+        model = KnowledgeBase
+        fields = ['name', 'identifier', 'icon', 'color']
+        widgets = {
+            'identifier': forms.TextInput(attrs={'placeholder': 'python', 'maxlength': 60}),
+            'icon': forms.TextInput(attrs={'placeholder': 'fab fa-python'}),
+            'color': forms.TextInput(attrs={'type': 'color'}),
+        }
+
+    def clean_identifier(self):
+        identifier = self.cleaned_data.get('identifier', '').strip()
+        return slugify(identifier)
+
+    def save(self, commit=True):
+        language_code = getattr(self, 'language_code', None) or translation.get_language() or settings.LANGUAGE_CODE
+        self.instance.set_current_language(language_code)
+        instance = super().save(commit=commit)
+        if not instance.icon:
+            instance.icon = instance.get_suggested_icon()
+        if not instance.color:
+            instance.color = instance.get_suggested_color()
+        if commit:
+            instance.save(update_fields=['icon', 'color'])
+        return instance
 
 
 # CV Management Forms

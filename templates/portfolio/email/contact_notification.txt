@@ -1,24 +1,24 @@
-NUEVO MENSAJE DE CONTACTO
+{% load i18n %}{% trans "NEW CONTACT MESSAGE" %}
 ========================
 
-Has recibido un nuevo mensaje desde tu portafolio web.
+{% trans "You have received a new message from your portfolio website." %}
 
-INFORMACIÓN DEL CONTACTO:
+{% trans "CONTACT INFORMATION:" %}
 ------------------------
-Nombre: {{ contact.name }}
-Email: {{ contact.email }}
-Asunto: {{ contact.subject }}
+{% trans "Name:" %} {{ contact.name }}
+{% trans "Email:" %} {{ contact.email }}
+{% trans "Subject:" %} {{ contact.subject }}
 
-MENSAJE:
+{% trans "MESSAGE:" %}
 --------
 {{ contact.message }}
 
-METADATOS:
+{% trans "METADATA:" %}
 ----------
-Fecha: {{ contact.created_at|date:"d/m/Y H:i" }}
-IP: {{ ip_address }}
-User Agent: {{ user_agent }}
+{% trans "Date:" %} {{ contact.created_at|date:"d/m/Y H:i" }}
+{% trans "IP:" %} {{ ip_address }}
+{% trans "User Agent:" %} {{ user_agent }}
 
 ---
-Este mensaje fue enviado desde el formulario de contacto de tu portafolio web.
-Para responder, simplemente contesta a este email o escribe directamente a: {{ contact.email }}
+{% trans "This message was sent from your portfolio website contact form." %}
+{% blocktrans with email=contact.email %}To reply, simply respond to this email or write directly to: {{ email }}{% endblocktrans %}

@@ -423,33 +423,23 @@ body {
     <nav class="admin-top-nav">
         <div class="nav-container">
             <div class="nav-left">
-                <a href="{% url 'portfolio:admin-dashboard' %}" class="nav-link">Dashboard</a>
+                <a href="{% url 'portfolio:admin-dashboard' %}" class="nav-link">{% trans "Dashboard" %}</a>
                 {% if site_config %}
                 <span class="lang-badge">{{ site_config.default_language|default:LANGUAGE_CODE|upper }}</span>
                 {% endif %}
             </div>
             <div class="nav-right">
                 <a href="{% url 'portfolio:admin-blog-list' %}" class="nav-link">{% trans "Context" %}</a>
+                <a href="{% url 'portfolio:admin-category-list' %}" class="nav-link">{% trans "Catalogs" %}</a>
                 <a href="{% url 'portfolio:admin-contact-list' %}" class="nav-link">{% trans "Inbox" %}</a>
                 <a href="{% url 'portfolio:admin-profile-edit' %}" class="nav-link">{% trans "Profile" %}</a>
                 <a href="{% url 'portfolio:admin-cv-hub' %}" class="nav-link">{% trans "CV" %}</a>
                 <a href="{% url 'portfolio:admin-analytics' %}" class="nav-link active">{% trans "Analytics" %}</a>
                 <a href="{% url 'portfolio:admin-site-configuration' %}" class="nav-link">{% trans "Settings" %}</a>
-                <a href="{% url 'admin:index' %}" class="nav-link">{% trans "Admin" %}</a>
                 <a href="{% url 'portfolio:home' %}" class="nav-link" target="_blank">{% trans "View Site" %}</a>
             </div>
         </div>
     </nav>
-    {% if site_config %}
-    <div class="admin-subnav">
-        <div class="subnav-container">
-            <a href="{% url 'portfolio:admin-blog-list' %}" class="subnav-link">{% trans "Blog Posts" %}</a>
-            <a href="{% url 'portfolio:admin-project-list' %}" class="subnav-link">{% trans "Projects" %}</a>
-            <a href="{% url 'portfolio:admin-cv-hub' %}" class="subnav-link">{% trans "CV Manager" %}</a>
-            <a href="{% url 'portfolio:admin-profile-edit' %}" class="subnav-link">{% trans "Edit Profile" %}</a>
-        </div>
-    </div>
-    {% endif %}
 
     <!-- Main Content -->
     <main class="analytics-main">

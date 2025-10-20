@@ -1,9 +1,9 @@
-<!DOCTYPE html>
-<html lang="es">
+{% load i18n %}<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuevo mensaje de contacto</title>
+    <title>{% trans "New Contact Message" %}</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -67,32 +67,32 @@
 <body>
     <div class="email-container">
         <div class="header">
-            <h1>📧 Nuevo mensaje de contacto</h1>
-            <p>Has recibido un nuevo mensaje desde tu portafolio web</p>
+            <h1>📧 {% trans "New contact message" %}</h1>
+            <p>{% trans "You have received a new message from your portfolio website" %}</p>
         </div>
 
         <div class="contact-info">
-            <h3>Información del contacto:</h3>
-            <p><strong>Nombre:</strong> {{ contact.name }}</p>
-            <p><strong>Email:</strong> <a href="mailto:{{ contact.email }}">{{ contact.email }}</a></p>
-            <p><strong>Asunto:</strong> {{ contact.subject }}</p>
+            <h3>{% trans "Contact information:" %}</h3>
+            <p><strong>{% trans "Name:" %}</strong> {{ contact.name }}</p>
+            <p><strong>{% trans "Email:" %}</strong> <a href="mailto:{{ contact.email }}">{{ contact.email }}</a></p>
+            <p><strong>{% trans "Subject:" %}</strong> {{ contact.subject }}</p>
         </div>
 
         <div class="message-content">
-            <h3>Mensaje:</h3>
+            <h3>{% trans "Message:" %}</h3>
             <p>{{ contact.message|linebreaks }}</p>
         </div>
 
         <a href="mailto:{{ contact.email }}?subject=Re: {{ contact.subject }}" class="btn">
-            Responder directamente
+            {% trans "Reply directly" %}
         </a>
 
         <div class="metadata">
-            <p><strong>Fecha:</strong> {{ contact.created_at|date:"d/m/Y H:i" }}</p>
-            <p><strong>IP:</strong> {{ ip_address }}</p>
-            <p><strong>User Agent:</strong> {{ user_agent|truncatechars:100 }}</p>
+            <p><strong>{% trans "Date:" %}</strong> {{ contact.created_at|date:"d/m/Y H:i" }}</p>
+            <p><strong>{% trans "IP:" %}</strong> {{ ip_address }}</p>
+            <p><strong>{% trans "User Agent:" %}</strong> {{ user_agent|truncatechars:100 }}</p>
             <hr>
-            <p><em>Este mensaje fue enviado desde el formulario de contacto de tu portafolio web.</em></p>
+            <p><em>{% trans "This message was sent from your portfolio website contact form." %}</em></p>
         </div>
     </div>
 </body>

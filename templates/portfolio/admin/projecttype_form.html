@@ -1,0 +1,121 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+{% load simple_i18n %}
+
+{% block admin_title %}
+    {% if object %}{% trans "Edit Project Type" %}{% else %}{% trans "New Project Type" %}{% endif %}
+{% endblock %}
+{% block admin_subtitle %}
+    {% if object %}
+        {% trans "Adjust this classification to keep your project catalog organized." %}
+    {% else %}
+        {% trans "Create a project type to group similar initiatives." %}
+    {% endif %}
+{% endblock %}
+
+{% block admin_actions %}
+<a href="{% url 'portfolio:admin-projecttype-list' %}" class="btn-secondary-custom">
+    <i class="fas fa-arrow-left"></i>{% trans "Back to Project Types" %}
+</a>
+{% endblock %}
+
+{% block admin_content %}
+{% include "portfolio/admin/includes/auto_translation_status.html" %}
+<div class="content-card">
+    <div class="card-header-custom">
+        <div>
+            <h2 class="card-title-custom">
+                {% if object %}{% trans "Edit Project Type" %}{% else %}{% trans "New Project Type" %}{% endif %}
+            </h2>
+            <p class="card-subtitle-custom">
+                {% if object %}
+                    {% trans "Update the labels and metadata associated with this type." %}
+                {% else %}
+                    {% trans "Define how this type should appear in the admin and frontend filters." %}
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    {% include "portfolio/admin/includes/editing_language_notice.html" %}
+
+    <form method="post" class="form-custom">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="form-error">{{ form.non_field_errors.0 }}</div>
+        {% endif %}
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label-custom" for="{{ form.name.id_for_label }}">
+                    {{ form.name.label }}
+                    <span class="required">*</span>
+                </label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <div class="form-error">{{ form.name.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label-custom" for="{{ form.slug.id_for_label }}">
+                    {{ form.slug.label }}
+                </label>
+                {{ form.slug }}
+                <div class="form-help">{% trans "Leave blank to auto-generate from the name." %}</div>
+                {% if form.slug.errors %}
+                    <div class="form-error">{{ form.slug.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label-custom" for="{{ form.description.id_for_label }}">
+                {{ form.description.label }}
+            </label>
+            {{ form.description }}
+            <div class="form-help">{% trans "Optional description used in admin overviews." %}</div>
+            {% if form.description.errors %}
+                <div class="form-error">{{ form.description.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label-custom" for="{{ form.order.id_for_label }}">
+                    {{ form.order.label }}
+                </label>
+                {{ form.order }}
+                <div class="form-help">{% trans "Lower values appear first in listings." %}</div>
+                {% if form.order.errors %}
+                    <div class="form-error">{{ form.order.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label-custom" style="display: block;">
+                    {{ form.is_active.label }}
+                </label>
+                <div class="checkbox-group">
+                    {{ form.is_active }}
+                    <span class="checkbox-label">{% trans "Available when creating or filtering projects" %}</span>
+                </div>
+                {% if form.is_active.errors %}
+                    <div class="form-error">{{ form.is_active.errors.0 }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary-custom">
+                <i class="fas fa-save"></i>
+                {% if object %}{% trans "Save Changes" %}{% else %}{% trans "Create Project Type" %}{% endif %}
+            </button>
+            <a href="{% url 'portfolio:admin-projecttype-list' %}" class="btn-secondary-custom">
+                <i class="fas fa-times"></i>{% trans "Cancel" %}
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

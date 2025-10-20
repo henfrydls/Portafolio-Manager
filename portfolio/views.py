@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.core.files.storage import default_storage
 from django.urls import reverse_lazy, reverse
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.db import transaction
 from django.http import JsonResponse
 from django.utils import translation
@@ -16,9 +16,35 @@ from django.core.exceptions import ImproperlyConfigured
 import os
 import uuid
 from django.contrib.contenttypes.models import ContentType
-from .models import Profile, Project, BlogPost, KnowledgeBase, Experience, Education, Skill, Language, Contact, PageVisit, Category, SiteConfiguration, AutoTranslationRecord
+from .models import (
+    Profile,
+    Project,
+    ProjectType,
+    BlogPost,
+    KnowledgeBase,
+    Experience,
+    Education,
+    Skill,
+    Language,
+    Contact,
+    PageVisit,
+    Category,
+    SiteConfiguration,
+    AutoTranslationRecord,
+)
 from .decorators import AdminRequiredMixin, SuperuserRequiredMixin
-from .forms import SecureProfileForm, SecureProjectForm, SecureBlogPostForm, SecureExperienceForm, SecureEducationForm, SecureSkillForm, SiteConfigurationForm
+from .forms import (
+    SecureProfileForm,
+    SecureProjectForm,
+    SecureBlogPostForm,
+    SecureCategoryForm,
+    SecureProjectTypeForm,
+    SecureKnowledgeBaseForm,
+    SecureExperienceForm,
+    SecureEducationForm,
+    SecureSkillForm,
+    SiteConfigurationForm,
+)
 from .utils import cleanup_old_page_visits
 from .query_optimizations import QueryOptimizer
 from .seo_utils import SEOGenerator
@@ -586,12 +612,15 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
             'published_posts': BlogPost.objects.filter(status='published').count(),
             'draft_posts': BlogPost.objects.filter(status='draft').count(),
             'featured_posts': BlogPost.objects.filter(featured=True).count(),
-            
+
             'total_messages': Contact.objects.count(),
             'unread_messages': Contact.objects.filter(read=False).count(),
             'read_messages': Contact.objects.filter(read=True).count(),
-            
+
             'total_visits': PageVisit.objects.count(),
+            'total_categories': Category.objects.count(),
+            'total_project_types': ProjectType.objects.count(),
+            'total_knowledge_bases': KnowledgeBase.objects.count(),
         }
         
         # Estadísticas de visitas por día (últimos 30 días)
@@ -1088,10 +1117,364 @@ class ProjectDeleteView(AdminRequiredMixin, DeleteView):
     model = Project
     template_name = 'portfolio/admin/project_confirm_delete.html'
     success_url = reverse_lazy('portfolio:admin-project-list')
-    
+
     def delete(self, request, *args, **kwargs):
         project = self.get_object()
         messages.success(request, f'Proyecto "{project.title}" eliminado exitosamente.')
+        return super().delete(request, *args, **kwargs)
+
+
+# ============================================================================
+# Catalog Management Views
+# ============================================================================
+
+class CategoryListAdminView(AdminRequiredMixin, ListView):
+    """Vista de lista de categorías del blog para administración."""
+
+    model = Category
+    template_name = 'portfolio/admin/category_list.html'
+    context_object_name = 'categories'
+    paginate_by = 25
+
+    def get_queryset(self):
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        queryset = (
+            Category.objects.language(current_language)
+            .all()
+            .order_by('order', 'translations__name')
+        )
+
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(translations__name__icontains=search) |
+                Q(translations__description__icontains=search)
+            )
+
+        status = self.request.GET.get('status')
+        if status == 'active':
+            queryset = queryset.filter(is_active=True)
+        elif status == 'inactive':
+            queryset = queryset.filter(is_active=False)
+
+        return queryset.distinct()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        categories = list(context['categories'])
+        context['categories'] = categories
+        ids = [category.pk for category in categories if category.pk]
+        if ids:
+            counts = (
+                BlogPost.objects.filter(category_id__in=ids)
+                .values('category_id')
+                .annotate(count=Count('id'))
+            )
+            context['category_post_counts'] = {item['category_id']: item['count'] for item in counts}
+        else:
+            context['category_post_counts'] = {}
+
+        context['current_search'] = self.request.GET.get('search', '')
+        context['current_status'] = self.request.GET.get('status', '')
+        context['current_language'] = translation.get_language() or settings.LANGUAGE_CODE
+        context['available_languages'] = settings.LANGUAGES
+        context['total_categories'] = Category.objects.count()
+        return context
+
+
+class CategoryCreateView(EditingLanguageContextMixin, AdminRequiredMixin, CreateView):
+    """Vista para crear nuevas categorías."""
+
+    model = Category
+    form_class = SecureCategoryForm
+    template_name = 'portfolio/admin/category_form.html'
+    success_url = reverse_lazy('portfolio:admin-category-list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        config = SiteConfiguration.get_solo()
+        language_code = config.default_language or settings.LANGUAGE_CODE
+        kwargs['language_code'] = language_code
+        return kwargs
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        name = self.object.safe_translation_getter('name', any_language=True) or self.object.slug
+        messages.success(self.request, f'Categoría "{name}" creada exitosamente.')
+        return response
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'No se pudo crear la categoría. Revisa los datos proporcionados.')
+        return super().form_invalid(form)
+
+
+class CategoryUpdateView(AutoTranslationStatusMixin, AdminRequiredMixin, UpdateView):
+    """Vista para editar categorías existentes."""
+
+    model = Category
+    form_class = SecureCategoryForm
+    template_name = 'portfolio/admin/category_form.html'
+    success_url = reverse_lazy('portfolio:admin-category-list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        kwargs['language_code'] = current_language
+        return kwargs
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        name = self.object.safe_translation_getter('name', any_language=True) or self.object.slug
+        messages.success(self.request, f'Categoría "{name}" actualizada exitosamente.')
+        return response
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'No se pudo actualizar la categoría. Revisa los datos proporcionados.')
+        return super().form_invalid(form)
+
+
+class CategoryDeleteView(AdminRequiredMixin, DeleteView):
+    """Vista para eliminar categorías."""
+
+    model = Category
+    template_name = 'portfolio/admin/category_confirm_delete.html'
+    success_url = reverse_lazy('portfolio:admin-category-list')
+
+    def delete(self, request, *args, **kwargs):
+        category = self.get_object()
+        name = category.safe_translation_getter('name', any_language=True) or category.slug
+        messages.success(request, f'Categoría "{name}" eliminada exitosamente.')
+        return super().delete(request, *args, **kwargs)
+
+
+class ProjectTypeListAdminView(AdminRequiredMixin, ListView):
+    """Vista de lista de tipos de proyecto."""
+
+    model = ProjectType
+    template_name = 'portfolio/admin/projecttype_list.html'
+    context_object_name = 'project_types'
+    paginate_by = 25
+
+    def get_queryset(self):
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        queryset = (
+            ProjectType.objects.language(current_language)
+            .all()
+            .order_by('order', 'translations__name')
+        )
+
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(translations__name__icontains=search) |
+                Q(translations__description__icontains=search)
+            )
+
+        status = self.request.GET.get('status')
+        if status == 'active':
+            queryset = queryset.filter(is_active=True)
+        elif status == 'inactive':
+            queryset = queryset.filter(is_active=False)
+
+        return queryset.distinct()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        project_types = list(context['project_types'])
+        context['project_types'] = project_types
+        ids = [ptype.pk for ptype in project_types if ptype.pk]
+        if ids:
+            counts = (
+                Project.objects.filter(project_type_obj_id__in=ids)
+                .values('project_type_obj_id')
+                .annotate(count=Count('id'))
+            )
+            context['project_type_project_counts'] = {item['project_type_obj_id']: item['count'] for item in counts}
+        else:
+            context['project_type_project_counts'] = {}
+
+        context['current_search'] = self.request.GET.get('search', '')
+        context['current_status'] = self.request.GET.get('status', '')
+        context['current_language'] = translation.get_language() or settings.LANGUAGE_CODE
+        context['available_languages'] = settings.LANGUAGES
+        context['total_project_types'] = ProjectType.objects.count()
+        return context
+
+
+class ProjectTypeCreateView(EditingLanguageContextMixin, AdminRequiredMixin, CreateView):
+    """Vista para crear nuevos tipos de proyecto."""
+
+    model = ProjectType
+    form_class = SecureProjectTypeForm
+    template_name = 'portfolio/admin/projecttype_form.html'
+    success_url = reverse_lazy('portfolio:admin-projecttype-list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        config = SiteConfiguration.get_solo()
+        language_code = config.default_language or settings.LANGUAGE_CODE
+        kwargs['language_code'] = language_code
+        return kwargs
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        name = self.object.safe_translation_getter('name', any_language=True) or self.object.slug
+        messages.success(self.request, f'Tipo de proyecto "{name}" creado exitosamente.')
+        return response
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'No se pudo crear el tipo de proyecto. Revisa los datos proporcionados.')
+        return super().form_invalid(form)
+
+
+class ProjectTypeUpdateView(AutoTranslationStatusMixin, AdminRequiredMixin, UpdateView):
+    """Vista para actualizar tipos de proyecto."""
+
+    model = ProjectType
+    form_class = SecureProjectTypeForm
+    template_name = 'portfolio/admin/projecttype_form.html'
+    success_url = reverse_lazy('portfolio:admin-projecttype-list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        kwargs['language_code'] = current_language
+        return kwargs
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        name = self.object.safe_translation_getter('name', any_language=True) or self.object.slug
+        messages.success(self.request, f'Tipo de proyecto "{name}" actualizado exitosamente.')
+        return response
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'No se pudo actualizar el tipo de proyecto. Revisa los datos proporcionados.')
+        return super().form_invalid(form)
+
+
+class ProjectTypeDeleteView(AdminRequiredMixin, DeleteView):
+    """Vista para eliminar tipos de proyecto."""
+
+    model = ProjectType
+    template_name = 'portfolio/admin/projecttype_confirm_delete.html'
+    success_url = reverse_lazy('portfolio:admin-projecttype-list')
+
+    def delete(self, request, *args, **kwargs):
+        project_type = self.get_object()
+        name = project_type.safe_translation_getter('name', any_language=True) or project_type.slug
+        messages.success(request, f'Tipo de proyecto "{name}" eliminado exitosamente.')
+        return super().delete(request, *args, **kwargs)
+
+
+class KnowledgeBaseListAdminView(AdminRequiredMixin, ListView):
+    """Vista de lista de bases de conocimiento."""
+
+    model = KnowledgeBase
+    template_name = 'portfolio/admin/knowledgebase_list.html'
+    context_object_name = 'knowledge_bases'
+    paginate_by = 25
+
+    def get_queryset(self):
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        queryset = (
+            KnowledgeBase.objects.language(current_language)
+            .all()
+            .order_by('translations__name')
+        )
+
+        search = self.request.GET.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(translations__name__icontains=search) |
+                Q(identifier__icontains=search)
+            )
+
+        return queryset.distinct()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        knowledge_bases = list(context['knowledge_bases'])
+        context['knowledge_bases'] = knowledge_bases
+        ids = [kb.pk for kb in knowledge_bases if kb.pk]
+        if ids:
+            counts = (
+                Project.objects.filter(knowledge_bases__id__in=ids)
+                .values('knowledge_bases')
+                .annotate(count=Count('id', distinct=True))
+            )
+            context['knowledge_base_project_counts'] = {item['knowledge_bases']: item['count'] for item in counts}
+        else:
+            context['knowledge_base_project_counts'] = {}
+
+        context['current_search'] = self.request.GET.get('search', '')
+        context['current_language'] = translation.get_language() or settings.LANGUAGE_CODE
+        context['available_languages'] = settings.LANGUAGES
+        context['total_knowledge_bases'] = KnowledgeBase.objects.count()
+        return context
+
+
+class KnowledgeBaseCreateView(EditingLanguageContextMixin, AdminRequiredMixin, CreateView):
+    """Vista para crear nuevas bases de conocimiento."""
+
+    model = KnowledgeBase
+    form_class = SecureKnowledgeBaseForm
+    template_name = 'portfolio/admin/knowledgebase_form.html'
+    success_url = reverse_lazy('portfolio:admin-knowledgebase-list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        config = SiteConfiguration.get_solo()
+        language_code = config.default_language or settings.LANGUAGE_CODE
+        kwargs['language_code'] = language_code
+        return kwargs
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        name = self.object.safe_translation_getter('name', any_language=True) or self.object.identifier
+        messages.success(self.request, f'Base de conocimiento "{name}" creada exitosamente.')
+        return response
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'No se pudo crear la base de conocimiento. Revisa los datos proporcionados.')
+        return super().form_invalid(form)
+
+
+class KnowledgeBaseUpdateView(AutoTranslationStatusMixin, AdminRequiredMixin, UpdateView):
+    """Vista para actualizar bases de conocimiento."""
+
+    model = KnowledgeBase
+    form_class = SecureKnowledgeBaseForm
+    template_name = 'portfolio/admin/knowledgebase_form.html'
+    success_url = reverse_lazy('portfolio:admin-knowledgebase-list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        kwargs['language_code'] = current_language
+        return kwargs
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        name = self.object.safe_translation_getter('name', any_language=True) or self.object.identifier
+        messages.success(self.request, f'Base de conocimiento "{name}" actualizada exitosamente.')
+        return response
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'No se pudo actualizar la base de conocimiento. Revisa los datos proporcionados.')
+        return super().form_invalid(form)
+
+
+class KnowledgeBaseDeleteView(AdminRequiredMixin, DeleteView):
+    """Vista para eliminar bases de conocimiento."""
+
+    model = KnowledgeBase
+    template_name = 'portfolio/admin/knowledgebase_confirm_delete.html'
+    success_url = reverse_lazy('portfolio:admin-knowledgebase-list')
+
+    def delete(self, request, *args, **kwargs):
+        kb = self.get_object()
+        name = kb.safe_translation_getter('name', any_language=True) or kb.identifier
+        messages.success(request, f'Base de conocimiento "{name}" eliminada exitosamente.')
         return super().delete(request, *args, **kwargs)
 
 

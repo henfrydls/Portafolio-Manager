@@ -9,7 +9,8 @@ A professional Django-based portfolio website featuring a modern design, compreh
 - **Modern Portfolio Design** with fixed sidebar layout and responsive design
 - **Comprehensive Admin Panel** for content management with analytics dashboard
 - **Blog System** with Medium-style posts, categories, and rich content editing
-- **Project Showcase** with technology filtering and public/private visibility
+- **Project Showcase** with catalog-driven filtering and public/private visibility
+- **Catalog Management** for categories, project types, and knowledge bases
 - **Resume Management** with web version and PDF download
 - **Contact System** with secure forms and email notifications
 - **Analytics Tracking** with visit statistics and performance metrics
@@ -179,6 +180,7 @@ All content is managed through the admin panel:
 - **Profile**: Personal information and social links
 - **Projects**: Portfolio items with images and descriptions
 - **Blog Posts**: Articles and tutorials
+- **Catalogs**: Categories, project types, and knowledge bases that feed filters
 - **Skills**: Technical skills and proficiency levels
 - **Experience**: Work history
 - **Education**: Academic background and certifications

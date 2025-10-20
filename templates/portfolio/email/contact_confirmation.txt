@@ -1,18 +1,18 @@
-¡MENSAJE RECIBIDO!
+{% load i18n %}{% trans "MESSAGE RECEIVED!" %}
 ==================
 
-Hola {{ contact.name }},
+{% blocktrans with name=contact.name %}Hello {{ name }},{% endblocktrans %}
 
-Gracias por contactarme. He recibido tu mensaje y te responderé lo antes posible.
+{% trans "Thank you for contacting me. I have received your message and will respond as soon as possible." %}
 
-RESUMEN DE TU MENSAJE:
+{% trans "YOUR MESSAGE SUMMARY:" %}
 ----------------------
-Asunto: {{ contact.subject }}
+{% trans "Subject:" %} {{ contact.subject }}
 
-Mensaje:
+{% trans "Message:" %}
 {{ contact.message }}
 
-Normalmente respondo en un plazo de 24-48 horas. Si tu consulta es urgente, no dudes en contactarme directamente a través de mis redes sociales.
+{% trans "I typically respond within 24-48 hours. If your inquiry is urgent, feel free to contact me directly through my social media." %}
 
 ---
 {{ profile.name }}
@@ -22,4 +22,4 @@ Normalmente respondo en un plazo de 24-48 horas. Si tu consulta es urgente, no d
 {% if profile.github_url %}GitHub: {{ profile.github_url }}{% endif %}
 {% if profile.medium_url %}Medium: {{ profile.medium_url }}{% endif %}
 
-Este es un mensaje automático de confirmación.
+{% trans "This is an automated confirmation message." %}

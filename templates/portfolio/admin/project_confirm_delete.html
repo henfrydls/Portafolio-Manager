@@ -1,11 +1,12 @@
 {% extends "portfolio/admin/base_admin.html" %}
 {% load static %}
+{% load i18n %}
 
-{% block admin_title %}Eliminar Proyecto{% endblock %}
+{% block admin_title %}{% trans "Delete Project" %}{% endblock %}
 
 {% block admin_actions %}
 <a href="{% url 'portfolio:admin-project-list' %}" class="btn btn-outline-secondary">
-    <i class="fas fa-arrow-left me-1"></i>Volver a Proyectos
+    <i class="fas fa-arrow-left me-1"></i>{% trans "Back to Projects" %}
 </a>
 {% endblock %}
 
@@ -15,15 +16,14 @@
         <div class="card border-danger">
             <div class="card-header bg-danger text-white">
                 <h5 class="card-title mb-0">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmar Eliminación
+                    <i class="fas fa-exclamation-triangle me-2"></i>{% trans "Confirm Deletion" %}
                 </h5>
             </div>
             <div class="card-body">
                 <div class="alert alert-warning">
-                    <h6><i class="fas fa-warning me-1"></i>¡Atención!</h6>
+                    <h6><i class="fas fa-warning me-1"></i>{% trans "Attention!" %}</h6>
                     <p class="mb-0">
-                        Esta acción no se puede deshacer. El proyecto será eliminado permanentemente 
-                        junto con toda su información asociada.
+                        {% trans "This action cannot be undone. The project will be permanently deleted along with all its associated information." %}
                     </p>
                 </div>
 
@@ -43,42 +43,42 @@
                         <h4 class="mb-3">
                             {% if object.emoji %}{{ object.emoji }} {% endif %}{{ object.title }}
                         </h4>
-                        
+
                         <div class="mb-3">
-                            <strong>Descripción:</strong>
+                            <strong>{% trans "Description:" %}</strong>
                             <p class="text-muted">{{ object.description }}</p>
                         </div>
 
                         <div class="mb-3">
-                            <strong>Tecnologías:</strong>
+                            <strong>{% trans "Technologies:" %}</strong>
                             <div class="mt-1">
                                 {% for tech in object.technologies.all %}
                                     <span class="badge bg-secondary me-1">{{ tech.name }}</span>
                                 {% empty %}
-                                    <span class="text-muted">Sin tecnologías asignadas</span>
+                                    <span class="text-muted">{% trans "No technologies assigned" %}</span>
                                 {% endfor %}
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-sm-6">
-                                <strong>Estado:</strong>
+                                <strong>{% trans "Status:" %}</strong>
                                 <span class="badge badge-{{ object.visibility }}">
                                     {% if object.visibility == 'public' %}
-                                        <i class="fas fa-eye me-1"></i>Público
+                                        <i class="fas fa-eye me-1"></i>{% trans "Public" %}
                                     {% else %}
-                                        <i class="fas fa-eye-slash me-1"></i>Privado
+                                        <i class="fas fa-eye-slash me-1"></i>{% trans "Private" %}
                                     {% endif %}
                                 </span>
                             </div>
                             <div class="col-sm-6">
-                                <strong>Destacado:</strong>
+                                <strong>{% trans "Featured:" %}</strong>
                                 {% if object.featured %}
                                     <span class="badge bg-warning text-dark">
-                                        <i class="fas fa-star me-1"></i>Sí
+                                        <i class="fas fa-star me-1"></i>{% trans "Yes" %}
                                     </span>
                                 {% else %}
-                                    <span class="badge bg-secondary">No</span>
+                                    <span class="badge bg-secondary">{% trans "No" %}</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -86,11 +86,11 @@
                         <div class="mt-3">
                             <div class="row">
                                 <div class="col-sm-6">
-                                    <strong>Creado:</strong>
+                                    <strong>{% trans "Created:" %}</strong>
                                     <small class="text-muted d-block">{{ object.created_at|date:"d/m/Y H:i" }}</small>
                                 </div>
                                 <div class="col-sm-6">
-                                    <strong>Actualizado:</strong>
+                                    <strong>{% trans "Updated:" %}</strong>
                                     <small class="text-muted d-block">{{ object.updated_at|date:"d/m/Y H:i" }}</small>
                                 </div>
                             </div>
@@ -98,7 +98,7 @@
 
                         {% if object.github_url or object.demo_url %}
                         <div class="mt-3">
-                            <strong>Enlaces:</strong>
+                            <strong>{% trans "Links:" %}</strong>
                             <div class="mt-1">
                                 {% if object.github_url %}
                                     <a href="{{ object.github_url }}" target="_blank" class="btn btn-sm btn-outline-dark me-2">
@@ -120,20 +120,20 @@
 
                 <div class="text-center">
                     <p class="mb-4">
-                        <strong>¿Estás seguro de que quieres eliminar el proyecto "{{ object.title }}"?</strong>
+                        <strong>{% trans "Are you sure you want to delete the project" %} "{{ object.title }}"?</strong>
                     </p>
-                    
+
                     <form method="post" class="d-inline">
                         {% csrf_token %}
                         <div class="d-flex justify-content-center gap-3">
                             <a href="{% url 'portfolio:admin-project-list' %}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times me-1"></i>Cancelar
+                                <i class="fas fa-times me-1"></i>{% trans "Cancel" %}
                             </a>
                             <a href="{% url 'portfolio:admin-project-edit' object.pk %}" class="btn btn-outline-primary">
-                                <i class="fas fa-edit me-1"></i>Editar en su lugar
+                                <i class="fas fa-edit me-1"></i>{% trans "Edit instead" %}
                             </a>
                             <button type="submit" class="btn btn-danger" id="confirmDelete">
-                                <i class="fas fa-trash me-1"></i>Sí, Eliminar Proyecto
+                                <i class="fas fa-trash me-1"></i>{% trans "Yes, Delete Project" %}
                             </button>
                         </div>
                     </form>
@@ -149,7 +149,7 @@
 <script>
 // Add confirmation dialog for extra safety
 document.getElementById('confirmDelete').addEventListener('click', function(e) {
-    if (!confirm('¿Estás completamente seguro? Esta acción no se puede deshacer.')) {
+    if (!confirm('{% trans "Are you completely sure? This action cannot be undone." %}')) {
         e.preventDefault();
     }
 });

@@ -1,0 +1,155 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+{% load simple_i18n %}
+
+{% block admin_title %}{% trans "Catalogs" %} · {% trans "Knowledge Bases" %}{% endblock %}
+{% block admin_subtitle %}{% trans "Curate the technologies, methodologies, and areas of expertise linked to your projects." %}{% endblock %}
+
+{% block admin_actions %}
+<a href="{% url 'portfolio:admin-knowledgebase-create' %}" class="btn-primary-custom">
+    <i class="fas fa-plus"></i>{% trans "New Knowledge Base" %}
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<div class="filters-section">
+    <form method="get" class="filters-grid">
+        <div style="grid-column: span 2;">
+            <label class="form-label-custom">{% trans "Search knowledge bases" %}</label>
+            <input type="text" name="search" class="form-control-custom"
+                   placeholder="{% trans "Name or identifier" %}" value="{{ current_search }}">
+        </div>
+        <div>
+            <button type="submit" class="btn-primary-custom">
+                <i class="fas fa-search"></i>{% trans "Filter" %}
+            </button>
+        </div>
+        <div>
+            <a href="{% url 'portfolio:admin-knowledgebase-list' %}" class="btn-secondary-custom">
+                <i class="fas fa-times"></i>{% trans "Clear" %}
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="content-card">
+    <div class="card-header-custom">
+        <div>
+            <h2 class="card-title-custom">{% trans "Knowledge Bases" %}</h2>
+            <p class="card-subtitle-custom">
+                {{ knowledge_bases|length }} {% trans "entries shown" %}
+                • {% trans "Total:" %} {{ total_knowledge_bases }}
+            </p>
+        </div>
+    </div>
+
+    {% if knowledge_bases %}
+    <div style="overflow-x: auto;">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>{% trans "Knowledge Base" %}</th>
+                    <th>{% trans "Identifier" %}</th>
+                    <th>{% trans "Icon" %}</th>
+                    <th>{% trans "Color" %}</th>
+                    <th>{% trans "Projects" %}</th>
+                    <th width="180">{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for kb in knowledge_bases %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 36px; height: 36px; border-radius: 8px; background: {{ kb.color }}1a; display: flex; align-items: center; justify-content: center; color: {{ kb.color }};">
+                                {% if kb.icon %}
+                                <i class="{{ kb.icon }}"></i>
+                                {% else %}
+                                <i class="fas fa-lightbulb"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div style="font-weight: 500; color: #242424;">{{ kb.name }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <code>{{ kb.identifier }}</code>
+                    </td>
+                    <td>
+                        {% if kb.icon %}
+                        <span class="badge-custom badge-secondary">{{ kb.icon }}</span>
+                        {% else %}
+                        <span class="badge-custom badge-warning">{% trans "Autodetected" %}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="width: 16px; height: 16px; border-radius: 50%; background: {{ kb.color }}; display: inline-block; border: 1px solid #e0e0e0;"></span>
+                            <code>{{ kb.color }}</code>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge-custom badge-secondary">
+                            {{ knowledge_base_project_counts|dict_get:kb.id|default:0 }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="quick-actions">
+                            <a href="{% url 'portfolio:admin-knowledgebase-edit' kb.pk %}" class="btn" title="{% trans "Edit" %}">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'portfolio:admin-knowledgebase-delete' kb.pk %}" class="btn" title="{% trans "Delete" %}" style="color: #dc3545;">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-database"></i>
+        <h3>{% trans "No knowledge bases yet" %}</h3>
+        <p>
+            {% if current_search %}
+                {% trans "No entries matched your search." %}
+            {% else %}
+                {% trans "Start by registering the technologies and domains you want to highlight." %}
+            {% endif %}
+        </p>
+        <a href="{% url 'portfolio:admin-knowledgebase-create' %}" class="btn-primary-custom">
+            <i class="fas fa-plus"></i>{% trans "Add Knowledge Base" %}
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% if is_paginated %}
+<div class="pagination-custom">
+    {% if page_obj.has_previous %}
+        <a class="page-link" href="?page=1{% if current_search %}&search={{ current_search }}{% endif %}">
+            <i class="fas fa-angle-double-left"></i>
+        </a>
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}">
+            <i class="fas fa-angle-left"></i>
+        </a>
+    {% endif %}
+
+    <span class="page-link active">
+        {% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}">
+            <i class="fas fa-angle-right"></i>
+        </a>
+        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_search %}&search={{ current_search }}{% endif %}">
+            <i class="fas fa-angle-double-right"></i>
+        </a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

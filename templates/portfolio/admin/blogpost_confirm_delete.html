@@ -1,11 +1,12 @@
 {% extends "portfolio/admin/base_admin.html" %}
 {% load static %}
+{% load i18n %}
 
-{% block admin_title %}Eliminar Post{% endblock %}
+{% block admin_title %}{% trans "Delete Post" %}{% endblock %}
 
 {% block admin_actions %}
 <a href="{% url 'portfolio:admin-blog-list' %}" class="btn btn-outline-secondary">
-    <i class="fas fa-arrow-left me-1"></i>Volver al Blog
+    <i class="fas fa-arrow-left me-1"></i>{% trans "Back to Blog" %}
 </a>
 {% endblock %}
 
@@ -15,13 +16,13 @@
         <div class="card border-danger">
             <div class="card-header bg-danger text-white">
                 <h5 class="card-title mb-0">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmar Eliminación
+                    <i class="fas fa-exclamation-triangle me-2"></i>{% trans "Confirm Deletion" %}
                 </h5>
             </div>
             <div class="card-body">
                 <div class="alert alert-danger">
-                    <h6><i class="fas fa-warning me-1"></i>¡Atención!</h6>
-                    <p class="mb-0">Esta acción no se puede deshacer. El post será eliminado permanentemente.</p>
+                    <h6><i class="fas fa-warning me-1"></i>{% trans "Attention!" %}</h6>
+                    <p class="mb-0">{% trans "This action cannot be undone. The post will be permanently deleted." %}</p>
                 </div>
 
                 <div class="row">
@@ -42,31 +43,31 @@
                         
                         <div class="row">
                             <div class="col-sm-6">
-                                <strong>Tipo:</strong> {{ object.get_post_type_display }}<br>
-                                <strong>Estado:</strong> 
+                                <strong>{% trans "Type:" %}</strong> {{ object.get_post_type_display }}<br>
+                                <strong>{% trans "Status:" %}</strong>
                                 <span class="badge badge-{{ object.status }}">
                                     {{ object.get_status_display }}
                                 </span><br>
-                                <strong>Destacado:</strong> 
+                                <strong>{% trans "Featured:" %}</strong>
                                 {% if object.featured %}
-                                    <i class="fas fa-star text-warning"></i> Sí
+                                    <i class="fas fa-star text-warning"></i> {% trans "Yes" %}
                                 {% else %}
-                                    <i class="far fa-star text-muted"></i> No
+                                    <i class="far fa-star text-muted"></i> {% trans "No" %}
                                 {% endif %}
                             </div>
                             <div class="col-sm-6">
-                                <strong>Creado:</strong> {{ object.created_at|date:"d/m/Y H:i" }}<br>
-                                <strong>Actualizado:</strong> {{ object.updated_at|date:"d/m/Y H:i" }}<br>
+                                <strong>{% trans "Created:" %}</strong> {{ object.created_at|date:"d/m/Y H:i" }}<br>
+                                <strong>{% trans "Updated:" %}</strong> {{ object.updated_at|date:"d/m/Y H:i" }}<br>
                                 {% if object.status == 'published' %}
-                                    <strong>Publicado:</strong> {{ object.publish_date|date:"d/m/Y H:i" }}<br>
+                                    <strong>{% trans "Published:" %}</strong> {{ object.publish_date|date:"d/m/Y H:i" }}<br>
                                 {% endif %}
-                                <strong>Tiempo de lectura:</strong> {{ object.reading_time }} min
+                                <strong>{% trans "Reading time:" %}</strong> {{ object.reading_time }} min
                             </div>
                         </div>
 
                         {% if object.tags %}
                         <div class="mt-3">
-                            <strong>Tags:</strong><br>
+                            <strong>{% trans "Tags:" %}</strong><br>
                             {% for tag in object.get_tags_list %}
                                 <span class="badge bg-secondary me-1">{{ tag }}</span>
                             {% endfor %}
@@ -79,18 +80,18 @@
 
                 <form method="post" class="d-flex justify-content-between align-items-center">
                     {% csrf_token %}
-                    
+
                     <div>
                         <a href="{% url 'portfolio:admin-blog-list' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-times me-1"></i>Cancelar
+                            <i class="fas fa-times me-1"></i>{% trans "Cancel" %}
                         </a>
                         <a href="{% url 'portfolio:admin-blog-edit' object.pk %}" class="btn btn-outline-primary ms-2">
-                            <i class="fas fa-edit me-1"></i>Editar en su lugar
+                            <i class="fas fa-edit me-1"></i>{% trans "Edit instead" %}
                         </a>
                     </div>
-                    
+
                     <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash me-1"></i>Sí, eliminar post
+                        <i class="fas fa-trash me-1"></i>{% trans "Yes, delete post" %}
                     </button>
                 </form>
             </div>
@@ -104,7 +105,7 @@
 <script>
 // Add confirmation dialog
 document.querySelector('form').addEventListener('submit', function(e) {
-    if (!confirm('¿Estás absolutamente seguro de que quieres eliminar este post? Esta acción no se puede deshacer.')) {
+    if (!confirm('{% trans "Are you absolutely sure you want to delete this post? This action cannot be undone." %}')) {
         e.preventDefault();
     }
 });

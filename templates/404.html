@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load simple_i18n %}
 
-{% block title %}{% trans "Página no encontrada" %} - {{ block.super }}{% endblock %}
+{% block title %}{% trans "Page Not Found" %} - {{ block.super }}{% endblock %}
 
 {% block content %}
 <div class="error-page-container">
@@ -9,33 +9,33 @@
         <div class="error-icon">
             <i class="fas fa-search" aria-hidden="true"></i>
         </div>
-        
+
         <h1 class="error-title">404</h1>
-        <h2 class="error-subtitle">{% trans "Página no encontrada" %}</h2>
-        
+        <h2 class="error-subtitle">{% trans "Page Not Found" %}</h2>
+
         <p class="error-message">
-            {% trans "Lo sentimos, la página que buscas no existe o ha sido movida." %}
+            {% trans "Sorry, the page you are looking for doesn't exist or has been moved." %}
         </p>
-        
+
         <div class="error-actions">
             <a href="/" class="btn btn-primary">
                 <i class="fas fa-home"></i>
-                {% trans "Ir al inicio" %}
+                {% trans "Go to Home" %}
             </a>
             <button onclick="history.back()" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left"></i>
-                {% trans "Volver atrás" %}
+                {% trans "Go Back" %}
             </button>
         </div>
-        
+
         <div class="error-suggestions">
-            <h3>{% trans "¿Qué puedes hacer?" %}</h3>
+            <h3>{% trans "What can you do?" %}</h3>
             <ul>
-                <li><a href="/">{% trans "Visitar la página principal" %}</a></li>
-                <li><a href="/#projects">{% trans "Ver mis proyectos" %}</a></li>
-                <li><a href="/#resume">{% trans "Revisar mi currículum" %}</a></li>
-                <li><a href="/#blog">{% trans "Leer el blog" %}</a></li>
-                <li><a href="/#contact">{% trans "Contactarme" %}</a></li>
+                <li><a href="/">{% trans "Visit the home page" %}</a></li>
+                <li><a href="/#projects">{% trans "View my projects" %}</a></li>
+                <li><a href="/#resume">{% trans "Review my resume" %}</a></li>
+                <li><a href="/#blog">{% trans "Read the blog" %}</a></li>
+                <li><a href="/#contact">{% trans "Contact me" %}</a></li>
             </ul>
         </div>
     </div>

@@ -555,24 +555,34 @@ body {
                 {% endif %}
             </div>
             <div class="nav-right">
-                <a href="{% url 'portfolio:admin-blog-list' %}" class="nav-link {% if 'project' in request.resolver_match.url_name or 'blog' in request.resolver_match.url_name %}active{% endif %}">{% trans "Context" %}</a>
+                {% with current_name=request.resolver_match.url_name|default:'' %}
+                <a href="{% url 'portfolio:admin-blog-list' %}" class="nav-link {% if 'project-' in current_name or 'blog' in current_name %}active{% endif %}">{% trans "Context" %}</a>
+                <a href="{% url 'portfolio:admin-category-list' %}" class="nav-link {% if 'category' in request.resolver_match.url_name or 'projecttype' in request.resolver_match.url_name or 'knowledge' in request.resolver_match.url_name %}active{% endif %}">{% trans "Catalogs" %}</a>
                 <a href="{% url 'portfolio:admin-contact-list' %}" class="nav-link {% if 'contact' in request.resolver_match.url_name %}active{% endif %}">{% trans "Inbox" %}</a>
                 <a href="{% url 'portfolio:admin-profile-edit' %}" class="nav-link {% if request.resolver_match.url_name == 'admin-profile-edit' %}active{% endif %}">{% trans "Profile" %}</a>
                 <a href="{% url 'portfolio:admin-cv-hub' %}" class="nav-link {% if 'cv' in request.resolver_match.url_name or 'experience' in request.resolver_match.url_name or 'education' in request.resolver_match.url_name or 'skill' in request.resolver_match.url_name %}active{% endif %}">{% trans "CV" %}</a>
                 <a href="{% url 'portfolio:admin-analytics' %}" class="nav-link {% if request.resolver_match.url_name == 'admin-analytics' %}active{% endif %}">{% trans "Analytics" %}</a>
                 <a href="{% url 'portfolio:admin-site-configuration' %}" class="nav-link {% if request.resolver_match.url_name == 'admin-site-configuration' %}active{% endif %}">{% trans "Settings" %}</a>
-                <a href="{% url 'admin:index' %}" class="nav-link">{% trans "Admin" %}</a>
                 <a href="{% url 'portfolio:home' %}" class="nav-link" target="_blank">{% trans "View Site" %}</a>
+                {% endwith %}
             </div>
         </div>
     </nav>
     {% with url_name=request.resolver_match.url_name %}
     {% if url_name %}
-        {% if 'project' in url_name or 'blog' in url_name %}
+        {% if 'project-' in url_name or 'blog' in url_name %}
         <div class="admin-subnav">
             <div class="subnav-container">
                 <a href="{% url 'portfolio:admin-blog-list' %}" class="subnav-link {% if 'blog' in url_name %}active{% endif %}">{% trans "Blog Posts" %}</a>
                 <a href="{% url 'portfolio:admin-project-list' %}" class="subnav-link {% if 'project' in url_name %}active{% endif %}">{% trans "Projects" %}</a>
+            </div>
+        </div>
+        {% elif 'category' in url_name or 'projecttype' in url_name or 'knowledge' in url_name %}
+        <div class="admin-subnav">
+            <div class="subnav-container">
+                <a href="{% url 'portfolio:admin-category-list' %}" class="subnav-link {% if 'category' in url_name %}active{% endif %}">{% trans "Categories" %}</a>
+                <a href="{% url 'portfolio:admin-projecttype-list' %}" class="subnav-link {% if 'projecttype' in url_name %}active{% endif %}">{% trans "Project Types" %}</a>
+                <a href="{% url 'portfolio:admin-knowledgebase-list' %}" class="subnav-link {% if 'knowledge' in url_name %}active{% endif %}">{% trans "Knowledge Bases" %}</a>
             </div>
         </div>
         {% endif %}

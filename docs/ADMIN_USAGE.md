@@ -29,10 +29,10 @@ The admin panel is organized into the following sections:
 - **👤 Profile Management** - Personal information and settings
 - **🚀 Projects** - Portfolio projects and showcases
 - **📝 Blog Posts** - Content management system
+- **📚 Catalogs** - Manage categories, project types, and knowledge bases
 - **💼 Experience** - Work history and professional background
 - **🎓 Education** - Academic background and certifications
 - **⚡ Skills** - Technical and professional skills
-- **🔧 Technologies** - Technology stack and tools
 - **📧 Contact Messages** - Visitor inquiries and feedback
 - **📈 Analytics** - Visit tracking and statistics
 
@@ -244,24 +244,41 @@ The admin panel is organized into the following sections:
 - **3 - Advanced**: Can handle complex projects independently
 - **4 - Expert**: Can mentor others and solve complex problems
 
-## 🔧 Technology Management
+## 📚 Catalog Management
 
-### Managing Technology Tags
+The **Catalogs** section centralizes the reusable building blocks that power projects and blog posts. Organize these elements first so editors can reuse them consistently.
 
-Technologies are used to categorize projects and skills. The system comes with 50+ predefined technologies.
+### Managing Categories
 
-1. **Navigate to "Technologies"** → **View existing technologies**
-2. **Add new technology** if needed:
-   - **Name**: Technology name
-   - **Icon**: CSS class for icon display
-   - **Color**: Hex color code for visual consistency
+1. **Navigate to "Catalogs" → "Categories"** to view existing entries.
+2. Click **"New Category"** to add a label used by blog posts.
+3. Configure the fields:
+   - **Name**: Display label shown in filters.
+   - **Slug**: URL-friendly identifier (auto-generated if left blank).
+   - **Description**: Optional context shown in the dashboard.
+   - **Order**: Sorting priority (lower numbers appear first).
+   - **Active**: Toggle visibility in public filters.
+4. Reorder categories with the **order** field to control how filters appear to visitors.
 
-### Popular Technologies Included
-- **Frontend**: React, Vue.js, Angular, HTML5, CSS3, JavaScript
-- **Backend**: Python, Django, Node.js, Express, PHP
-- **Databases**: PostgreSQL, MySQL, MongoDB, SQLite
-- **Tools**: Git, Docker, AWS, Nginx, Redis
-- **Mobile**: React Native, Flutter, Swift, Kotlin
+### Managing Project Types
+
+1. **Navigate to "Catalogs" → "Project Types"**.
+2. Use **"New Project Type"** to add a high-level classification for portfolio items.
+3. Provide:
+   - **Name** and **Description** for the admin UI.
+   - **Slug** for internal references.
+   - **Order** and **Active** state to determine availability.
+4. Project types help editors group projects by delivery model (frameworks, implementations, strategy, etc.).
+
+### Managing Knowledge Bases
+
+1. **Navigate to "Catalogs" → "Knowledge Bases"** to manage the technology stack and areas of expertise.
+2. Fields to maintain:
+   - **Name**: Label displayed in project badges.
+   - **Identifier**: Stable, lowercase key used internally.
+   - **Icon**: Font Awesome/Devicon class (e.g., `fab fa-python`). Leave blank to auto-suggest based on the name.
+   - **Color**: Hex code that drives the badge tint.
+3. Knowledge bases appear as tags in the public project cards and support multi-language labels through the inline translation tools.
 
 ## 📧 Contact Message Management
 

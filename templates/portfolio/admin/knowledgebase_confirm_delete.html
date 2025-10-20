@@ -1,0 +1,60 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+{% load simple_i18n %}
+
+{% block admin_title %}{% trans "Delete Knowledge Base" %}{% endblock %}
+{% block admin_subtitle %}{% trans "Confirm removal of this knowledge entry." %}{% endblock %}
+
+{% block admin_actions %}
+<a href="{% url 'portfolio:admin-knowledgebase-list' %}" class="btn-secondary-custom">
+    <i class="fas fa-arrow-left"></i>{% trans "Back to Knowledge Bases" %}
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<div class="content-card" style="border: 1px solid #FDECEA;">
+    <div class="card-header-custom" style="border-bottom-color: #FDECEA;">
+        <div>
+            <h2 class="card-title-custom" style="color: #C62828;">
+                <i class="fas fa-exclamation-triangle"></i> {% trans "Confirm Deletion" %}
+            </h2>
+            <p class="card-subtitle-custom">{% trans "This action cannot be undone." %}</p>
+        </div>
+    </div>
+
+    <div style="padding: 24px;">
+        <p style="font-size: 15px; color: #424242;">
+            {% trans "You are about to delete the knowledge base" %}:
+        </p>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid #F2F2F2; border-radius: 8px; background: #FFF8E1;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: {{ object.color }}1a; display: flex; align-items: center; justify-content: center; color: {{ object.color }};">
+                {% if object.icon %}
+                <i class="{{ object.icon }}"></i>
+                {% else %}
+                <i class="fas fa-lightbulb"></i>
+                {% endif %}
+            </div>
+            <div>
+                <strong>{{ object.name }}</strong>
+                <div style="font-size: 12px; color: #6B6B6B; margin-top: 4px;">
+                    <span style="font-weight: 600;">Identifier:</span> <code>{{ object.identifier }}</code>
+                </div>
+            </div>
+        </div>
+
+        <p style="font-size: 13px; color: #6B6B6B; margin-top: 16px;">
+            {% trans "Projects linked to this knowledge base will remain, but the association will be removed." %}
+        </p>
+
+        <form method="post" style="margin-top: 24px; display: flex; gap: 12px;">
+            {% csrf_token %}
+            <button type="submit" class="btn-danger-custom">
+                <i class="fas fa-trash"></i>{% trans "Delete Knowledge Base" %}
+            </button>
+            <a href="{% url 'portfolio:admin-knowledgebase-list' %}" class="btn-secondary-custom">
+                <i class="fas fa-times"></i>{% trans "Cancel" %}
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

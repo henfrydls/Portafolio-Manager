@@ -1,0 +1,165 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load static %}
+{% load simple_i18n %}
+
+{% block admin_title %}{% trans "Catalogs" %} · {% trans "Categories" %}{% endblock %}
+{% block admin_subtitle %}{% trans "Organize your blog content by managing categories" %}{% endblock %}
+
+{% block admin_actions %}
+<a href="{% url 'portfolio:admin-category-create' %}" class="btn-primary-custom">
+    <i class="fas fa-plus"></i>{% trans "New Category" %}
+</a>
+{% endblock %}
+
+{% block admin_content %}
+<div class="filters-section">
+    <form method="get" class="filters-grid">
+        <div>
+            <label class="form-label-custom">{% trans "Search categories" %}</label>
+            <input type="text" name="search" class="form-control-custom"
+                   placeholder="{% trans "Name or description" %}" value="{{ current_search }}">
+        </div>
+        <div>
+            <label class="form-label-custom">{% trans "Status" %}</label>
+            <select name="status" class="form-control-custom">
+                <option value="">{% trans "All statuses" %}</option>
+                <option value="active" {% if current_status == 'active' %}selected{% endif %}>{% trans "Active" %}</option>
+                <option value="inactive" {% if current_status == 'inactive' %}selected{% endif %}>{% trans "Inactive" %}</option>
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="btn-primary-custom">
+                <i class="fas fa-search"></i>{% trans "Filter" %}
+            </button>
+        </div>
+        <div>
+            <a href="{% url 'portfolio:admin-category-list' %}" class="btn-secondary-custom">
+                <i class="fas fa-times"></i>{% trans "Clear" %}
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="content-card">
+    <div class="card-header-custom">
+        <div>
+            <h2 class="card-title-custom">{% trans "Categories" %}</h2>
+            <p class="card-subtitle-custom">
+                {{ categories|length }} {% trans "categories shown" %}
+                • {% trans "Total:" %} {{ total_categories }}
+            </p>
+        </div>
+    </div>
+
+    {% if categories %}
+    <div style="overflow-x: auto;">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>{% trans "Category" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Posts" %}</th>
+                    <th>{% trans "Order" %}</th>
+                    <th>{% trans "Updated" %}</th>
+                    <th width="180">{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                <tr>
+                    <td>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <div style="font-weight: 500; color: #242424;">{{ category.name }}</div>
+                            <div style="font-size: 12px; color: #6B6B6B;">
+                                <span style="font-weight: 500;">Slug:</span> <code>{{ category.slug }}</code>
+                            </div>
+                            {% if category.description %}
+                            <div style="font-size: 12px; color: #6B6B6B;">
+                                {{ category.description|truncatewords:16 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        {% if category.is_active %}
+                        <span class="badge-custom badge-success">
+                            <i class="fas fa-check"></i>{% trans "Active" %}
+                        </span>
+                        {% else %}
+                        <span class="badge-custom badge-warning">
+                            <i class="fas fa-pause"></i>{% trans "Inactive" %}
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge-custom badge-secondary">
+                            {{ category_post_counts|dict_get:category.id|default:0 }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge-custom badge-secondary">#{{ category.order }}</span>
+                    </td>
+                    <td>
+                        <div style="font-size: 12px; color: #6B6B6B;">
+                            {{ category.updated_at|date:"d/m/Y" }}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="quick-actions">
+                            <a href="{% url 'portfolio:admin-category-edit' category.pk %}" class="btn" title="{% trans "Edit" %}">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'portfolio:admin-category-delete' category.pk %}" class="btn" title="{% trans "Delete" %}" style="color: #dc3545;">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-folder-open"></i>
+        <h3>{% trans "No categories yet" %}</h3>
+        <p>
+            {% if current_search or current_status %}
+                {% trans "No categories found with the applied filters." %}
+            {% else %}
+                {% trans "Start by creating your first blog category." %}
+            {% endif %}
+        </p>
+        <a href="{% url 'portfolio:admin-category-create' %}" class="btn-primary-custom">
+            <i class="fas fa-plus"></i>{% trans "Add Category" %}
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% if is_paginated %}
+<div class="pagination-custom">
+    {% if page_obj.has_previous %}
+        <a class="page-link" href="?page=1{% if current_search %}&search={{ current_search }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">
+            <i class="fas fa-angle-double-left"></i>
+        </a>
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">
+            <i class="fas fa-angle-left"></i>
+        </a>
+    {% endif %}
+
+    <span class="page-link active">
+        {% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">
+            <i class="fas fa-angle-right"></i>
+        </a>
+        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_status %}&status={{ current_status }}{% endif %}">
+            <i class="fas fa-angle-double-right"></i>
+        </a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
