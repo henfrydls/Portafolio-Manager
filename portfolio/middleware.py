@@ -1,13 +1,73 @@
 from django.utils.deprecation import MiddlewareMixin
-from django.urls import resolve
+from django.urls import resolve, reverse
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.utils import translation
+from django.http import HttpResponseRedirect
+from django.db import DatabaseError
+from django.db.utils import OperationalError, ProgrammingError
 
 SESSION_LANGUAGE_KEY = getattr(translation, 'LANGUAGE_SESSION_KEY', '_language')
 from .models import PageVisit, SiteConfiguration
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+class InitialSetupRedirectMiddleware(MiddlewareMixin):
+    """
+    Redirect to the setup wizard when no superuser exists yet.
+
+    Ensures the first visit guides the admin through the initial configuration.
+    """
+
+    SESSION_FLAG = '_initial_setup_superuser_present'
+
+    def __init__(self, get_response=None):
+        super().__init__(get_response)
+        self._setup_path = None
+
+    def process_request(self, request):
+        if request.session.get(self.SESSION_FLAG):
+            return None
+
+        if self._has_superuser():
+            request.session[self.SESSION_FLAG] = True
+            return None
+
+        setup_path = self._get_setup_path()
+        path = request.path or ''
+
+        if not setup_path:
+            return None
+
+        if path.startswith(setup_path):
+            return None
+
+        static_url = getattr(settings, 'STATIC_URL', None)
+        if static_url and path.startswith(static_url):
+            return None
+
+        media_url = getattr(settings, 'MEDIA_URL', None)
+        if media_url and path.startswith(media_url):
+            return None
+
+        return HttpResponseRedirect(setup_path)
+
+    def _has_superuser(self):
+        try:
+            return get_user_model().objects.filter(is_superuser=True).exists()
+        except (ProgrammingError, OperationalError, DatabaseError):
+            # Database not ready (e.g. during migrations); skip redirect.
+            return True
+
+    def _get_setup_path(self):
+        if self._setup_path is None:
+            try:
+                self._setup_path = reverse('portfolio:initial-setup')
+            except Exception:
+                self._setup_path = None
+        return self._setup_path
 
 
 class SiteLanguageMiddleware(MiddlewareMixin):

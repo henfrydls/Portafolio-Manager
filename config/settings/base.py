@@ -35,6 +35,7 @@ MIDDLEWARE = [
     #'portfolio.security_middleware.RateLimitMiddleware',  # Rate limiting
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'portfolio.middleware.InitialSetupRedirectMiddleware',  # First-run setup redirect
     'django.middleware.locale.LocaleMiddleware',  # Language detection and setting
     'portfolio.middleware.SiteLanguageMiddleware',  # Apply global language preference
     'django.middleware.common.CommonMiddleware',

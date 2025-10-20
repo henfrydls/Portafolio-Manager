@@ -6,243 +6,262 @@
 
 {% block extra_css %}
 <style>
-    .login-container {
-        min-height: 100vh;
+    .auth-wrapper {
+        min-height: calc(100vh - 160px);
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    
-    .login-card {
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        padding: 2rem;
-        width: 100%;
-        max-width: 400px;
-        margin: 1rem;
-    }
-    
-    .login-header {
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-    
-    .login-header h1 {
-        color: #333;
-        font-size: 1.8rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-    
-    .login-header p {
-        color: #666;
-        font-size: 0.9rem;
-    }
-    
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-    
-    .form-label {
-        display: block;
-        margin-bottom: 0.5rem;
-        color: #333;
-        font-weight: 500;
-        font-size: 0.9rem;
-    }
-    
-    .form-control {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        border: 2px solid #e1e5e9;
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: border-color 0.3s ease;
+        padding: 60px 24px 80px;
         box-sizing: border-box;
     }
-    
-    .form-control:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+
+    .auth-card {
+        background: #ffffff;
+        border: 1px solid #F2F2F2;
+        border-radius: 12px;
+        padding: 48px;
+        max-width: 480px;
+        width: 100%;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.06);
     }
-    
-    .form-check {
+
+    .auth-header {
+        margin-bottom: 36px;
+        text-align: center;
+    }
+
+    .auth-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: #F5F5F5;
+        color: #6B6B6B;
+        margin-bottom: 18px;
+    }
+
+    .auth-title {
+        font-size: 32px;
+        line-height: 40px;
+        font-weight: 700;
+        color: #242424;
+        margin: 0 0 12px;
+    }
+
+    .auth-subtitle {
+        font-size: 15px;
+        color: #6B6B6B;
+        margin: 0;
+    }
+
+    .auth-field {
+        margin-bottom: 20px;
+    }
+
+    .auth-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: #242424;
+        margin-bottom: 8px;
+    }
+
+    .auth-input {
+        width: 100%;
+        border: 1px solid #E6E6E6;
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 14px;
+        background: #fff;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .auth-input:focus {
+        border-color: #242424;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(36, 36, 36, 0.1);
+    }
+
+    .auth-remember {
         display: flex;
         align-items: center;
-        margin-bottom: 1.5rem;
+        gap: 10px;
+        margin: 10px 0 28px;
+        font-size: 13px;
+        color: #6B6B6B;
     }
-    
-    .form-check-input {
-        margin-right: 0.5rem;
+
+    .auth-remember input {
+        width: 16px;
+        height: 16px;
     }
-    
-    .form-check-label {
-        color: #666;
-        font-size: 0.9rem;
-        cursor: pointer;
-    }
-    
-    .btn-login {
+
+    .auth-button {
         width: 100%;
-        padding: 0.75rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 1rem;
+        padding: 14px 18px;
+        font-size: 15px;
         font-weight: 600;
+        color: #ffffff;
+        background: #242424;
+        border: 1px solid #242424;
+        border-radius: 10px;
         cursor: pointer;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        letter-spacing: 0.02em;
     }
-    
-    .btn-login:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+
+    .auth-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 30px rgba(36, 36, 36, 0.18);
     }
-    
-    .btn-login:active {
+
+    .auth-button:active {
         transform: translateY(0);
+        box-shadow: none;
     }
-    
-    .back-link {
+
+    .auth-back {
+        margin-top: 28px;
         text-align: center;
-        margin-top: 1.5rem;
+        font-size: 13px;
     }
-    
-    .back-link a {
-        color: #667eea;
+
+    .auth-back a {
+        color: #6B6B6B;
         text-decoration: none;
-        font-size: 0.9rem;
-        transition: color 0.3s ease;
+        transition: color 0.2s ease;
     }
-    
-    .back-link a:hover {
-        color: #764ba2;
+
+    .auth-back a:hover {
+        color: #242424;
         text-decoration: underline;
     }
-    
-    .error-messages {
-        background: #fee;
-        border: 1px solid #fcc;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-bottom: 1.5rem;
+
+    .auth-alert {
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin-bottom: 24px;
+        font-size: 13px;
+        line-height: 1.5;
     }
-    
-    .error-messages ul {
-        margin: 0;
-        padding: 0;
-        list-style: none;
+
+    .auth-alert--warning {
+        background: #FFF7E0;
+        border: 1px solid #FFE4A3;
+        color: #8C6B1F;
     }
-    
-    .error-messages li {
-        color: #c33;
-        font-size: 0.9rem;
+
+    .auth-alert--error {
+        background: #FDECEC;
+        border: 1px solid #F6B9B8;
+        color: #C13C38;
     }
-    
-    .session-warning {
-        background: #fff3cd;
-        border: 1px solid #ffeaa7;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-bottom: 1.5rem;
-        color: #856404;
-        font-size: 0.9rem;
-        text-align: center;
-    }
-    
-    @media (max-width: 480px) {
-        .login-card {
-            margin: 0.5rem;
-            padding: 1.5rem;
+
+    @media (max-width: 768px) {
+        body {
+            min-width: auto;
         }
-        
-        .login-header h1 {
-            font-size: 1.5rem;
+
+        .auth-wrapper {
+            padding: 40px 16px 60px;
+        }
+
+        .auth-card {
+            padding: 32px 28px;
+            box-shadow: 0 18px 48px rgba(0, 0, 0, 0.08);
+        }
+
+        .auth-title {
+            font-size: 28px;
+            line-height: 36px;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="login-container">
-    <div class="login-card">
-        <div class="login-header">
-            <h1>{% trans "Administration" %}</h1>
-            <p>{% trans "Access to control panel" %}</p>
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-kicker">
+                <i class="fas fa-lock"></i>
+                {% trans "Secure Access" %}
+            </div>
+            <h1 class="auth-title">{% trans "Administration" %}</h1>
+            <p class="auth-subtitle">{% trans "Access to control panel" %}</p>
         </div>
-        
+
         {% if messages %}
             {% for message in messages %}
-                <div class="session-warning">
+                <div class="auth-alert auth-alert--warning">
                     {{ message }}
                 </div>
             {% endfor %}
         {% endif %}
-        
+
         {% if form.errors %}
-            <div class="error-messages">
-                <ul>
-                    {% for field, errors in form.errors.items %}
-                        {% for error in errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
+            <div class="auth-alert auth-alert--error">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <div>{{ error }}</div>
                     {% endfor %}
-                </ul>
+                {% endfor %}
             </div>
         {% endif %}
-        
+
         <form method="post" action="{% url 'portfolio:login' %}">
             {% csrf_token %}
-            
-            <div class="form-group">
-                <label for="{{ form.username.id_for_label }}" class="form-label">
+
+            <div class="auth-field">
+                <label for="{{ form.username.id_for_label }}" class="auth-label">
                     {% trans "Username" %}
                 </label>
                 {{ form.username }}
             </div>
 
-            <div class="form-group">
-                <label for="{{ form.password.id_for_label }}" class="form-label">
+            <div class="auth-field">
+                <label for="{{ form.password.id_for_label }}" class="auth-label">
                     {% trans "Password" %}
                 </label>
                 {{ form.password }}
             </div>
-            
-            <div class="form-check">
-                <input type="checkbox" name="remember_me" id="remember_me" class="form-check-input">
-                <label for="remember_me" class="form-check-label">
-                    {% trans "Remember me for 30 days" %}
-                </label>
-            </div>
-            
-            <button type="submit" class="btn-login">
+
+            <label class="auth-remember">
+                <input type="checkbox" name="remember_me" id="remember_me">
+                <span>{% trans "Remember me for 30 days" %}</span>
+            </label>
+
+            <button type="submit" class="auth-button">
+                <i class="fas fa-sign-in-alt"></i>
                 {% trans "Log In" %}
             </button>
         </form>
-        
-        <div class="back-link">
-            <a href="{% url 'portfolio:home' %}">{% trans "← Back to portfolio" %}</a>
+
+        <div class="auth-back">
+            <a href="{% url 'portfolio:home' %}">{% trans "Back to portfolio" %}</a>
         </div>
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Focus on username field
+(function () {
     const usernameField = document.getElementById('{{ form.username.id_for_label }}');
     if (usernameField) {
         usernameField.focus();
     }
-    
-    // Add form control classes to Django form fields
-    const formFields = document.querySelectorAll('input[type="text"], input[type="password"]');
-    formFields.forEach(field => {
-        field.classList.add('form-control');
-    });
-});
+
+    const inputs = document.querySelectorAll('input[type="text"], input[type="password"]');
+    inputs.forEach(el => el.classList.add('auth-input'));
+})();
 </script>
 {% endblock %}

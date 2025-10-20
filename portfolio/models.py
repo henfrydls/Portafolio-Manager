@@ -16,7 +16,7 @@ from .validators import (
 )
 from .image_utils import optimize_uploaded_image
 from django.utils import timezone
-from django.db import connection
+from django.db import transaction
 
 
 class SiteConfiguration(models.Model):
@@ -219,30 +219,25 @@ class Profile(TranslatableModel):
             default_location = getattr(settings, 'PROFILE_LOCATION', 'Your Location')
             default_email = getattr(settings, 'PROFILE_EMAIL', getattr(settings, 'DEFAULT_FROM_EMAIL', 'contact@example.com'))
             default_bio = getattr(settings, 'PROFILE_BIO', 'Update your biography to introduce yourself.')
-            now = timezone.now()
-
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    """
-                    INSERT INTO portfolio_profile
-                        (id, name, title, bio, location, email, phone, linkedin_url, github_url, medium_url,
-                         profile_image, resume_pdf, resume_pdf_es, show_web_resume, created_at, updated_at)
-                    VALUES
-                        (1, ?, ?, ?, ?, ?, '', '', '', '', '', '', '', 1, ?, ?)
-                    """,
-                    [default_name, default_title, default_bio, default_location, default_email, now, now],
+            with transaction.atomic():
+                obj = cls.objects.create(
+                    pk=1,
+                    email=default_email,
+                    phone='',
+                    linkedin_url='',
+                    github_url='',
+                    medium_url='',
+                    profile_image='',
+                    resume_pdf='',
+                    resume_pdf_es='',
+                    show_web_resume=True,
                 )
-
-            obj = cls.objects.get(pk=1)
-
-            obj.set_current_language(default_language)
-            obj.name = default_name
-            obj.title = default_title
-            obj.bio = default_bio
-            obj.location = default_location
-            obj.email = default_email
-            obj.safe_translation_getter('name', default="", language_code=default_language)
-            obj.save()
+                obj.set_current_language(default_language)
+                obj.name = default_name
+                obj.title = default_title
+                obj.bio = default_bio
+                obj.location = default_location
+                obj.save()
 
         else:
             default_language = getattr(settings, 'LANGUAGE_CODE', 'en')

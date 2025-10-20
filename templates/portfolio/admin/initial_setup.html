@@ -1,0 +1,73 @@
+{% extends "portfolio/admin/base_admin.html" %}
+{% load i18n %}
+
+{% block admin_title %}{% trans "First run setup" %}{% endblock %}
+{% block admin_subtitle %}{% trans "Create the initial administrator account and choose the dashboard language." %}{% endblock %}
+
+{% block admin_actions %}{% endblock %}
+
+{% block admin_content %}
+<div style="max-width: 720px; margin: 0 auto;">
+    <div class="content-card">
+        <div class="card-header-custom" style="margin-bottom: 24px;">
+            <div>
+                <h2 class="card-title-custom" style="font-size: 28px;">{% trans "Welcome to your new dashboard" %}</h2>
+                <p class="card-subtitle-custom" style="max-width: 520px;">
+                    {% trans "Before you start managing content we need an administrator account and the language for editing." %}
+                </p>
+            </div>
+        </div>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert-custom alert-danger">
+                {% for error in form.non_field_errors %}
+                <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div style="display: grid; gap: 20px;">
+                {% for field in form %}
+                <div>
+                    <label for="{{ field.id_for_label }}" class="form-label-custom">
+                        {{ field.label }}
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}
+                    <p class="form-text-custom">
+                        {% if field.name == 'password1' %}
+                            {{ field.help_text|safe }}
+                        {% else %}
+                            {{ field.help_text }}
+                        {% endif %}
+                    </p>
+                    {% endif %}
+                    {% for error in field.errors %}
+                    <p class="form-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <div style="margin-top: 32px; display: flex; gap: 12px;">
+                <button type="submit" class="btn-primary-custom">
+                    <i class="fas fa-check-circle"></i>{% trans "Create administrator" %}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="content-card" style="background: #fafafa;">
+        <h3 class="card-title-custom" style="font-size: 20px;">{% trans "What's next?" %}</h3>
+        <p class="form-text-custom" style="margin: 12px 0 0 0;">
+            {% trans "After saving, you'll be redirected to the login page. Sign in with the credentials above to finish configuring your dashboard." %}
+        </p>
+        <p class="form-text-custom" style="margin: 12px 0 0 0;">
+            {% trans "Remember: the public site stays in English, but the admin tools will switch to your selected language." %}
+        </p>
+    </div>
+</div>
+{% endblock %}

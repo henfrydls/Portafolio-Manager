@@ -21,7 +21,7 @@ def admin_required(function=None, redirect_field_name=REDIRECT_FIELD_NAME, login
         def _wrapped_view(request, *args, **kwargs):
             if not request.user.is_authenticated:
                 messages.warning(request, 'Debes iniciar sesión para acceder a esta página.')
-                return redirect('admin:login')
+                return redirect('portfolio:login')
             
             if not request.user.is_staff:
                 messages.error(request, 'No tienes permisos para acceder a esta página.')
@@ -45,7 +45,7 @@ def superuser_required(function=None, redirect_field_name=REDIRECT_FIELD_NAME, l
         def _wrapped_view(request, *args, **kwargs):
             if not request.user.is_authenticated:
                 messages.warning(request, 'Debes iniciar sesión para acceder a esta página.')
-                return redirect('admin:login')
+                return redirect('portfolio:login')
             
             if not request.user.is_superuser:
                 messages.error(request, 'No tienes permisos de superusuario para acceder a esta página.')
@@ -63,7 +63,7 @@ class AdminRequiredMixin(DjangoLoginRequiredMixin):
     """
     Mixin for class-based views that requires the user to be authenticated and staff.
     """
-    login_url = '/admin/login/'
+    login_url = '/login/'
     
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -81,7 +81,7 @@ class SuperuserRequiredMixin(DjangoLoginRequiredMixin):
     """
     Mixin for class-based views that requires the user to be authenticated and superuser.
     """
-    login_url = '/admin/login/'
+    login_url = '/login/'
     
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -107,10 +107,10 @@ def ajax_login_required(view_func):
                 from django.http import JsonResponse
                 return JsonResponse({
                     'error': 'Authentication required',
-                    'login_url': reverse('admin:login')
+                    'login_url': reverse('portfolio:login')
                 }, status=401)
             else:
-                return redirect('admin:login')
+                return redirect('portfolio:login')
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 

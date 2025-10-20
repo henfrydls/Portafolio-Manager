@@ -1,18 +1,19 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView, FormView
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.core.files.storage import default_storage
 from django.urls import reverse_lazy, reverse
 from django.db.models import Q, Count
-from django.db import transaction
+from django.db import transaction, DatabaseError
 from django.http import JsonResponse
 from django.utils import translation
 from django.utils.translation import gettext as _
 from django.utils.text import slugify
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.contrib.auth import get_user_model, authenticate, login as auth_login
 import os
 import uuid
 from django.contrib.contenttypes.models import ContentType
@@ -44,11 +45,13 @@ from .forms import (
     SecureEducationForm,
     SecureSkillForm,
     SiteConfigurationForm,
+    InitialSetupForm,
 )
 from .utils import cleanup_old_page_visits
 from .query_optimizations import QueryOptimizer
 from .seo_utils import SEOGenerator
 from .translation import schedule_auto_translation, _run_auto_translation
+from django.db.utils import OperationalError, ProgrammingError
 
 LANGUAGE_SESSION_KEY = getattr(translation, 'LANGUAGE_SESSION_KEY', '_language')
 
@@ -77,6 +80,56 @@ class EditingLanguageContextMixin:
         context.setdefault('target_languages', target_codes)
         context.setdefault('settings_url', reverse('portfolio:admin-site-configuration'))
         return context
+
+
+class InitialSetupView(FormView):
+    """
+    Setup wizard to create the first superuser and configure dashboard language.
+    """
+
+    template_name = 'portfolio/admin/initial_setup.html'
+    form_class = InitialSetupForm
+    success_url = reverse_lazy('portfolio:admin-dashboard')
+
+    def dispatch(self, request, *args, **kwargs):
+        if self._superuser_exists():
+            messages.info(request, _("A superuser is already configured. Please sign in."))
+            return redirect('portfolio:login')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.setdefault('available_languages', settings.LANGUAGES)
+        return kwargs
+
+    def form_valid(self, form):
+        user = form.save()
+        language = form.cleaned_data.get('language') or settings.LANGUAGE_CODE
+        translation.activate(language)
+        self.request.session[LANGUAGE_SESSION_KEY] = language
+        self.request.session['_initial_setup_superuser_present'] = True
+        authenticated_user = authenticate(
+            self.request,
+            username=user.username,
+            password=form.cleaned_data.get('password1'),
+        )
+        if authenticated_user is not None:
+            auth_login(self.request, authenticated_user)
+        else:
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            auth_login(self.request, user)
+        messages.success(
+            self.request,
+            _("Setup complete. Welcome to your dashboard."),
+        )
+        return super().form_valid(form)
+
+    @staticmethod
+    def _superuser_exists():
+        try:
+            return get_user_model().objects.filter(is_superuser=True).exists()
+        except (ProgrammingError, OperationalError, DatabaseError):
+            return False
 
 
 class AutoTranslationStatusMixin(EditingLanguageContextMixin):

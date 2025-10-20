@@ -2851,6 +2851,106 @@ msgstr ""
 #~ msgid "Back"
 #~ msgstr "Back"
 
+#: portfolio/forms.py
+msgid "Confirm password"
+msgstr "Confirm password"
+
+#: portfolio/forms.py
+msgid "Email address"
+msgstr "Email address"
+
+#: portfolio/forms.py
+msgid "Dashboard language"
+msgstr "Dashboard language"
+
+#: portfolio/forms.py
+msgid "Choose a username"
+msgstr "Choose a username"
+
+#: portfolio/forms.py
+msgid "Admin email address"
+msgstr "Admin email address"
+
+#: portfolio/forms.py
+msgid "Enter a strong password"
+msgstr "Enter a strong password"
+
+#: portfolio/forms.py
+msgid "Repeat the password"
+msgstr "Repeat the password"
+
+#: portfolio/forms.py
+msgid "Username is required."
+msgstr "Username is required."
+
+#: portfolio/forms.py
+msgid "This username is already taken."
+msgstr "This username is already taken."
+
+#: portfolio/forms.py
+msgid "Email address is required."
+msgstr "Email address is required."
+
+#: portfolio/forms.py
+msgid "This email address is already in use."
+msgstr "This email address is already in use."
+
+#: portfolio/forms.py
+msgid "Both password fields are required."
+msgstr "Both password fields are required."
+
+#: portfolio/forms.py
+msgid "Passwords do not match."
+msgstr "Passwords do not match."
+
+#: portfolio/views.py
+msgid "Setup complete. Welcome to your dashboard."
+msgstr "Setup complete. Welcome to your dashboard."
+
+#: portfolio/views.py
+msgid "A superuser is already configured. Please sign in."
+msgstr "A superuser is already configured. Please sign in."
+
+#: templates/portfolio/admin/initial_setup.html
+msgid "First run setup"
+msgstr "First run setup"
+
+#: templates/portfolio/admin/initial_setup.html
+msgid "Create the initial administrator account and choose the dashboard language."
+msgstr "Create the initial administrator account and choose the dashboard language."
+
+#: templates/portfolio/admin/initial_setup.html
+msgid "Welcome to your new dashboard"
+msgstr "Welcome to your new dashboard"
+
+#: templates/portfolio/admin/initial_setup.html
+msgid "Before you start managing content we need an administrator account and the language for editing."
+msgstr "Before you start managing content we need an administrator account and the language for editing."
+
+#: templates/portfolio/admin/initial_setup.html
+msgid "Create administrator"
+msgstr "Create administrator"
+
+#: templates/portfolio/auth/login.html
+msgid "Secure Access"
+msgstr "Secure Access"
+
+#: templates/portfolio/auth/login.html
+msgid "Back to portfolio"
+msgstr "Back to portfolio"
+
+#: templates/portfolio/admin/initial_setup.html
+msgid "What's next?"
+msgstr "What's next?"
+
+#: templates/portfolio/admin/initial_setup.html
+msgid "After saving, you'll be redirected to the login page. Sign in with the credentials above to finish configuring your dashboard."
+msgstr "After saving, you'll be redirected to the login page. Sign in with the credentials above to finish configuring your dashboard."
+
+#: templates/portfolio/admin/initial_setup.html
+msgid "Remember: the public site stays in English, but the admin tools will switch to your selected language."
+msgstr "Remember: the public site stays in English, but the admin tools will switch to your selected language."
+
 #~ msgid "Submit"
 #~ msgstr "Submit"
 

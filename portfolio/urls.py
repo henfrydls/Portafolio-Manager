@@ -24,6 +24,9 @@ urlpatterns = [
     # Resume page
     path('resume/', views.ResumeView.as_view(), name='resume'),
 
+    # Initial setup wizard
+    path('setup/', views.InitialSetupView.as_view(), name='initial-setup'),
+
     # Authentication URLs
     path('login/', auth_views.CustomLoginView.as_view(), name='login'),
     path('logout/', auth_views.CustomLogoutView.as_view(), name='logout'),
