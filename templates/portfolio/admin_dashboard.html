@@ -679,7 +679,7 @@
     </div>
 
     <div class="content-section">
-        <h2 class="section-title">Recent Posts</h2>
+        <h2 class="section-title">{% trans "Recent Posts" %}</h2>
         {% for post in recent_posts %}
         <div class="content-item">
             <div class="item-content">
@@ -692,9 +692,9 @@
                 </div>
             </div>
             {% if post.status == 'published' %}
-            <span class="item-badge badge-success">Published</span>
+            <span class="item-badge badge-success">{% trans "Published" %}</span>
             {% elif post.status == 'draft' %}
-            <span class="item-badge badge-warning">Draft</span>
+            <span class="item-badge badge-warning">{% trans "Draft" %}</span>
             {% else %}
             <span class="item-badge badge-info">{{ post.get_status_display }}</span>
             {% endif %}
@@ -711,23 +711,23 @@
 
 <!-- Popular Content -->
 <div class="popular-section">
-    <h2 class="section-title">Analytics Overview</h2>
+    <h2 class="section-title">{% trans "Analytics Overview" %}</h2>
     <div class="popular-grid">
         <div>
-            <h3 class="section-title" style="font-size: 18px; margin-bottom: 16px;">Most Visited Pages (30 days)</h3>
+            <h3 class="section-title" style="font-size: 18px; margin-bottom: 16px;">{% trans "Most Visited Pages (30 days)" %}</h3>
             {% for page in popular_pages %}
             <div class="popular-item">
                 <div class="popular-content">
                     <div class="popular-title">{{ page.page_title|default:"Untitled"|truncatechars:50 }}</div>
                     <div class="popular-url">{{ page.page_url|truncatechars:60 }}</div>
                 </div>
-                <div class="visit-count">{{ page.visits }} visits</div>
+                <div class="visit-count">{{ page.visits }} {% trans "visits" %}</div>
             </div>
             {% empty %}
             <div class="empty-state">
                 <i class="fas fa-chart-bar"></i>
-                <h3>No visit data</h3>
-                <p>Page visit analytics will appear here</p>
+                <h3>{% trans "No visit data" %}</h3>
+                <p>{% trans "Page visit analytics will appear here" %}</p>
             </div>
             {% endfor %}
         </div>

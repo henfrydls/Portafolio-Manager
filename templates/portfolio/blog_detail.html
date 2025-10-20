@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 {% load markdown_extras %}
 
 {% block title %}{{ post.title }} - {{ profile.name|default:"Your Name" }}{% endblock %}
@@ -15,14 +15,14 @@
     <nav class="medium-top-nav">
         <div class="nav-container">
             <div class="nav-left">
-                <a href="{% url 'portfolio:home' %}" class="nav-link">Home</a>
+                <a href="{% url 'portfolio:home' %}" class="nav-link">{% trans "Home" %}</a>
             </div>
             <div class="nav-right">
-                <a href="{% url 'portfolio:post-list' %}" class="nav-link">All Posts</a>
-                <a href="{% url 'portfolio:home' %}#recent" class="nav-link">Recent</a>
-                <a href="{% url 'portfolio:home' %}#featured" class="nav-link">Featured Work</a>
-                <a href="{% url 'portfolio:home' %}#projects" class="nav-link">Projects</a>
-                <button onclick="openContactModal()" class="nav-link contact-nav-btn">Contact</button>
+                <a href="{% url 'portfolio:post-list' %}" class="nav-link">{% trans "All Posts" %}</a>
+                <a href="{% url 'portfolio:home' %}#recent" class="nav-link">{% trans "Recent" %}</a>
+                <a href="{% url 'portfolio:home' %}#featured" class="nav-link">{% trans "Featured Work" %}</a>
+                <a href="{% url 'portfolio:home' %}#projects" class="nav-link">{% trans "Projects" %}</a>
+                <button onclick="openContactModal()" class="nav-link contact-nav-btn">{% trans "Contact" %}</button>
             </div>
         </div>
     </nav>
@@ -30,9 +30,9 @@
     <!-- Breadcrumb Navigation -->
     <nav class="breadcrumb-nav">
         <div class="breadcrumb-container">
-            <a href="{% url 'portfolio:home' %}" class="breadcrumb-link">Home</a>
+            <a href="{% url 'portfolio:home' %}" class="breadcrumb-link">{% trans "Home" %}</a>
             <span class="breadcrumb-separator">→</span>
-            <a href="{% url 'portfolio:post-list' %}" class="breadcrumb-link">Posts</a>
+            <a href="{% url 'portfolio:post-list' %}" class="breadcrumb-link">{% trans "Posts" %}</a>
             <span class="breadcrumb-separator">→</span>
             <span class="breadcrumb-current">{{ post.title|truncatewords:6 }}</span>
         </div>
@@ -47,10 +47,10 @@
                     <!-- Post Type Badge -->
                     <div class="post-badges">
                         <span class="post-type-badge{% if post.category %} post-type-{{ post.category.slug }}{% endif %}">
-                            {% if post.category %}{{ post.category.name }}{% else %}Article{% endif %}
+                            {% if post.category %}{{ post.category.name }}{% else %}{% trans "Article" %}{% endif %}
                         </span>
                         {% if post.featured %}
-                        <span class="featured-badge">Featured</span>
+                        <span class="featured-badge">{% trans "Featured" %}</span>
                         {% endif %}
                     </div>
 
@@ -77,7 +77,7 @@
                                     <span class="meta-separator">·</span>
                                     <span class="read-time">
                                         <i class="far fa-clock"></i>
-                                        {{ post.reading_time }} min read
+                                        {{ post.reading_time }} {% trans "min read" %}
                                     </span>
                                 </div>
                             </div>
@@ -85,18 +85,18 @@
 
                         <!-- Social Sharing -->
                         <div class="social-sharing">
-                            <button class="share-btn" onclick="sharePost()" title="Share this post">
+                            <button class="share-btn" onclick="sharePost()" title="{% trans 'Share this post' %}">
                                 <i class="fas fa-share-alt"></i>
                             </button>
                             <div class="share-dropdown" id="shareDropdown">
                                 <a href="#" onclick="shareLinkedIn()" class="share-option linkedin">
-                                    <i class="fab fa-linkedin"></i> LinkedIn
+                                    <i class="fab fa-linkedin"></i> {% trans "LinkedIn" %}
                                 </a>
                                 <a href="#" onclick="shareEmail()" class="share-option email">
-                                    <i class="fas fa-envelope"></i> Email
+                                    <i class="fas fa-envelope"></i> {% trans "Email" %}
                                 </a>
                                 <a href="#" onclick="copyLink()" class="share-option copy">
-                                    <i class="fas fa-link"></i> Copy Link
+                                    <i class="fas fa-link"></i> {% trans "Copy Link" %}
                                 </a>
                             </div>
                         </div>
@@ -105,27 +105,27 @@
                     <!-- Reference Links -->
                     {% if post.github_url or post.medium_url or post.linkedin_url %}
                     <div class="reference-links">
-                        <h4 class="reference-title">Reference Links</h4>
+                        <h4 class="reference-title">{% trans "Reference Links" %}</h4>
                         <div class="reference-icons">
                             {% if post.github_url %}
                             <a href="{{ post.github_url }}" target="_blank" class="reference-link github"
-                                title="GitHub Repository">
+                                title="{% trans 'GitHub Repository' %}">
                                 <i class="fab fa-github"></i>
-                                <span>GitHub</span>
+                                <span>{% trans "GitHub" %}</span>
                             </a>
                             {% endif %}
                             {% if post.medium_url %}
                             <a href="{{ post.medium_url }}" target="_blank" class="reference-link medium"
-                                title="Medium Article">
+                                title="{% trans 'Medium Article' %}">
                                 <i class="fab fa-medium"></i>
-                                <span>Medium</span>
+                                <span>{% trans "Medium" %}</span>
                             </a>
                             {% endif %}
                             {% if post.linkedin_url %}
                             <a href="{{ post.linkedin_url }}" target="_blank" class="reference-link linkedin"
-                                title="LinkedIn Post">
+                                title="{% trans 'LinkedIn Post' %}">
                                 <i class="fab fa-linkedin"></i>
-                                <span>LinkedIn</span>
+                                <span>{% trans "LinkedIn" %}</span>
                             </a>
                             {% endif %}
                         </div>
@@ -136,7 +136,7 @@
                 <!-- Table of Contents -->
                 <div class="table-of-contents" id="tableOfContents" style="display: none;">
                     <div class="toc-header">
-                        <h4 class="toc-title">Table of Contents</h4>
+                        <h4 class="toc-title">{% trans "Table of Contents" %}</h4>
                         <button class="toc-toggle" onclick="toggleTOC()">
                             <i class="fas fa-times"></i>
                         </button>
@@ -193,16 +193,16 @@
                             <div class="bio-actions">
                                 {% if profile.github_url %}
                                 <a href="{{ profile.github_url }}" target="_blank" class="social-link">
-                                    <i class="fab fa-github"></i> GitHub
+                                    <i class="fab fa-github"></i> {% trans "GitHub" %}
                                 </a>
                                 {% endif %}
                                 {% if profile.linkedin_url %}
                                 <a href="{{ profile.linkedin_url }}" target="_blank" class="social-link">
-                                    <i class="fab fa-linkedin"></i> LinkedIn
+                                    <i class="fab fa-linkedin"></i> {% trans "LinkedIn" %}
                                 </a>
                                 {% endif %}
                                 <a href="javascript:void(0)" onclick="openContactModal()" class="contact-cta">
-                                    <i class="fas fa-envelope"></i> Get in touch
+                                    <i class="fas fa-envelope"></i> {% trans "Get in touch" %}
                                 </a>
                             </div>
                         </div>
@@ -211,10 +211,10 @@
                     <!-- Subtle Contact CTA -->
                     <div class="post-contact-cta">
                         <div class="cta-content">
-                            <h4 class="cta-title">Enjoyed this post?</h4>
-                            <p class="cta-text">Let's discuss your next project or share thoughts on this topic.</p>
+                            <h4 class="cta-title">{% trans "Enjoyed this post?" %}</h4>
+                            <p class="cta-text">{% trans "Let's discuss your next project or share thoughts on this topic." %}</p>
                             <a href="javascript:void(0)" onclick="openContactModal()" class="cta-button">
-                                Start a conversation
+                                {% trans "Start a conversation" %}
                             </a>
                         </div>
                     </div>
@@ -224,8 +224,8 @@
                 {% if related_posts %}
                 <section class="continue-reading-section">
                     <div class="section-header">
-                        <h2 class="section-title">Continue Reading</h2>
-                        <p class="section-subtitle">More insights and perspectives</p>
+                        <h2 class="section-title">{% trans "Continue Reading" %}</h2>
+                        <p class="section-subtitle">{% trans "More insights and perspectives" %}</p>
                     </div>
 
                     <div class="related-posts-horizontal">
@@ -236,12 +236,12 @@
                                 <div class="related-horizontal-content">
                                     <div class="related-horizontal-meta">
                                         <span class="related-type-simple">
-                                            {% if related_post.category %}{{ related_post.category.name }}{% else %}Article{% endif %}
+                                            {% if related_post.category %}{{ related_post.category.name }}{% else %}{% trans "Article" %}{% endif %}
                                         </span>
                                         <span class="meta-separator">·</span>
                                         <span class="related-date">{{ related_post.publish_date|date:"M d" }}</span>
                                         <span class="meta-separator">·</span>
-                                        <span class="related-read-time">{{ related_post.reading_time }} min</span>
+                                        <span class="related-read-time">{{ related_post.reading_time }} {% trans "min" %}</span>
                                     </div>
 
                                     <h3 class="related-horizontal-title">{{ related_post.title }}</h3>
@@ -263,7 +263,7 @@
                     <!-- View All Posts CTA - Enhanced -->
                     <div class="view-all-section">
                         <a href="{% url 'portfolio:post-list' %}" class="view-all-button">
-                            <span class="view-all-text">View All Posts</span>
+                            <span class="view-all-text">{% trans "View All Posts" %}</span>
                             <div class="view-all-icon">
                                 <i class="fas fa-arrow-right"></i>
                             </div>
@@ -278,14 +278,14 @@
 
     <!-- Floating Action Buttons -->
     <div class="floating-actions">
-        <button class="fab-btn toc-btn" onclick="toggleTOC()" title="Table of Contents" id="tocBtn"
+        <button class="fab-btn toc-btn" onclick="toggleTOC()" title="{% trans 'Table of Contents' %}" id="tocBtn"
             style="display: none;">
             <i class="fas fa-list"></i>
         </button>
-        <a href="{% url 'portfolio:post-list' %}" class="fab-btn back-btn" title="Back to All Posts">
+        <a href="{% url 'portfolio:post-list' %}" class="fab-btn back-btn" title="{% trans 'Back to All Posts' %}">
             <i class="fas fa-arrow-left"></i>
         </a>
-        <button class="fab-btn scroll-top-btn" onclick="scrollToTop()" title="Scroll to Top" id="scrollTopBtn"
+        <button class="fab-btn scroll-top-btn" onclick="scrollToTop()" title="{% trans 'Scroll to Top' %}" id="scrollTopBtn"
             style="display: none;">
             <i class="fas fa-arrow-up"></i>
         </button>

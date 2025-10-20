@@ -16,6 +16,14 @@ A professional Django-based portfolio website featuring a modern design, compreh
 - **Bilingual Support** (English/Spanish) with custom translation system
 - **SEO Optimization** with meta tags, sitemaps, and structured data
 - **Security Features** including CSRF protection, file validation, and rate limiting
+- **Automatic Translation Pipeline** (branch `i18n`) with LibreTranslate integration and per-language status tracking
+
+## Project Variants
+
+- **`main`** – single-language template without django-parler or automatic translation. Ideal when you just need the classic portfolio.
+- **`i18n`** – multilingual template (this branch) with django-parler, automatic translation, and LibreTranslate integration. Requires the additional setup described below.
+
+Clone the branch that best matches your needs. You can keep both branches up-to-date by cherry-picking neutral improvements from `i18n` into `main`.
 
 ## 🛠️ Technologies
 
@@ -92,6 +100,22 @@ python manage.py runserver
 # - Portfolio: http://127.0.0.1:8000/
 # - Admin Panel: http://127.0.0.1:8000/admin/
 ```
+
+### Optional: Docker Compose (app + LibreTranslate)
+
+For a ready-to-run stack (Django + LibreTranslate), make sure Docker Desktop is running and then:
+
+```bash
+cp .env.example .env  # populate with your values
+docker compose up --build
+```
+
+Services exposed:
+
+- Portfolio: http://127.0.0.1:8000/
+- LibreTranslate API: http://127.0.0.1:5000/
+
+The `web` container mounts your local project, so code changes reload automatically. Stop the stack with `docker compose down`.
 
 ## 📝 Initial Setup
 
@@ -237,6 +261,17 @@ python manage.py flush
 python manage.py createsuperuser
 ```
 
+- **Translation (i18n branch)**
+
+```env
+TRANSLATION_PROVIDER=libretranslate
+TRANSLATION_API_URL=http://libretranslate:5000
+TRANSLATION_API_KEY=            # optional if your server requires it
+```
+
+- If you run `docker compose up`, these defaults already point to the bundled LibreTranslate service.
+- After enabling “Auto translate” in **Dashboard → Settings**, the site will attempt to translate new/updated content into every language listed in `settings.LANGUAGES` except the default one.
+
 ### Static Files
 
 ```bash
@@ -253,6 +288,19 @@ python manage.py collectstatic --clear
 # Verify all translations are complete
 python verify_translations.py
 ```
+
+### Automatic Translation Workflow (i18n branch)
+
+1. Ensure a translation provider is reachable. The included docker compose file launches LibreTranslate on port 5000.
+2. Add/update the configuration in **Dashboard → Settings**:
+   - Default language (source language for content entry)
+   - Enable automatic translation
+   - Provider: `libretranslate`
+   - API URL: e.g. `http://libretranslate:5000`
+   - Timeout (seconds) according to your environment
+3. Edit your profile, projects, blog posts, etc. in the default language.
+4. After saving, the edit view shows the status of every target language (generated, pending, or failed). Failures include the returned error so you can retry.
+5. You can regenerate translations manually by editing the item again after fixing the root cause (e.g., API downtime).
 
 ## 📚 Documentation
 

@@ -1,5 +1,5 @@
 {% extends "portfolio/admin/base_admin.html" %}
-{% load static %}
+{% load static i18n %}
 
 {% block admin_title %}Work Experience Management{% endblock %}
 {% block admin_subtitle %}Manage your professional history and work experience{% endblock %}
@@ -16,25 +16,25 @@
     <form method="get" class="filters-grid">
         <div>
             <label class="form-label-custom">Search experiences</label>
-            <input type="text" name="search" class="form-control-custom" 
-                   placeholder="Empresa, posición..." value="{{ current_search }}">
+            <input type="text" name="search" class="form-control-custom"
+                   placeholder="{% trans 'Company, position...' %}" value="{{ current_search }}">
         </div>
         <div>
-            <label class="form-label-custom">Estado</label>
+            <label class="form-label-custom">{% trans "Status" %}</label>
             <select name="current" class="form-control-custom">
-                <option value="">Todas las experiencias</option>
-                <option value="true" {% if current_filter == 'true' %}selected{% endif %}>Trabajo actual</option>
-                <option value="false" {% if current_filter == 'false' %}selected{% endif %}>Trabajos anteriores</option>
+                <option value="">{% trans "All experiences" %}</option>
+                <option value="true" {% if current_filter == 'true' %}selected{% endif %}>{% trans "Current job" %}</option>
+                <option value="false" {% if current_filter == 'false' %}selected{% endif %}>{% trans "Previous jobs" %}</option>
             </select>
         </div>
         <div>
             <button type="submit" class="btn-primary-custom">
-                <i class="fas fa-search"></i>Filtrar
+                <i class="fas fa-search"></i>{% trans "Filter" %}
             </button>
         </div>
         <div>
             <a href="{% url 'portfolio:admin-experience-list' %}" class="btn-secondary-custom">
-                <i class="fas fa-times"></i>Limpiar
+                <i class="fas fa-times"></i>{% trans "Clear" %}
             </a>
         </div>
     </form>
@@ -44,8 +44,8 @@
 <div class="content-card">
     <div class="card-header-custom">
         <div>
-            <h2 class="card-title-custom">Experiencia Laboral</h2>
-            <p class="card-subtitle-custom">{{ experiences|length }} experiencias mostradas • Total: {{ paginator.count }}</p>
+            <h2 class="card-title-custom">{% trans "Work Experience" %}</h2>
+            <p class="card-subtitle-custom">{{ experiences|length }} {% trans "experiences shown" %} • {% trans "Total:" %} {{ paginator.count }}</p>
         </div>
     </div>
     
@@ -54,11 +54,11 @@
         <table class="table-custom">
             <thead>
                 <tr>
-                    <th>Posición</th>
-                    <th>Empresa</th>
-                    <th>Período</th>
-                    <th>Estado</th>
-                    <th width="200">Acciones</th>
+                    <th>{% trans "Position" %}</th>
+                    <th>{% trans "Company" %}</th>
+                    <th>{% trans "Period" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th width="200">{% trans "Actions" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -81,7 +81,7 @@
                         <div style="font-size: 13px; color: #6B6B6B;">
                             {{ experience.start_date|date:"M Y" }}
                             {% if experience.current %}
-                                - Presente
+                                - {% trans "Present" %}
                             {% elif experience.end_date %}
                                 - {{ experience.end_date|date:"M Y" }}
                             {% endif %}
@@ -90,22 +90,22 @@
                     <td>
                         {% if experience.current %}
                             <span class="badge-custom badge-success">
-                                <i class="fas fa-briefcase" style="margin-right: 4px;"></i>Actual
+                                <i class="fas fa-briefcase" style="margin-right: 4px;"></i>{% trans "Current" %}
                             </span>
                         {% else %}
                             <span class="badge-custom badge-secondary">
-                                <i class="fas fa-history" style="margin-right: 4px;"></i>Previous
+                                <i class="fas fa-history" style="margin-right: 4px;"></i>{% trans "Previous" %}
                             </span>
                         {% endif %}
                     </td>
                     <td>
                         <div class="quick-actions">
-                            <a href="{% url 'portfolio:admin-experience-edit' experience.pk %}" 
-                               class="btn" title="Editar">
+                            <a href="{% url 'portfolio:admin-experience-edit' experience.pk %}"
+                               class="btn" title="{% trans 'Edit' %}">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a href="{% url 'portfolio:admin-experience-delete' experience.pk %}" 
-                               class="btn" title="Eliminar" style="color: #dc3545;">
+                            <a href="{% url 'portfolio:admin-experience-delete' experience.pk %}"
+                               class="btn" title="{% trans 'Delete' %}" style="color: #dc3545;">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </div>
@@ -118,16 +118,16 @@
     {% else %}
     <div class="empty-state">
         <i class="fas fa-briefcase"></i>
-        <h3>No hay experiencias laborales</h3>
+        <h3>{% trans "No work experiences" %}</h3>
         <p>
             {% if current_search or current_filter %}
-                No se encontraron experiencias con los filtros aplicados.
+                {% trans "No experiences found with the applied filters." %}
             {% else %}
-                Comienza agregando tu primera experiencia laboral.
+                {% trans "Start by adding your first work experience." %}
             {% endif %}
         </p>
         <a href="{% url 'portfolio:admin-experience-create' %}" class="btn-primary-custom">
-            <i class="fas fa-plus"></i>Add Experience
+            <i class="fas fa-plus"></i>{% trans "Add Experience" %}
         </a>
     </div>
     {% endif %}
@@ -146,7 +146,7 @@
     {% endif %}
 
     <span class="page-link active">
-        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        {% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}
     </span>
 
     {% if page_obj.has_next %}

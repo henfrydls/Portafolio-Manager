@@ -1,11 +1,9 @@
 <!DOCTYPE html>
-{% load simple_i18n %}
+{% load i18n static %}
 {% get_current_language as LANGUAGE_CODE %}
 <html lang="{{ LANGUAGE_CODE }}">
 
 <head>
-    {% load static %}
-
     <!-- Google Fonts - Montserrat for clean typography -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -217,9 +215,9 @@
 
 <body>
     <!-- Floating Language Switcher -->
+    {% if request.path == '/' or request.path == '/es/' or request.path|slice:'0:7' == '/posts/' or request.path|slice:'0:6' == '/posts' or request.path|slice:'0:10' == '/es/posts/' or request.path|slice:'0:9' == '/es/posts' or request.path|slice:'0:6' == '/post/' or request.path|slice:'0:5' == '/post' or request.path|slice:'0:9' == '/es/post/' or request.path|slice:'0:8' == '/es/post' or request.path|slice:'0:8' == '/resume/' or request.path|slice:'0:7' == '/resume' or request.path|slice:'0:11' == '/es/resume/' or request.path|slice:'0:10' == '/es/resume' %}
     <div id="portfolio-lang-switcher">
-        {% get_current_language as CURRENT_LANGUAGE %}
-        {% if CURRENT_LANGUAGE == 'en' %}
+        {% if LANGUAGE_CODE == 'en' %}
         <span class="portfolio-lang-option active">EN</span>
         <span class="portfolio-lang-separator">|</span>
         <form method="post" action="{% url 'set_language' %}"
@@ -241,6 +239,7 @@
         <span class="portfolio-lang-option active">ES</span>
         {% endif %}
     </div>
+    {% endif %}
 
     <!-- Navigation -->
     <nav class="top-nav">

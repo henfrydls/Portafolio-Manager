@@ -4,7 +4,7 @@ Sitemaps for portfolio application.
 
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
-from django.utils import timezone
+from django.utils import timezone, translation
 from .models import Project, BlogPost, Category
 
 class StaticViewSitemap(Sitemap):
@@ -55,7 +55,11 @@ class CategorySitemap(Sitemap):
     priority = 0.6
     
     def items(self):
-        return Category.objects.filter(is_active=True).order_by('name')
+        current_language = translation.get_language()
+        qs = Category.objects.filter(is_active=True)
+        if current_language:
+            qs = qs.filter(translations__language_code=current_language)
+        return qs.order_by('translations__name')
     
     def lastmod(self, obj):
         return obj.updated_at

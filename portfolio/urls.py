@@ -35,6 +35,7 @@ urlpatterns = [
 
     # Admin URLs (protected) - keep these for content management
     path('dashboard/', views.AdminDashboardView.as_view(), name='admin-dashboard'),
+    path('dashboard/settings/', views.SiteConfigurationUpdateView.as_view(), name='admin-site-configuration'),
     path('analytics/', views.AnalyticsView.as_view(), name='admin-analytics'),
     
     # Profile Management

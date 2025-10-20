@@ -6,6 +6,8 @@ Incluye: Profile, Experience, Education, Skills, Languages, Projects, Blog Posts
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.utils import translation as dj_translation
+from django.utils.text import slugify
 from datetime import datetime, timedelta
 from portfolio.models import (
     Profile, Project, Technology, Experience, Education, Skill, Language,
@@ -128,45 +130,94 @@ class Command(BaseCommand):
     def create_categories(self):
         """Crear categorías de blog"""
         categories_data = [
-            {'name': 'Desarrollo Web', 'slug': 'desarrollo-web', 'description': 'Artículos sobre desarrollo web frontend y backend', 'order': 1},
-            {'name': 'Inteligencia Artificial', 'slug': 'inteligencia-artificial', 'description': 'Contenido sobre IA, ML y Data Science', 'order': 2},
-            {'name': 'DevOps', 'slug': 'devops', 'description': 'Herramientas y prácticas de DevOps', 'order': 3},
-            {'name': 'Tutorial', 'slug': 'tutorial', 'description': 'Guías paso a paso y tutoriales', 'order': 4},
-            {'name': 'Opinión', 'slug': 'opinion', 'description': 'Reflexiones y opiniones técnicas', 'order': 5},
+            {
+                'slug': 'desarrollo-web',
+                'order': 1,
+                'name': 'Web Development',
+                'description': 'Articles about frontend and backend development',
+            },
+            {
+                'slug': 'inteligencia-artificial',
+                'order': 2,
+                'name': 'Artificial Intelligence',
+                'description': 'Content covering AI, ML and Data Science',
+            },
+            {
+                'slug': 'devops',
+                'order': 3,
+                'name': 'DevOps',
+                'description': 'Tools and best practices for DevOps teams',
+            },
+            {
+                'slug': 'tutorial',
+                'order': 4,
+                'name': 'Tutorials',
+                'description': 'Step-by-step guides and tutorials',
+            },
+            {
+                'slug': 'opinion',
+                'order': 5,
+                'name': 'Opinion',
+                'description': 'Technical reflections and thought leadership',
+            },
         ]
 
+        language_code = 'en'
         categories = []
         for cat_data in categories_data:
+            defaults = {
+                'order': cat_data['order'],
+                'is_active': True,
+            }
             category, created = Category.objects.get_or_create(
                 slug=cat_data['slug'],
-                defaults=cat_data
+                defaults=defaults,
             )
+            with dj_translation.override(language_code):
+                if created or not category.safe_translation_getter('name', language_code=language_code):
+                    category.set_current_language(language_code)
+                    category.name = cat_data['name']
+                    category.description = cat_data['description']
+                    category.save()
             categories.append(category)
             if created:
-                self.stdout.write(f'   📁 Categoría creada: {category.name}')
+                display_name = category.safe_translation_getter('name', language_code=language_code, default=category.slug)
+                self.stdout.write(f'   ✅ Categoría creada: {display_name}')
 
         return categories
 
     def create_project_types(self):
         """Crear tipos de proyectos"""
         types_data = [
-            {'name': 'Aplicación Web', 'slug': 'web-app', 'order': 1},
-            {'name': 'API REST', 'slug': 'api-rest', 'order': 2},
-            {'name': 'Aplicación Móvil', 'slug': 'mobile-app', 'order': 3},
-            {'name': 'Dashboard', 'slug': 'dashboard', 'order': 4},
-            {'name': 'E-commerce', 'slug': 'ecommerce', 'order': 5},
-            {'name': 'Automatización', 'slug': 'automation', 'order': 6},
+            {'slug': 'web-app', 'order': 1, 'label': 'Web Application'},
+            {'slug': 'api-rest', 'order': 2, 'label': 'REST API'},
+            {'slug': 'mobile-app', 'order': 3, 'label': 'Mobile Application'},
+            {'slug': 'dashboard', 'order': 4, 'label': 'Dashboard'},
+            {'slug': 'ecommerce', 'order': 5, 'label': 'E-commerce'},
+            {'slug': 'automation', 'order': 6, 'label': 'Automation'},
         ]
 
+        language_code = 'en'
         project_types = []
         for type_data in types_data:
+            defaults = {
+                'order': type_data['order'],
+                'is_active': True,
+            }
             project_type, created = ProjectType.objects.get_or_create(
                 slug=type_data['slug'],
-                defaults=type_data
+                defaults=defaults,
             )
+            with dj_translation.override(language_code):
+                if created or not project_type.safe_translation_getter('name', language_code=language_code):
+                    project_type.set_current_language(language_code)
+                    project_type.name = type_data['label']
+                    project_type.description = ''
+                    project_type.save()
             project_types.append(project_type)
             if created:
-                self.stdout.write(f'   🏷️ Tipo de proyecto creado: {project_type.name}')
+                display_name = project_type.safe_translation_getter('name', language_code=language_code, default=project_type.slug)
+                self.stdout.write(f'   ✅ Tipo de proyecto creado: {display_name}')
 
         return project_types
 
@@ -215,20 +266,30 @@ class Command(BaseCommand):
             ],
         }
 
+        language_code = 'en'
         created_count = 0
         for category, techs in technologies_data.items():
-            for name, icon, color in techs:
+            for index, (name, icon, color) in enumerate(techs, start=1):
+                identifier = slugify(name) or f"{category}-{index}"
                 tech, created = Technology.objects.get_or_create(
-                    name=name,
-                    defaults={'icon': icon, 'color': color}
+                    identifier=identifier,
+                    defaults={'icon': icon, 'color': color},
                 )
+                with dj_translation.override(language_code):
+                    if created or not tech.safe_translation_getter('name', language_code=language_code):
+                        tech.set_current_language(language_code)
+                        tech.name = name
+                if tech.icon != icon or tech.color != color or created:
+                    tech.icon = icon
+                    tech.color = color
+                    tech.save()
                 if created:
                     created_count += 1
 
         if created_count > 0:
-            self.stdout.write(f'⚡ {created_count} tecnologías creadas con iconos y colores')
+            self.stdout.write(f'⚙️ {created_count} tecnologías creadas con iconos y colores')
         else:
-            self.stdout.write('⚡ Tecnologías ya existen')
+            self.stdout.write('ℹ️ Tecnologías ya existen')
 
     def create_profile(self):
         """Crear perfil de ejemplo"""
@@ -402,23 +463,34 @@ Diseño de arquitecturas escalables y fault-tolerant.""",
         return skills
 
     def create_languages(self):
-        """Crear idiomas hablados de ejemplo (NUEVO)"""
+        """Crear idiomas hablados de ejemplo"""
         languages_data = [
-            {'name': 'English', 'proficiency': 'Native', 'order': 1},
-            {'name': 'Spanish', 'proficiency': 'C2', 'order': 2},
-            {'name': 'French', 'proficiency': 'B2', 'order': 3},
-            {'name': 'German', 'proficiency': 'A2', 'order': 4},
+            {'code': 'en', 'label': 'English', 'proficiency': 'Native', 'order': 1},
+            {'code': 'es', 'label': 'Spanish', 'proficiency': 'C2', 'order': 2},
+            {'code': 'fr', 'label': 'French', 'proficiency': 'B2', 'order': 3},
+            {'code': 'de', 'label': 'German', 'proficiency': 'A2', 'order': 4},
         ]
 
+        language_code = 'en'
         languages = []
         for lang_data in languages_data:
+            defaults = {
+                'proficiency': lang_data['proficiency'],
+                'order': lang_data['order'],
+            }
             language, created = Language.objects.get_or_create(
-                name=lang_data['name'],
-                defaults=lang_data
+                code=lang_data['code'],
+                defaults=defaults,
             )
+            with dj_translation.override(language_code):
+                if created or not language.safe_translation_getter('name', language_code=language_code):
+                    language.set_current_language(language_code)
+                    language.name = lang_data['label']
+                    language.save()
             languages.append(language)
             if created:
-                self.stdout.write(f'   🌍 Idioma creado: {language.name} ({language.proficiency})')
+                display_name = language.safe_translation_getter('name', language_code=language_code, default=language.code)
+                self.stdout.write(f'   🌍 Idioma creado: {display_name} ({language.proficiency})')
 
         return languages
 

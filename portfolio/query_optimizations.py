@@ -4,6 +4,7 @@ Provides optimized querysets with select_related and prefetch_related.
 """
 
 from django.db.models import Prefetch, Q, Count
+from django.utils import translation
 import logging
 
 logger = logging.getLogger('portfolio')
@@ -42,11 +43,19 @@ class QueryOptimizer:
         Returns:
             QuerySet: Optimized projects queryset
         """
-        from .models import Project
-        
+        from .models import Project, KnowledgeBase, ProjectType
+
         # Build base queryset with optimizations to avoid N+1 queries
-        queryset = Project.objects.select_related('project_type_obj').prefetch_related(
-            'technologies'
+        language = translation.get_language() or 'en'
+        queryset = Project.objects.language(language).prefetch_related(
+            Prefetch(
+                'knowledge_bases',
+                queryset=KnowledgeBase.objects.language(language)
+            ),
+            Prefetch(
+                'project_type_obj',
+                queryset=ProjectType.objects.language(language)
+            )
         )
         
         # Apply filters
@@ -103,15 +112,16 @@ class QueryOptimizer:
         return queryset
     
     @classmethod
-    def get_optimized_technologies(cls):
+    def get_optimized_knowledge_bases(cls):
         """
-        Get all technologies ordered by name.
-        
+        Get all knowledge bases ordered by name.
+
         Returns:
-            QuerySet: Technologies queryset
+            QuerySet: Knowledge bases queryset
         """
-        from .models import Technology
-        return Technology.objects.all().order_by('name')
+        from .models import KnowledgeBase
+        language = translation.get_language() or 'en'
+        return KnowledgeBase.objects.language(language).order_by('translations__name')
     
     @classmethod
     def get_optimized_categories(cls, active_only=True):
@@ -125,12 +135,13 @@ class QueryOptimizer:
             QuerySet: Categories queryset
         """
         from .models import Category
-        queryset = Category.objects.all()
-        
+        language = translation.get_language() or 'en'
+        queryset = Category.objects.language(language)
+
         if active_only:
             queryset = queryset.filter(is_active=True)
         
-        return queryset.order_by('order', 'name')
+        return queryset.order_by('order', 'translations__name')
     
     @classmethod
     def get_featured_items_optimized(cls, limit=4):
@@ -177,7 +188,7 @@ class QueryOptimizer:
                 'has_featured_link': project.has_featured_link(),
                 'date': project.created_at,
                 'order': project.order,
-                'technologies': list(project.technologies.all()[:3]),
+                'knowledge_bases': list(project.knowledge_bases.all()[:3]),
                 'is_external': is_external
             })
         

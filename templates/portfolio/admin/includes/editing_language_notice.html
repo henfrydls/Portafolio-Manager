@@ -1,0 +1,14 @@
+{% load i18n %}
+<div style="margin-bottom: 16px; padding: 16px; border-radius: 8px; background: #f5f9ff; border: 1px solid #dce7ff; color: #1a3d7c; font-size: 13px; line-height: 1.6;">
+    {% blocktrans with language=editing_language_label %}
+        <strong>Editing language:</strong> {{ language }}.
+    {% endblocktrans %}<br/>
+    {% if target_language_labels %}
+        {% blocktrans with languages=target_language_labels|join:", " %}
+            The system will generate automatic translations to: {{ languages }}.
+        {% endblocktrans %}
+    {% else %}
+        {% trans "No additional target languages are configured for automatic translation yet." %}
+    {% endif %}<br/>
+    {% trans "To change the editing language or translation targets visit" %} <a href="{{ settings_url }}" style="color: #0d47a1; font-weight: 600;">{% trans "Settings" %}</a>.
+</div>

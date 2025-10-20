@@ -2,6 +2,10 @@ Django==5.2
 Pillow==10.0.0
 whitenoise==6.5.0
 python-decouple==3.8
-python-magic-bin==0.4.14
 python-dotenv==1.0.1
+python-magic==0.4.27; platform_system != "Windows"
+python-magic-bin==0.4.14; platform_system == "Windows"
 markdown==3.6
+django-parler==2.3
+libretranslatepy==2.1.4
+requests==2.32.3

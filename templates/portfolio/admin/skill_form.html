@@ -1,16 +1,17 @@
 {% extends "portfolio/admin/base_admin.html" %}
 {% load static %}
+{% load i18n %}
 
 {% block admin_title %}
-    {% if object %}Editar Habilidad{% else %}Nueva Habilidad{% endif %}
+    {% if object %}{% trans "Edit Skill" %}{% else %}{% trans "New Skill" %}{% endif %}
 {% endblock %}
 {% block admin_subtitle %}
-    {% if object %}Actualiza la información de esta habilidad{% else %}Agrega una nueva habilidad a tu CV{% endif %}
+    {% if object %}{% trans "Update the details for this skill." %}{% else %}{% trans "Add a new skill to your resume." %}{% endif %}
 {% endblock %}
 
 {% block admin_actions %}
 <a href="{% url 'portfolio:admin-skill-list' %}" class="btn-secondary-custom">
-    <i class="fas fa-arrow-left"></i>Volver a Habilidades
+    <i class="fas fa-arrow-left"></i>{% trans "Back to Skills" %}
 </a>
 {% endblock %}
 
@@ -19,84 +20,86 @@
     <div class="card-header-custom">
         <div>
             <h2 class="card-title-custom">
-                {% if object %}Editar Habilidad{% else %}Nueva Habilidad{% endif %}
+                {% if object %}{% trans "Edit Skill" %}{% else %}{% trans "New Skill" %}{% endif %}
             </h2>
             <p class="card-subtitle-custom">
-                {% if object %}Actualiza los detalles de esta habilidad{% else %}Completa la información de tu nueva habilidad{% endif %}
+                {% if object %}{% trans "Update the details for this skill entry." %}{% else %}{% trans "Complete the information for your new skill." %}{% endif %}
             </p>
         </div>
     </div>
+
+    {% include "portfolio/admin/includes/editing_language_notice.html" %}
 
     <form method="post" class="form-custom">
         {% csrf_token %}
         
         <div class="form-grid">
-            <div class="form-group">
-                <label class="form-label-custom" for="{{ form.name.id_for_label }}">
-                    {{ form.name.label }}
-                    <span class="required">*</span>
-                </label>
-                {{ form.name }}
-                <div class="form-help">Ej: Python, JavaScript, React, Docker, etc.</div>
-                {% if form.name.errors %}
-                    <div class="form-error">{{ form.name.errors.0 }}</div>
-                {% endif %}
-            </div>
+        <div class="form-group">
+            <label class="form-label-custom" for="{{ form.name.id_for_label }}">
+                {{ form.name.label }}
+                <span class="required">*</span>
+            </label>
+            {{ form.name }}
+            <div class="form-help">{% trans "Example: Python, JavaScript, React, Docker, etc." %}</div>
+            {% if form.name.errors %}
+                <div class="form-error">{{ form.name.errors.0 }}</div>
+            {% endif %}
+        </div>
 
-            <div class="form-group">
-                <label class="form-label-custom" for="{{ form.category.id_for_label }}">
-                    {{ form.category.label }}
-                    <span class="required">*</span>
-                </label>
-                {{ form.category }}
-                <div class="form-help">Ej: Frontend, Backend, Database, DevOps, etc.</div>
-                {% if form.category.errors %}
-                    <div class="form-error">{{ form.category.errors.0 }}</div>
-                {% endif %}
-            </div>
+        <div class="form-group">
+            <label class="form-label-custom" for="{{ form.category.id_for_label }}">
+                {{ form.category.label }}
+                <span class="required">*</span>
+            </label>
+            {{ form.category }}
+            <div class="form-help">{% trans "Example: Frontend, Backend, Database, DevOps, etc." %}</div>
+            {% if form.category.errors %}
+                <div class="form-error">{{ form.category.errors.0 }}</div>
+            {% endif %}
+        </div>
         </div>
 
         <div class="form-grid">
             <div class="form-group">
                 <label class="form-label-custom" for="{{ form.proficiency.id_for_label }}">
-                    {{ form.proficiency.label }}
-                    <span class="required">*</span>
-                </label>
-                {{ form.proficiency }}
-                <div class="form-help">
-                    <strong>Básico:</strong> Conocimiento inicial<br>
-                    <strong>Intermedio:</strong> Uso regular y confianza<br>
-                    <strong>Avanzado:</strong> Dominio sólido y experiencia<br>
-                    <strong>Experto:</strong> Maestría completa
-                </div>
-                {% if form.proficiency.errors %}
-                    <div class="form-error">{{ form.proficiency.errors.0 }}</div>
-                {% endif %}
+                {{ form.proficiency.label }}
+                <span class="required">*</span>
+            </label>
+            {{ form.proficiency }}
+            <div class="form-help">
+                    <strong>{% trans "Basic" %}:</strong> {% trans "Introductory understanding." %}<br>
+                    <strong>{% trans "Intermediate" %}:</strong> {% trans "Regular use with confidence." %}<br>
+                    <strong>{% trans "Advanced" %}:</strong> {% trans "Solid mastery and experience." %}<br>
+                    <strong>{% trans "Expert" %}:</strong> {% trans "Complete command of the skill." %}
             </div>
+            {% if form.proficiency.errors %}
+                <div class="form-error">{{ form.proficiency.errors.0 }}</div>
+            {% endif %}
+        </div>
 
-            <div class="form-group">
-                <label class="form-label-custom" for="{{ form.years_experience.id_for_label }}">
-                    {{ form.years_experience.label }}
-                    <span class="required">*</span>
-                </label>
-                {{ form.years_experience }}
-                <div class="form-help">Años de experiencia práctica con esta habilidad</div>
-                {% if form.years_experience.errors %}
-                    <div class="form-error">{{ form.years_experience.errors.0 }}</div>
-                {% endif %}
-            </div>
+        <div class="form-group">
+            <label class="form-label-custom" for="{{ form.years_experience.id_for_label }}">
+                {{ form.years_experience.label }}
+                <span class="required">*</span>
+            </label>
+            {{ form.years_experience }}
+            <div class="form-help">{% trans "Years of hands-on experience with this skill." %}</div>
+            {% if form.years_experience.errors %}
+                <div class="form-error">{{ form.years_experience.errors.0 }}</div>
+            {% endif %}
+        </div>
         </div>
 
         <!-- Preview de la barra de progreso -->
         <div class="form-group">
-            <label class="form-label-custom">Vista Previa del Nivel</label>
+            <label class="form-label-custom">{% trans "Proficiency Preview" %}</label>
             <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #F8F9FA; border-radius: 8px;">
                 <div style="flex: 1; height: 12px; background: #E9ECEF; border-radius: 6px; overflow: hidden;">
                     <div id="progress-preview" style="height: 100%; background: #007bff; width: 50%; transition: all 0.3s ease; border-radius: 6px;"></div>
                 </div>
                 <span id="percentage-preview" style="font-size: 14px; color: #495057; min-width: 40px; font-weight: 500;">50%</span>
             </div>
-            <div class="form-help">Esta barra muestra cómo se verá tu nivel de competencia en el CV</div>
+            <div class="form-help">{% trans "This preview shows how your proficiency level will appear on the resume." %}</div>
         </div>
 
         {% if form.non_field_errors %}
@@ -108,10 +111,10 @@
         <div class="form-actions">
             <button type="submit" class="btn-primary-custom">
                 <i class="fas fa-save"></i>
-                {% if object %}Actualizar Habilidad{% else %}Crear Habilidad{% endif %}
+                {% if object %}{% trans "Update Skill" %}{% else %}{% trans "Create Skill" %}{% endif %}
             </button>
             <a href="{% url 'portfolio:admin-skill-list' %}" class="btn-secondary-custom">
-                <i class="fas fa-times"></i>Cancelar
+                <i class="fas fa-times"></i>{% trans "Cancel" %}
             </a>
         </div>
     </form>
@@ -134,14 +137,14 @@ function updateProgressPreview() {
     percentageText.textContent = Math.round(percentage) + '%';
     
     // Update color based on level
-    const colors = {
-        1: '#17a2b8', // info - básico
-        2: '#007bff', // primary - intermedio  
-        3: '#ffc107', // warning - avanzado
-        4: '#28a745'  // success - experto
-    };
-    
-    progressBar.style.background = colors[proficiency] || colors[1];
+const colors = {
+    1: '#17a2b8', // info - basic
+    2: '#007bff', // primary - intermediate
+    3: '#ffc107', // warning - advanced
+    4: '#28a745'  // success - expert
+};
+
+progressBar.style.background = colors[proficiency] || colors[1];
 }
 
 // Initialize on page load

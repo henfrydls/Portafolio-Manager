@@ -1,7 +1,11 @@
-from django.db import models
+﻿from django.db import models
 from django.utils.text import slugify
 from django.urls import reverse
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ImproperlyConfigured
+from parler.models import TranslatableModel, TranslatedFields
+from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from .validators import (
     profile_image_validator, 
     project_image_validator, 
@@ -11,38 +15,179 @@ from .validators import (
     validate_filename
 )
 from .image_utils import optimize_uploaded_image
+from django.utils import timezone
+from django.db import connection
 
 
-class Profile(models.Model):
+class SiteConfiguration(models.Model):
+    """Singleton storing global preferences for the site."""
+
+    TRANSLATION_PROVIDERS = [
+        ('libretranslate', 'LibreTranslate'),
+    ]
+
+    default_language = models.CharField(
+        max_length=10,
+        choices=settings.LANGUAGES,
+        default=settings.LANGUAGE_CODE,
+        verbose_name="Default language"
+    )
+    auto_translate_enabled = models.BooleanField(
+        default=False,
+        verbose_name="Enable automatic translation"
+    )
+    translation_provider = models.CharField(
+        max_length=50,
+        choices=TRANSLATION_PROVIDERS,
+        default=getattr(settings, 'TRANSLATION_PROVIDER', 'libretranslate'),
+        verbose_name="Translation provider"
+    )
+    translation_api_url = models.CharField(
+        max_length=255,
+        blank=True,
+        default=getattr(settings, 'TRANSLATION_API_URL', 'http://libretranslate:5000'),
+        verbose_name="Translation service URL"
+    )
+    translation_api_key = models.CharField(
+        max_length=255,
+        blank=True,
+        default=getattr(settings, 'TRANSLATION_API_KEY', ''),
+        verbose_name="Translation service API key"
+    )
+    translation_timeout = models.PositiveIntegerField(
+        default=10,
+        verbose_name="Tiempo de espera (segundos)"
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Site configuration"
+        verbose_name_plural = "Site configuration"
+
+    def __str__(self):
+        return "Site configuration"
+
+    def save(self, *args, **kwargs):
+        if not self.pk and SiteConfiguration.objects.exists():
+            raise ValidationError('Only one site configuration instance is allowed.')
+        return super().save(*args, **kwargs)
+
+    @classmethod
+    def get_solo(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        changed = False
+        if not obj.translation_provider:
+            obj.translation_provider = getattr(settings, 'TRANSLATION_PROVIDER', 'libretranslate')
+            changed = True
+        if not obj.translation_api_url:
+            obj.translation_api_url = getattr(settings, 'TRANSLATION_API_URL', 'http://libretranslate:5000')
+            changed = True
+        if obj.translation_api_key is None:
+            obj.translation_api_key = getattr(settings, 'TRANSLATION_API_KEY', '')
+            changed = True
+        if changed:
+            obj.save(update_fields=['translation_provider', 'translation_api_url', 'translation_api_key', 'updated_at'])
+        return obj
+
+    def get_translation_service(self):
+        """Build TranslationService if auto translation is enabled and configured."""
+        if not self.auto_translate_enabled:
+            return None
+        if not self.translation_api_url:
+            raise ImproperlyConfigured("Translation API URL is required for auto translation.")
+        from .services.translation_service import TranslationService  # lazy import
+        return TranslationService(
+            provider=self.translation_provider,
+            api_url=self.translation_api_url,
+            api_key=self.translation_api_key or "",
+            timeout=self.translation_timeout,
+        )
+
+    def get_target_languages(self):
+        default = self.default_language or settings.LANGUAGE_CODE
+        return [code for code, _ in settings.LANGUAGES if code != default]
+
+
+class AutoTranslationRecord(models.Model):
+    """Track automatically generated translations."""
+
+    STATUS_PENDING = 'pending'
+    STATUS_SUCCESS = 'success'
+    STATUS_FAILED = 'failed'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pendiente'),
+        (STATUS_SUCCESS, 'Completado'),
+        (STATUS_FAILED, 'Fallido'),
+    ]
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+    language_code = models.CharField(max_length=10)
+    source_language = models.CharField(max_length=10)
+    provider = models.CharField(max_length=50, blank=True)
+    duration_ms = models.PositiveIntegerField(default=0)
+    auto_generated = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    error_message = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('content_type', 'object_id', 'language_code')
+        verbose_name = 'Registro de traducción automática'
+        verbose_name_plural = 'Registros de traducción automática'
+        ordering = ['-updated_at']
+
+    def mark_success(self, provider: str, duration_ms: int):
+        self.provider = provider
+        self.duration_ms = duration_ms
+        self.auto_generated = True
+        self.status = self.STATUS_SUCCESS
+        self.error_message = ''
+        self.save(update_fields=['provider', 'duration_ms', 'auto_generated', 'status', 'error_message', 'updated_at'])
+
+    def mark_failure(self, message: str):
+        self.auto_generated = False
+        self.status = self.STATUS_FAILED
+        self.error_message = message[:1000]
+        self.save(update_fields=['auto_generated', 'status', 'error_message', 'updated_at'])
+
+
+class Profile(TranslatableModel):
     """Modelo para información personal del portafolio (Singleton)"""
-    name = models.CharField(max_length=100, verbose_name="Nombre")
-    title = models.CharField(max_length=200, verbose_name="Título profesional")
-    bio = models.TextField(verbose_name="Biografía")
+
+    translations = TranslatedFields(
+        name=models.CharField(max_length=100, verbose_name="Nombre"),
+        title=models.CharField(max_length=200, verbose_name="Título profesional"),
+        bio=models.TextField(verbose_name="Biografía"),
+        location=models.CharField(max_length=100, verbose_name="Ubicación"),
+        meta={'unique_together': [('language_code', 'name')]},
+    )
     profile_image = models.ImageField(
-        upload_to='profile/', 
+        upload_to='profile/',
         verbose_name="Foto de perfil",
         help_text="Sube una imagen cuadrada (misma anchura y altura). Se optimizará automáticamente a 250x250px. Formatos: JPG, PNG, WebP. Máximo 3MB.",
-        validators=[profile_image_validator, validate_no_executable]
+        validators=[profile_image_validator, validate_no_executable],
     )
-    email = models.EmailField(verbose_name="Email")
+    email = models.EmailField(unique=True, verbose_name="Email")
     phone = models.CharField(max_length=20, blank=True, verbose_name="Teléfono")
-    location = models.CharField(max_length=100, verbose_name="Ubicación")
     linkedin_url = models.URLField(blank=True, verbose_name="URL de LinkedIn")
     github_url = models.URLField(blank=True, verbose_name="URL de GitHub")
     medium_url = models.URLField(blank=True, verbose_name="URL de Medium")
     resume_pdf = models.FileField(
-        upload_to='profile/', 
-        blank=True, 
+        upload_to='profile/',
+        blank=True,
         verbose_name="CV en PDF (English)",
         help_text="Upload your resume in English (PDF format)",
-        validators=[resume_pdf_validator, validate_no_executable]
+        validators=[resume_pdf_validator, validate_no_executable],
     )
     resume_pdf_es = models.FileField(
-        upload_to='profile/', 
-        blank=True, 
+        upload_to='profile/',
+        blank=True,
         verbose_name="CV en PDF (Español)",
         help_text="Sube tu currículum en español (formato PDF)",
-        validators=[resume_pdf_validator, validate_no_executable]
+        validators=[resume_pdf_validator, validate_no_executable],
     )
     show_web_resume = models.BooleanField(default=True, verbose_name="Mostrar CV web")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -53,51 +198,84 @@ class Profile(models.Model):
         verbose_name_plural = "Perfiles"
 
     def __str__(self):
-        return self.name
-    
+        return self.safe_translation_getter("name", any_language=True) or "Perfil"
+
     def save(self, *args, **kwargs):
-        # Singleton pattern: ensure only one profile exists
         if not self.pk and Profile.objects.exists():
-            raise ValidationError('Solo puede existir un perfil. Por favor edita el perfil existente.')
-        
-        # Optimize profile image before saving
+            raise ValidationError("Solo puede existir un perfil. Por favor edita el perfil existente.")
+
         if self.profile_image:
-            optimize_uploaded_image(self.profile_image, image_type='profile', quality='high')
-        
+            optimize_uploaded_image(self.profile_image, image_type="profile", quality="high")
+
         return super().save(*args, **kwargs)
-    
+
     @classmethod
     def get_solo(cls):
-        """Get or create the singleton profile instance"""
-        obj, created = cls.objects.get_or_create(pk=1)
+        obj = cls.objects.filter(pk=1).first()
+        if not obj:
+            default_language = getattr(settings, 'LANGUAGE_CODE', 'en')
+            default_name = getattr(settings, 'PROFILE_NAME', 'Your Name')
+            default_title = getattr(settings, 'PROFILE_TITLE', 'Your Title')
+            default_location = getattr(settings, 'PROFILE_LOCATION', 'Your Location')
+            default_email = getattr(settings, 'PROFILE_EMAIL', getattr(settings, 'DEFAULT_FROM_EMAIL', 'contact@example.com'))
+            default_bio = getattr(settings, 'PROFILE_BIO', 'Update your biography to introduce yourself.')
+            now = timezone.now()
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO portfolio_profile
+                        (id, name, title, bio, location, email, phone, linkedin_url, github_url, medium_url,
+                         profile_image, resume_pdf, resume_pdf_es, show_web_resume, created_at, updated_at)
+                    VALUES
+                        (1, ?, ?, ?, ?, ?, '', '', '', '', '', '', '', 1, ?, ?)
+                    """,
+                    [default_name, default_title, default_bio, default_location, default_email, now, now],
+                )
+
+            obj = cls.objects.get(pk=1)
+
+            obj.set_current_language(default_language)
+            obj.name = default_name
+            obj.title = default_title
+            obj.bio = default_bio
+            obj.location = default_location
+            obj.email = default_email
+            obj.safe_translation_getter('name', default="", language_code=default_language)
+            obj.save()
+
+        else:
+            default_language = getattr(settings, 'LANGUAGE_CODE', 'en')
+            if not obj.safe_translation_getter('name', language_code=default_language, any_language=False):
+                obj.set_current_language(default_language)
+                obj.name = getattr(settings, 'PROFILE_NAME', 'Your Name')
+                obj.title = getattr(settings, 'PROFILE_TITLE', 'Your Title')
+                obj.bio = getattr(settings, 'PROFILE_BIO', 'Update your biography to introduce yourself.')
+                obj.location = getattr(settings, 'PROFILE_LOCATION', 'Your Location')
+                obj.save()
         return obj
-    
+
     def delete(self, *args, **kwargs):
-        """Prevent deletion of the profile"""
-        raise ValidationError('No se puede eliminar el perfil. Solo puedes editarlo.')
-    
+        raise ValidationError("No se puede eliminar el perfil. Solo puedes editarlo.")
+
     def get_resume_pdf_for_language(self, language_code):
-        """
-        Returns the appropriate resume PDF based on language.
-        Falls back to available PDF if requested language is not available.
-        """
-        if language_code == 'es' and self.resume_pdf_es:
+        if language_code == "es" and self.resume_pdf_es:
             return self.resume_pdf_es
-        elif language_code == 'en' and self.resume_pdf:
+        if language_code == "en" and self.resume_pdf:
             return self.resume_pdf
-        # Fallback: return whichever is available
-        elif self.resume_pdf_es:
+        if self.resume_pdf_es:
             return self.resume_pdf_es
-        elif self.resume_pdf:
+        if self.resume_pdf:
             return self.resume_pdf
         return None
 
 
-class Technology(models.Model):
-    """Modelo para tecnologías utilizadas en proyectos"""
-    
-    # Clases CSS predeterminadas para tecnologías comunes
-    COMMON_TECH_ICONS = {
+
+class KnowledgeBase(TranslatableModel):
+    """Modelo para bases de conocimiento (tecnologías, metodologías, áreas de experticia)"""
+
+    # Clases CSS predeterminadas para bases de conocimiento comunes
+    COMMON_KNOWLEDGE_ICONS = {
         # Lenguajes de programación
         'Python': 'fab fa-python',
         'JavaScript': 'fab fa-js-square',
@@ -170,62 +348,80 @@ class Technology(models.Model):
         'Firebase': 'fas fa-fire',
         'GraphQL': 'fas fa-project-diagram',
         'REST API': 'fas fa-exchange-alt',
+
+        # Áreas de Conocimiento - Energía y Ingeniería
+        'BESS': 'fas fa-battery-full',
+        'Renewable Energy': 'fas fa-solar-panel',
+        'AutoCAD': 'fas fa-drafting-compass',
+
+        # Áreas de Conocimiento - Negocios y Gestión
+        'Business Development': 'fas fa-chart-line',
+        'Project Management': 'fas fa-tasks',
+        'Innovation Management': 'fas fa-lightbulb',
     }
     
-    name = models.CharField(max_length=50, unique=True, verbose_name="Nombre")
+    translations = TranslatedFields(
+        name=models.CharField(max_length=50, verbose_name="Nombre")
+    )
+    identifier = models.CharField(
+        max_length=60,
+        unique=True,
+        verbose_name="Identificador",
+        help_text="Identificador estable (en ingles) utilizado como clave interna."
+    )
     icon = models.CharField(
-        max_length=50, 
-        blank=True, 
+        max_length=50,
+        blank=True,
         verbose_name="Clase CSS del icono",
         help_text=(
             "Clase CSS para mostrar el icono. Ejemplos comunes:<br>"
-            "• Python: <code>fab fa-python</code><br>"
-            "• JavaScript: <code>fab fa-js-square</code><br>"
-            "• React: <code>fab fa-react</code><br>"
-            "• Docker: <code>fab fa-docker</code><br>"
-            "• HTML: <code>fab fa-html5</code><br>"
-            "• CSS: <code>fab fa-css3-alt</code><br>"
-            "• Node.js: <code>fab fa-node-js</code><br>"
-            "• Git: <code>fab fa-git-alt</code><br>"
-            "• AWS: <code>fab fa-aws</code><br>"
-            "• Linux: <code>fab fa-linux</code><br><br>"
-            "📚 <strong>Más iconos disponibles en:</strong><br>"
-            "🔗 <a href='https://fontawesome.com/icons' target='_blank'>Font Awesome Icons</a><br>"
-            "🔗 <a href='https://devicon.dev/' target='_blank'>Devicon (Iconos específicos para desarrollo)</a><br>"
-            "🔗 <a href='https://simpleicons.org/' target='_blank'>Simple Icons</a>"
+            "- Python: <code>fab fa-python</code><br>"
+            "- JavaScript: <code>fab fa-js-square</code><br>"
+            "- React: <code>fab fa-react</code><br>"
+            "- Docker: <code>fab fa-docker</code><br>"
+            "- HTML: <code>fab fa-html5</code><br>"
+            "- CSS: <code>fab fa-css3-alt</code><br>"
+            "- Node.js: <code>fab fa-node-js</code><br>"
+            "- Git: <code>fab fa-git-alt</code><br>"
+            "- AWS: <code>fab fa-aws</code><br>"
+            "- Linux: <code>fab fa-linux</code><br><br>"
+            "<strong>Mas iconos disponibles en:</strong><br>"
+            "<a href='https://fontawesome.com/icons' target='_blank'>Font Awesome Icons</a><br>"
+            "<a href='https://devicon.dev/' target='_blank'>Devicon (iconos para desarrollo)</a><br>"
+            "<a href='https://simpleicons.org/' target='_blank'>Simple Icons</a>"
         )
     )
     color = models.CharField(
-        max_length=7, 
-        default='#000000', 
-        verbose_name="Color", 
+        max_length=7,
+        default='#000000',
+        verbose_name="Color",
         help_text=(
             "Color en formato hexadecimal. Ejemplos de colores oficiales:<br>"
-            "• Python: <code>#3776ab</code><br>"
-            "• JavaScript: <code>#f7df1e</code><br>"
-            "• React: <code>#61dafb</code><br>"
-            "• Django: <code>#092e20</code><br>"
-            "• Docker: <code>#2496ed</code><br>"
-            "• Git: <code>#f05032</code><br>"
-            "• AWS: <code>#ff9900</code><br>"
-            "• PostgreSQL: <code>#336791</code>"
+            "- Python: <code>#3776ab</code><br>"
+            "- JavaScript: <code>#f7df1e</code><br>"
+            "- React: <code>#61dafb</code><br>"
+            "- Django: <code>#092e20</code><br>"
+            "- Docker: <code>#2496ed</code><br>"
+            "- Git: <code>#f05032</code><br>"
+            "- AWS: <code>#ff9900</code><br>"
+            "- PostgreSQL: <code>#336791</code>"
         )
     )
-
     class Meta:
-        verbose_name = "Tecnología"
-        verbose_name_plural = "Tecnologías"
-        ordering = ['name']
+        verbose_name = "Base de Conocimiento"
+        verbose_name_plural = "Bases de Conocimiento"
+        ordering = ['translations__name']
 
     def __str__(self):
-        return self.name
-    
+        return self.safe_translation_getter('name', any_language=True) or self.identifier or "Knowledge Base"
+
     def get_suggested_icon(self):
-        """Retorna el icono sugerido para la tecnología basado en el nombre"""
-        return self.COMMON_TECH_ICONS.get(self.name, 'fas fa-code')
-    
+        """Retorna el icono sugerido para la base de conocimiento basado en el nombre"""
+        key = self.identifier or self.safe_translation_getter('name', any_language=True)
+        return self.COMMON_KNOWLEDGE_ICONS.get(key, 'fas fa-code')
+
     def get_suggested_color(self):
-        """Retorna el color sugerido para la tecnología basado en el nombre"""
+        """Retorna el color sugerido para la base de conocimiento basado en el nombre"""
         color_mapping = {
             'Python': '#3776ab',
             'JavaScript': '#f7df1e',
@@ -284,15 +480,29 @@ class Technology(models.Model):
             'Firebase': '#ffca28',
             'GraphQL': '#e10098',
             'REST API': '#009688',
+
+            # Áreas de Conocimiento - Energía y Ingeniería
+            'BESS': '#28a745',
+            'Renewable Energy': '#8bc34a',
+            'AutoCAD': '#e51937',
+
+            # Áreas de Conocimiento - Negocios y Gestión
+            'Business Development': '#0066cc',
+            'Project Management': '#ff6b6b',
+            'Innovation Management': '#ffd700',
         }
-        return color_mapping.get(self.name, '#000000')
+        key = self.identifier or self.safe_translation_getter('name', any_language=True)
+        return color_mapping.get(key, '#000000')
 
 
-class ProjectType(models.Model):
+class ProjectType(TranslatableModel):
     """Modelo para tipos de proyectos"""
-    name = models.CharField(max_length=50, unique=True, verbose_name="Nombre")
+
+    translations = TranslatedFields(
+        name=models.CharField(max_length=50, verbose_name="Nombre"),
+        description=models.TextField(blank=True, verbose_name="Descripcion"),
+    )
     slug = models.SlugField(unique=True, verbose_name="Slug")
-    description = models.TextField(blank=True, verbose_name="Descripción")
     is_active = models.BooleanField(default=True, verbose_name="Activo")
     order = models.PositiveIntegerField(default=0, verbose_name="Orden")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -301,15 +511,17 @@ class ProjectType(models.Model):
     class Meta:
         verbose_name = "Tipo de Proyecto"
         verbose_name_plural = "Tipos de Proyectos"
-        ordering = ['order', 'name']
+        ordering = ['order', 'translations__name']
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            base_name = self.safe_translation_getter('name', any_language=True)
+            if base_name:
+                self.slug = slugify(base_name)
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.name
+        return self.safe_translation_getter('name', any_language=True) or self.slug or "Project Type"
 
     @property
     def project_count(self):
@@ -317,10 +529,10 @@ class ProjectType(models.Model):
         return self.project_set.filter(visibility='public').count()
 
 
-class Project(models.Model):
+class Project(TranslatableModel):
     """Modelo para proyectos del portafolio"""
     VISIBILITY_CHOICES = [
-        ('public', 'Público'),
+        ('public', 'Publico'),
         ('private', 'Privado'),
     ]
 
@@ -344,19 +556,20 @@ class Project(models.Model):
         ('other', 'Other'),
     ]
 
-    title = models.CharField(max_length=200, verbose_name="Título")
+    translations = TranslatedFields(
+        title=models.CharField(max_length=200, verbose_name="Titulo"),
+        description=models.TextField(verbose_name="Descripcion breve"),
+        detailed_description=models.TextField(verbose_name="Descripcion detallada"),
+    )
     slug = models.SlugField(unique=True, verbose_name="Slug",
-                           help_text="URL amigable generada automáticamente")
-    description = models.TextField(verbose_name="Descripción breve")
-    detailed_description = models.TextField(verbose_name="Descripción detallada")
+                           help_text="URL amigable generada automaticamente")
     image = models.ImageField(
-        upload_to='projects/', 
-        verbose_name="Imagen principal", 
+        upload_to='projects/',
+        verbose_name="Imagen principal",
         blank=True,
         validators=[project_image_validator, validate_no_executable]
     )
 
-    # Nueva relación con tipos de proyectos (reemplaza project_type)
     project_type_obj = models.ForeignKey(
         ProjectType,
         on_delete=models.PROTECT,
@@ -366,7 +579,6 @@ class Project(models.Model):
         help_text="Tipo de proyecto principal"
     )
 
-    # Mantener project_type temporalmente para migración
     project_type = models.CharField(
         max_length=20,
         choices=PROJECT_TYPE_CHOICES,
@@ -374,41 +586,40 @@ class Project(models.Model):
         blank=True,
         null=True,
         verbose_name="Tipo de proyecto",
-        help_text="Categoría del proyecto (Framework, Tool, Website, etc.)"
+        help_text="Categoria del proyecto (Framework, Tool, Website, etc.)"
     )
     stars_count = models.PositiveIntegerField(
         default=0,
-        verbose_name="Número de estrellas",
-        help_text="Para proyectos de GitHub, se actualiza automáticamente. Para proyectos privados, puedes agregar un número estimado."
+        verbose_name="Numero de estrellas",
+        help_text="Para proyectos de GitHub, se actualiza automaticamente. Para proyectos privados, puedes agregar un numero estimado."
     )
     forks_count = models.PositiveIntegerField(
         default=0,
-        verbose_name="Número de forks",
-        help_text="Para proyectos de GitHub, se actualiza automáticamente"
+        verbose_name="Numero de forks",
+        help_text="Para proyectos de GitHub, se actualiza automaticamente"
     )
     primary_language = models.CharField(
         max_length=50,
         blank=True,
         verbose_name="Lenguaje principal",
-        help_text="El lenguaje de programación principal usado (Python, JavaScript, etc.)"
+        help_text="El lenguaje de programacion principal usado (Python, JavaScript, etc.)"
     )
     github_owner = models.CharField(
         max_length=100,
         blank=True,
         verbose_name="Propietario GitHub",
-        help_text="Usuario/organización propietaria del repositorio (ej: microsoft, google)"
+        help_text="Usuario/organizacion propietaria del repositorio (ej: microsoft, google)"
     )
     is_private_project = models.BooleanField(
         default=False,
         verbose_name="Proyecto privado/trabajo",
-        help_text="Marcar si es un proyecto privado o de trabajo que no tiene repositorio público"
+        help_text="Marcar si es un proyecto privado o de trabajo que no tiene repositorio publico"
     )
 
-    technologies = models.ManyToManyField(Technology, verbose_name="Tecnologías utilizadas")
+    knowledge_bases = models.ManyToManyField(KnowledgeBase, verbose_name="Bases de Conocimiento")
     github_url = models.URLField(blank=True, verbose_name="URL de GitHub")
-    demo_url = models.URLField(blank=True, verbose_name="URL de demostración")
+    demo_url = models.URLField(blank=True, verbose_name="URL de demostracion")
 
-    # Featured work link options
     LINK_TYPE_CHOICES = [
         ('none', 'Sin enlace'),
         ('post', 'Enlace a Post'),
@@ -423,7 +634,7 @@ class Project(models.Model):
         choices=LINK_TYPE_CHOICES,
         default='none',
         verbose_name="Tipo de enlace para Featured Work",
-        help_text="Selecciona qué tipo de enlace mostrar cuando el proyecto aparezca en Featured Work"
+        help_text="Selecciona que tipo de enlace mostrar cuando el proyecto aparezca en Featured Work"
     )
     featured_link_post = models.ForeignKey(
         'BlogPost',
@@ -448,7 +659,7 @@ class Project(models.Model):
     visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES,
                                  default='public', verbose_name="Visibilidad")
     featured = models.BooleanField(default=False, verbose_name="Proyecto destacado")
-    order = models.PositiveIntegerField(default=0, verbose_name="Orden de visualización")
+    order = models.PositiveIntegerField(default=0, verbose_name="Orden de visualizacion")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -458,45 +669,75 @@ class Project(models.Model):
         ordering = ['order', '-created_at']
 
     def __str__(self):
-        return self.title
+        return self.safe_translation_getter('title', any_language=True) or 'Proyecto'
 
     def get_absolute_url(self):
         return reverse('portfolio:project-detail', kwargs={'slug': self.slug})
 
-    def get_primary_technology(self):
-        """Retorna la primera tecnología para mostrar como lenguaje principal"""
+    def get_primary_knowledge(self):
+        """Retorna el conocimiento primario del proyecto"""
+        from django.utils import translation
+
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        knowledge_qs = self.knowledge_bases.language(current_language)
+
         if self.primary_language:
+            kb = knowledge_qs.filter(
+                models.Q(identifier__iexact=self.primary_language) |
+                models.Q(translations__name__iexact=self.primary_language)
+            ).first()
+            if kb:
+                return kb.safe_translation_getter('name', any_language=True)
             return self.primary_language
-        tech = self.technologies.first()
-        return tech.name if tech else 'Code'
+
+        kb = knowledge_qs.first()
+        if kb:
+            return kb.safe_translation_getter('name', any_language=True)
+        return 'Code'
+
+    def get_primary_knowledge_color(self):
+        """Retorna el color del conocimiento primario"""
+        from django.utils import translation
+
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        knowledge_qs = self.knowledge_bases.language(current_language)
+
+        kb = None
+        if self.primary_language:
+            kb = knowledge_qs.filter(
+                models.Q(identifier__iexact=self.primary_language) |
+                models.Q(translations__name__iexact=self.primary_language)
+            ).first()
+
+        if not kb:
+            kb = knowledge_qs.first()
+
+        if kb:
+            return kb.color or kb.get_suggested_color()
+        return '#6c757d'
+
+    # Mantener métodos legacy para compatibilidad
+    def get_primary_technology(self):
+        """Legacy method - usa get_primary_knowledge()"""
+        return self.get_primary_knowledge()
 
     def get_primary_technology_color(self):
-        """Retorna el color de la tecnología principal"""
-        if self.primary_language:
-            # Buscar por nombre del lenguaje principal
-            tech = self.technologies.filter(name__iexact=self.primary_language).first()
-            if tech:
-                return tech.color
-        # Si no, usar la primera tecnología
-        tech = self.technologies.first()
-        return tech.color if tech else '#6c757d'
+        """Legacy method - usa get_primary_knowledge_color()"""
+        return self.get_primary_knowledge_color()
 
     def get_github_display_url(self):
-        """Retorna el texto para mostrar del GitHub (owner/repo)"""
         if not self.github_url:
             return None
         try:
-            # Extraer owner/repo de la URL de GitHub
             from urllib.parse import urlparse
             path = urlparse(self.github_url).path.strip('/')
             if '/' in path:
                 return path
-        except:
+        except Exception:
             pass
         return self.github_url
 
     def get_project_type_display_class(self):
-        """Retorna la clase CSS para el tipo de proyecto"""
         type_classes = {
             'framework': 'badge-framework',
             'tool': 'badge-tool',
@@ -512,7 +753,6 @@ class Project(models.Model):
         return type_classes.get(self.project_type, 'badge-other')
 
     def get_featured_link_url(self):
-        """Retorna la URL para featured work basada en el tipo seleccionado"""
         if self.featured_link_type == 'post' and self.featured_link_post:
             return self.featured_link_post.get_absolute_url()
         elif self.featured_link_type == 'github' and self.github_url:
@@ -526,7 +766,6 @@ class Project(models.Model):
         return None
 
     def get_featured_link_icon(self):
-        """Retorna el icono para el enlace de featured work"""
         icons = {
             'post': 'fas fa-arrow-right',
             'github': 'fab fa-github',
@@ -537,30 +776,28 @@ class Project(models.Model):
         return icons.get(self.featured_link_type, 'fas fa-link')
 
     def has_featured_link(self):
-        """Verifica si el proyecto tiene un enlace configurado para featured work"""
         return self.featured_link_type != 'none' and self.get_featured_link_url() is not None
-    
+
     def save(self, *args, **kwargs):
-        # Auto-generate slug if not provided
         if not self.slug:
             self.slug = slugify(self.title)
-        
-        # Optimize project image before saving
         if self.image:
             optimize_uploaded_image(self.image, image_type='project', quality='medium')
-        
         super().save(*args, **kwargs)
 
 
-class Experience(models.Model):
+class Experience(TranslatableModel):
     """Modelo para experiencia laboral"""
-    company = models.CharField(max_length=200, verbose_name="Empresa")
-    position = models.CharField(max_length=200, verbose_name="Posición")
-    description = models.TextField(verbose_name="Descripción del trabajo")
+
+    translations = TranslatedFields(
+        company=models.CharField(max_length=200, verbose_name="Empresa"),
+        position=models.CharField(max_length=200, verbose_name="Posicion"),
+        description=models.TextField(verbose_name="Descripcion del trabajo"),
+    )
     start_date = models.DateField(verbose_name="Fecha de inicio")
     end_date = models.DateField(null=True, blank=True, verbose_name="Fecha de fin")
     current = models.BooleanField(default=False, verbose_name="Trabajo actual")
-    order = models.PositiveIntegerField(default=0, verbose_name="Orden de visualización")
+    order = models.PositiveIntegerField(default=0, verbose_name="Orden de visualizacion")
 
     class Meta:
         verbose_name = "Experiencia"
@@ -568,83 +805,94 @@ class Experience(models.Model):
         ordering = ['-start_date', 'order']
 
     def __str__(self):
-        return f"{self.position} en {self.company}"
+        position = self.safe_translation_getter('position', any_language=True) or ''
+        company = self.safe_translation_getter('company', any_language=True) or ''
+        if position and company:
+            return f"{position} en {company}"
+        return position or company or "Experiencia"
 
     def save(self, *args, **kwargs):
-        # Si es trabajo actual, limpiar end_date
         if self.current:
             self.end_date = None
         super().save(*args, **kwargs)
 
 
-class Education(models.Model):
-    """Modelo para educación y certificaciones"""
+class Education(TranslatableModel):
+    """Modelo para educacion y certificaciones"""
     EDUCATION_TYPES = [
-        ('formal', 'Educación Formal'),           # Universidad, instituto
-        ('online_course', 'Curso Online'),        # Coursera, Platzi, Udemy
-        ('certification', 'Certificación'),       # AWS, Google, Microsoft
-        ('bootcamp', 'Bootcamp'),                 # Coding bootcamps
-        ('workshop', 'Taller/Workshop'),          # Eventos cortos
+        ('formal', 'Educacion Formal'),
+        ('online_course', 'Curso Online'),
+        ('certification', 'Certificacion'),
+        ('bootcamp', 'Bootcamp'),
+        ('workshop', 'Taller/Workshop'),
     ]
-    
-    institution = models.CharField(max_length=200, verbose_name="Institución")
-    degree = models.CharField(max_length=200, verbose_name="Título/Certificación")
-    field_of_study = models.CharField(max_length=200, verbose_name="Campo de estudio")
-    education_type = models.CharField(max_length=20, choices=EDUCATION_TYPES, 
-                                     default='formal', verbose_name="Tipo de educación")
+
+    translations = TranslatedFields(
+        institution=models.CharField(max_length=200, verbose_name="Institucion"),
+        degree=models.CharField(max_length=200, verbose_name="Titulo/Certificacion"),
+        field_of_study=models.CharField(max_length=200, verbose_name="Campo de estudio"),
+        description=models.TextField(blank=True, verbose_name="Descripcion"),
+    )
+    education_type = models.CharField(max_length=20, choices=EDUCATION_TYPES,
+                                     default='formal', verbose_name="Tipo de educacion")
     start_date = models.DateField(verbose_name="Fecha de inicio")
     end_date = models.DateField(null=True, blank=True, verbose_name="Fecha de fin")
     current = models.BooleanField(default=False, verbose_name="En curso")
-    description = models.TextField(blank=True, verbose_name="Descripción")
     credential_id = models.CharField(max_length=100, blank=True, verbose_name="ID del certificado")
-    credential_url = models.URLField(blank=True, verbose_name="URL de verificación")
-    order = models.PositiveIntegerField(default=0, verbose_name="Orden de visualización")
-    
+    credential_url = models.URLField(blank=True, verbose_name="URL de verificacion")
+    order = models.PositiveIntegerField(default=0, verbose_name="Orden de visualizacion")
+
     class Meta:
-        verbose_name = "Educación"
-        verbose_name_plural = "Educación"
+        verbose_name = "Educacion"
+        verbose_name_plural = "Educacion"
         ordering = ['-end_date', '-start_date']
 
     def __str__(self):
-        return f"{self.degree} - {self.institution}"
+        degree = self.safe_translation_getter('degree', any_language=True) or ''
+        institution = self.safe_translation_getter('institution', any_language=True) or ''
+        if degree and institution:
+            return f"{degree} - {institution}"
+        return degree or institution or "Educacion"
 
     def save(self, *args, **kwargs):
-        # Si está en curso, limpiar end_date
         if self.current:
             self.end_date = None
         super().save(*args, **kwargs)
 
 
-class Skill(models.Model):
-    """Modelo para habilidades técnicas"""
+class Skill(TranslatableModel):
+    """Modelo para habilidades tecnicas"""
     PROFICIENCY_CHOICES = [
-        (1, 'Básico'),
+        (1, 'Basico'),
         (2, 'Intermedio'),
         (3, 'Avanzado'),
         (4, 'Experto'),
     ]
-    
-    name = models.CharField(max_length=100, verbose_name="Nombre de la habilidad")
+
+    translations = TranslatedFields(
+        name=models.CharField(max_length=100, verbose_name="Nombre de la habilidad"),
+    )
     proficiency = models.IntegerField(choices=PROFICIENCY_CHOICES, verbose_name="Nivel de competencia")
-    years_experience = models.PositiveIntegerField(verbose_name="Años de experiencia")
-    category = models.CharField(max_length=100, verbose_name="Categoría", 
+    years_experience = models.PositiveIntegerField(verbose_name="Anios de experiencia")
+    category = models.CharField(max_length=100, verbose_name="Categoria",
                                help_text="Ej: Programming, Cloud, Business, Methodologies, etc.")
 
     class Meta:
         verbose_name = "Habilidad"
         verbose_name_plural = "Habilidades"
-        ordering = ['category', '-proficiency', 'name']
+        ordering = ['category', '-proficiency', 'translations__name']
 
     def __str__(self):
-        return f"{self.name} ({self.get_proficiency_display()})"
+        name = self.safe_translation_getter('name', any_language=True) or 'Habilidad'
+        return f"{name} ({self.get_proficiency_display()})"
 
-    def get_proficiency_percentage(self):
-        """Retorna el nivel de competencia como porcentaje para barras de progreso"""
-        return (self.proficiency / 4) * 100
+    def proficiency_bar(self):
+        return min(max((self.proficiency / 4) * 100, 0), 100)
 
 
-class Language(models.Model):
+class Language(TranslatableModel):
     """Modelo para idiomas y nivel de dominio"""
+
     PROFICIENCY_LEVELS = [
         ('A1', 'A1 - Beginner'),
         ('A2', 'A2 - Elementary'),
@@ -654,92 +902,114 @@ class Language(models.Model):
         ('C2', 'C2 - Proficient'),
         ('Native', 'Native'),
     ]
-    
-    name = models.CharField(max_length=50, verbose_name="Idioma", 
-                           help_text="Ej: English, Español, Français")
-    proficiency = models.CharField(max_length=10, choices=PROFICIENCY_LEVELS, 
-                                  verbose_name="Nivel de dominio")
-    order = models.PositiveIntegerField(default=0, verbose_name="Orden de visualización",
-                                       help_text="Orden en que aparecerá en el CV")
-    
+
+    translations = TranslatedFields(
+        name=models.CharField(
+            max_length=50,
+            verbose_name="Idioma",
+            help_text="Ej: English, Espanol, Francais"
+        )
+    )
+    code = models.CharField(
+        max_length=20,
+        unique=True,
+        verbose_name="Codigo",
+        help_text="Identificador interno del idioma (en, es, fr, etc.)"
+    )
+    proficiency = models.CharField(
+        max_length=10,
+        choices=PROFICIENCY_LEVELS,
+        verbose_name="Nivel de dominio"
+    )
+    order = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Orden de visualizacion",
+        help_text="Orden en que aparecera en el CV"
+    )
+
     class Meta:
         verbose_name = "Idioma"
         verbose_name_plural = "Idiomas"
-        ordering = ['order', 'name']
-    
+        ordering = ['order', 'translations__name']
+
     def __str__(self):
-        return f"{self.name} ({self.proficiency})"
+        name = self.safe_translation_getter('name', any_language=True) or self.code
+        return f"{name} ({self.proficiency})"
 
 
-class Category(models.Model):
-    """Modelo para categorías de posts del blog"""
-    name = models.CharField(max_length=50, unique=True, verbose_name="Nombre")
+class Category(TranslatableModel):
+    """Modelo para categorias del blog"""
+
+    translations = TranslatedFields(
+        name=models.CharField(max_length=100, verbose_name="Nombre"),
+        description=models.TextField(blank=True, verbose_name="Descripcion"),
+    )
     slug = models.SlugField(unique=True, verbose_name="Slug")
-    description = models.TextField(blank=True, verbose_name="Descripción")
     is_active = models.BooleanField(default=True, verbose_name="Activa")
     order = models.PositiveIntegerField(default=0, verbose_name="Orden")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Categoría"
-        verbose_name_plural = "Categorías"
-        ordering = ['order', 'name']
+        verbose_name = "Categoria"
+        verbose_name_plural = "Categorias"
+        ordering = ['order', 'translations__name']
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            base_name = self.safe_translation_getter('name', any_language=True)
+            if base_name:
+                self.slug = slugify(base_name)
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.name
+        return self.safe_translation_getter('name', any_language=True) or "Categoria"
 
     @property
     def post_count(self):
-        """Retorna el número de posts publicados en esta categoría"""
         return self.blogpost_set.filter(status='published').count()
 
 
-class BlogPost(models.Model):
+class BlogPost(TranslatableModel):
     """Modelo para posts del blog/noticias"""
     STATUS_CHOICES = [
         ('draft', 'Borrador'),
         ('published', 'Publicado'),
         ('archived', 'Archivado'),
     ]
-    
-    title = models.CharField(max_length=200, verbose_name="Título")
+
+    translations = TranslatedFields(
+        title=models.CharField(max_length=200, verbose_name="Titulo"),
+        content=models.TextField(verbose_name="Contenido"),
+        excerpt=models.TextField(max_length=300, verbose_name="Extracto"),
+    )
     slug = models.SlugField(unique=True, verbose_name="Slug")
-    content = models.TextField(verbose_name="Contenido")
-    excerpt = models.TextField(max_length=300, verbose_name="Extracto")
     featured_image = models.ImageField(
-        upload_to='blog/', 
-        blank=True, 
+        upload_to='blog/',
+        blank=True,
         verbose_name="Imagen destacada",
         validators=[blog_image_validator, validate_no_executable]
     )
-    # Nueva relación con categorías (reemplaza post_type)
     category = models.ForeignKey(
         Category,
         on_delete=models.PROTECT,
         null=True,
         blank=True,
-        verbose_name="Categoría",
-        help_text="Categoría principal del post"
+        verbose_name="Categoria",
+        help_text="Categoria principal del post"
     )
 
-    tags = models.CharField(max_length=200, blank=True, verbose_name="Tags", 
+    tags = models.CharField(max_length=200, blank=True, verbose_name="Tags",
                            help_text="Tags separados por comas")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft', verbose_name="Estado")
-    publish_date = models.DateTimeField(verbose_name="Fecha de publicación")
+    publish_date = models.DateTimeField(verbose_name="Fecha de publicacion")
     reading_time = models.PositiveIntegerField(default=5, verbose_name="Tiempo de lectura (minutos)")
     featured = models.BooleanField(default=False, verbose_name="Post destacado")
 
-    # Reference links
     github_url = models.URLField(blank=True, verbose_name="URL de GitHub",
                                help_text="Repositorio relacionado con el post")
     medium_url = models.URLField(blank=True, verbose_name="URL de Medium",
-                               help_text="Enlace al artículo en Medium")
+                               help_text="Enlace al articulo en Medium")
     linkedin_url = models.URLField(blank=True, verbose_name="URL de LinkedIn",
                                  help_text="Enlace al post en LinkedIn")
 
@@ -752,44 +1022,37 @@ class BlogPost(models.Model):
         ordering = ['-publish_date']
 
     def __str__(self):
-        return self.title
+        return self.safe_translation_getter('title', any_language=True) or 'Post'
 
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
-        
-        # Optimize blog featured image before saving
         if self.featured_image:
             optimize_uploaded_image(self.featured_image, image_type='blog', quality='medium')
-        
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse('portfolio:post-detail', kwargs={'slug': self.slug})
 
     def get_tags_list(self):
-        """Retorna los tags como lista"""
         if self.tags:
             return [tag.strip() for tag in self.tags.split(',')]
         return []
 
     def get_post_type_display(self):
-        """Retorna el nombre de la categoría (compatibilidad hacia atrás)"""
         if self.category:
             return self.category.name
-        return "Sin categoría"
+        return "Sin categoria"
 
     def get_category_color(self):
-        """Retorna el color de la categoría"""
         if hasattr(self, 'category') and self.category:
             return self.category.color
-        return "#6c757d"  # Color por defecto
+        return "#6c757d"
 
     def get_category_icon(self):
-        """Retorna el icono de la categoría"""
         if hasattr(self, 'category') and self.category:
             return self.category.icon
-        return "fas fa-newspaper"  # Icono por defecto
+        return "fas fa-newspaper"
 
 
 class Contact(models.Model):

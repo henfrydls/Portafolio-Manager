@@ -32,8 +32,8 @@
                         {% trans "All" %}
                     </a>
                     {% for tech in technologies %}
-                    <a href="?tech={{ tech.name }}" 
-                       class="btn btn-sm {% if current_tech == tech.name %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    <a href="?tech={{ tech.identifier }}" 
+                       class="btn btn-sm {% if current_tech == tech.identifier %}btn-primary{% else %}btn-outline-primary{% endif %}">
                         {% if tech.icon %}<i class="{{ tech.icon }} me-1"></i>{% endif %}
                         {{ tech.name }}
                     </a>
@@ -81,7 +81,7 @@
                             <h5 class="card-title fw-bold mb-0">{{ project.title }}</h5>
                             {% if project.featured %}
                             <span class="badge bg-warning text-dark">
-                                <i class="fas fa-star me-1"></i>Destacado
+                                <i class="fas fa-star me-1"></i>{% trans "Featured" %}
                             </span>
                             {% endif %}
                         </div>
@@ -101,19 +101,19 @@
                         
                         <!-- Action Buttons -->
                         <div class="d-flex gap-2">
-                            <a href="{% url 'portfolio:project-detail' project.slug %}" 
+                            <a href="{% url 'portfolio:project-detail' project.slug %}"
                                class="btn btn-primary btn-sm flex-grow-1">
-                                <i class="fas fa-eye me-1"></i>Ver Detalles
+                                <i class="fas fa-eye me-1"></i>{% trans "View Details" %}
                             </a>
                             {% if project.github_url %}
-                            <a href="{{ project.github_url }}" target="_blank" 
-                               class="btn btn-outline-dark btn-sm" title="Ver en GitHub">
+                            <a href="{{ project.github_url }}" target="_blank"
+                               class="btn btn-outline-dark btn-sm" title="{% trans 'View on GitHub' %}">
                                 <i class="fab fa-github"></i>
                             </a>
                             {% endif %}
                             {% if project.demo_url %}
-                            <a href="{{ project.demo_url }}" target="_blank" 
-                               class="btn btn-outline-primary btn-sm" title="Ver Demo">
+                            <a href="{{ project.demo_url }}" target="_blank"
+                               class="btn btn-outline-primary btn-sm" title="{% trans 'View Demo' %}">
                                 <i class="fas fa-external-link-alt"></i>
                             </a>
                             {% endif %}
@@ -134,7 +134,7 @@
         
         <!-- Pagination -->
         {% if is_paginated %}
-        <nav aria-label="Paginación de proyectos" class="mt-5">
+        <nav aria-label="{% trans 'Project pagination' %}" class="mt-5">
             <ul class="pagination justify-content-center">
                 {% if page_obj.has_previous %}
                 <li class="page-item">
@@ -183,17 +183,17 @@
         <!-- No Projects Found -->
         <div class="text-center py-5">
             <i class="fas fa-search text-muted mb-3" style="font-size: 4rem;"></i>
-            <h3 class="text-muted">No se encontraron proyectos</h3>
+            <h3 class="text-muted">{% trans "No projects found" %}</h3>
             <p class="text-muted">
                 {% if current_search or current_tech %}
-                Intenta ajustar tus filtros de búsqueda.
+                {% trans "Try adjusting your search filters." %}
                 {% else %}
-                Aún no hay proyectos disponibles.
+                {% trans "No projects available yet." %}
                 {% endif %}
             </p>
             {% if current_search or current_tech %}
             <a href="{% url 'portfolio:project-list' %}" class="btn btn-primary">
-                <i class="fas fa-times me-2"></i>Limpiar Filtros
+                <i class="fas fa-times me-2"></i>{% trans "Clear Filters" %}
             </a>
             {% endif %}
         </div>

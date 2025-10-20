@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.sitemaps',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
+    'parler',
     'portfolio',
 ]
 
@@ -35,6 +36,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',  # Language detection and setting
+    'portfolio.middleware.SiteLanguageMiddleware',  # Apply global language preference
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'portfolio.security_middleware.CSRFFailureLoggingMiddleware',  # CSRF logging
@@ -79,8 +81,19 @@ USE_TZ = True
 # Available languages
 LANGUAGES = [
     ('en', 'English'),
-    ('es', 'Español'),
+    ('es', 'Espanol'),
 ]
+
+PARLER_LANGUAGES = {
+    None: (
+        {'code': 'en'},
+        {'code': 'es'},
+    ),
+    'default': {
+        'fallback': 'en',
+        'hide_untranslated': False,
+    }
+}
 
 # Locale paths for translation files
 LOCALE_PATHS = [
@@ -171,6 +184,10 @@ BLOCKED_EXTENSIONS = [
 SEND_CONTACT_CONFIRMATIONS = os.environ.get('SEND_CONTACT_CONFIRMATIONS', 'True').lower() == 'true'
 EMAIL_TIMEOUT = 30  # seconds
 
+# Translation service defaults (used in i18n branch)
+TRANSLATION_PROVIDER = os.environ.get('TRANSLATION_PROVIDER', 'libretranslate')
+TRANSLATION_API_URL = os.environ.get('TRANSLATION_API_URL', 'http://libretranslate:5000')
+TRANSLATION_API_KEY = os.environ.get('TRANSLATION_API_KEY', '')
 # Page Visit Tracking Configuration
 PAGE_VISIT_CLEANUP_FREQUENCY = 1000  # Ejecutar limpieza cada 1000 requests
 PAGE_VISIT_RETENTION_DAYS = 180      # Mantener visitas de los últimos 6 meses

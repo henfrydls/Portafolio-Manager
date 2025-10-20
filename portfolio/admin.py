@@ -2,26 +2,29 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.safestring import mark_safe
+from django.utils import translation
+from parler.admin import TranslatableAdmin
 from .models import (
-    Profile, Technology, Project, Experience, Education,
-    Skill, Language, BlogPost, Contact, PageVisit, Category, ProjectType
+    Profile, KnowledgeBase, Project, Experience, Education,
+    Skill, Language, BlogPost, Contact, PageVisit, Category, ProjectType,
+    AutoTranslationRecord,
 )
 
 
-class TechnologyInline(admin.TabularInline):
-    """Inline para tecnologías en proyectos"""
-    model = Project.technologies.through
+class KnowledgeBaseInline(admin.TabularInline):
+    """Inline para bases de conocimiento en proyectos"""
+    model = Project.knowledge_bases.through
     extra = 1
-    verbose_name = "Tecnología"
-    verbose_name_plural = "Tecnologías"
+    verbose_name = "Base de Conocimiento"
+    verbose_name_plural = "Bases de Conocimiento"
 
 
 @admin.register(Profile)
-class ProfileAdmin(admin.ModelAdmin):
+class ProfileAdmin(TranslatableAdmin):
     """Administración del perfil personal (Singleton)"""
     list_display = ('name', 'title', 'email', 'location', 'show_web_resume', 'cv_status', 'updated_at')
     list_filter = ('show_web_resume', 'created_at', 'updated_at')
-    search_fields = ('name', 'title', 'email', 'location')
+    search_fields = ('translations__name', 'translations__title', 'email', 'translations__location')
     readonly_fields = ('created_at', 'updated_at', 'profile_image_preview')
     
     def has_add_permission(self, request):
@@ -79,30 +82,35 @@ class ProfileAdmin(admin.ModelAdmin):
     profile_image_preview.short_description = "Preview de imagen"
 
 
-@admin.register(Technology)
-class TechnologyAdmin(admin.ModelAdmin):
-    """Administración de tecnologías"""
-    list_display = ('name', 'icon_preview', 'color_preview', 'suggestions_status', 'project_count')
-    list_filter = ('name',)
-    search_fields = ('name', 'icon')
-    ordering = ('name',)
+@admin.register(KnowledgeBase)
+class KnowledgeBaseAdmin(TranslatableAdmin):
+    """Administración de bases de conocimiento"""
+    list_display = ('translated_name', 'identifier', 'icon_preview', 'color_preview', 'suggestions_status', 'project_count')
+    list_filter = ('identifier',)
+    search_fields = ('translations__name', 'identifier', 'icon')
+    ordering = ('translations__name',)
     readonly_fields = ('suggested_icon_display', 'suggested_color_display')
-    
+
     fieldsets = (
         ('Información Básica', {
-            'fields': ('name',)
+            'fields': ('identifier', 'name')
         }),
         ('Configuración Visual', {
             'fields': ('icon', 'color')
         }),
         ('Sugerencias Automáticas', {
             'fields': ('suggested_icon_display', 'suggested_color_display'),
-            'description': 'Sugerencias basadas en el nombre de la tecnología. Usa las acciones para aplicar automáticamente.',
+            'description': 'Sugerencias basadas en el nombre de la base de conocimiento. Usa las acciones para aplicar automáticamente.',
             'classes': ('collapse',)
         })
     )
-    
+
     actions = ['apply_suggested_icons', 'apply_suggested_colors', 'apply_all_suggestions']
+
+    def translated_name(self, obj):
+        """Nombre traducido de la base de conocimiento"""
+        return obj.safe_translation_getter('name', any_language=True)
+    translated_name.short_description = "Nombre"
     
     def icon_preview(self, obj):
         """Muestra preview del icono actual"""
@@ -177,77 +185,76 @@ class TechnologyAdmin(admin.ModelAdmin):
     def apply_suggested_icons(self, request, queryset):
         """Acción para aplicar iconos sugeridos"""
         updated = 0
-        for tech in queryset:
-            suggested = tech.get_suggested_icon()
-            if suggested != 'fas fa-code' and tech.icon != suggested:
-                tech.icon = suggested
-                tech.save()
+        for kb in queryset:
+            suggested = kb.get_suggested_icon()
+            if suggested != 'fas fa-code' and kb.icon != suggested:
+                kb.icon = suggested
+                kb.save()
                 updated += 1
-        
+
         if updated > 0:
-            self.message_user(request, f'{updated} tecnologías actualizadas con iconos sugeridos.')
+            self.message_user(request, f'{updated} bases de conocimiento actualizadas con iconos sugeridos.')
         else:
-            self.message_user(request, 'No hay iconos sugeridos para aplicar en las tecnologías seleccionadas.')
+            self.message_user(request, 'No hay iconos sugeridos para aplicar en las bases de conocimiento seleccionadas.')
     apply_suggested_icons.short_description = "Aplicar iconos sugeridos"
-    
+
     def apply_suggested_colors(self, request, queryset):
         """Acción para aplicar colores sugeridos"""
         updated = 0
-        for tech in queryset:
-            suggested = tech.get_suggested_color()
-            if suggested != '#000000' and tech.color != suggested:
-                tech.color = suggested
-                tech.save()
+        for kb in queryset:
+            suggested = kb.get_suggested_color()
+            if suggested != '#000000' and kb.color != suggested:
+                kb.color = suggested
+                kb.save()
                 updated += 1
-        
+
         if updated > 0:
-            self.message_user(request, f'{updated} tecnologías actualizadas con colores sugeridos.')
+            self.message_user(request, f'{updated} bases de conocimiento actualizadas con colores sugeridos.')
         else:
-            self.message_user(request, 'No hay colores sugeridos para aplicar en las tecnologías seleccionadas.')
+            self.message_user(request, 'No hay colores sugeridos para aplicar en las bases de conocimiento seleccionadas.')
     apply_suggested_colors.short_description = "Aplicar colores sugeridos"
-    
+
     def apply_all_suggestions(self, request, queryset):
         """Acción para aplicar todas las sugerencias"""
         updated_icons = 0
         updated_colors = 0
-        
-        for tech in queryset:
-            suggested_icon = tech.get_suggested_icon()
-            suggested_color = tech.get_suggested_color()
-            
-            if suggested_icon != 'fas fa-code' and tech.icon != suggested_icon:
-                tech.icon = suggested_icon
+
+        for kb in queryset:
+            suggested_icon = kb.get_suggested_icon()
+            suggested_color = kb.get_suggested_color()
+
+            if suggested_icon != 'fas fa-code' and kb.icon != suggested_icon:
+                kb.icon = suggested_icon
                 updated_icons += 1
-            
-            if suggested_color != '#000000' and tech.color != suggested_color:
-                tech.color = suggested_color
+
+            if suggested_color != '#000000' and kb.color != suggested_color:
+                kb.color = suggested_color
                 updated_colors += 1
-            
-            if (suggested_icon != 'fas fa-code' and tech.icon != suggested_icon) or \
-               (suggested_color != '#000000' and tech.color != suggested_color):
-                tech.save()
-        
+
+            if (suggested_icon != 'fas fa-code' and kb.icon != suggested_icon) or \
+               (suggested_color != '#000000' and kb.color != suggested_color):
+                kb.save()
+
         messages = []
         if updated_icons > 0:
             messages.append(f'{updated_icons} iconos')
         if updated_colors > 0:
             messages.append(f'{updated_colors} colores')
-        
+
         if messages:
             self.message_user(request, f'Sugerencias aplicadas: {", ".join(messages)}.')
         else:
-            self.message_user(request, 'No hay sugerencias para aplicar en las tecnologías seleccionadas.')
+            self.message_user(request, 'No hay sugerencias para aplicar en las bases de conocimiento seleccionadas.')
     apply_all_suggestions.short_description = "Aplicar todas las sugerencias"
 
 
 @admin.register(Project)
-class ProjectAdmin(admin.ModelAdmin):
+class ProjectAdmin(TranslatableAdmin):
     """Administración de proyectos"""
     list_display = ('title', 'project_type_obj', 'visibility', 'is_private_project', 'featured', 'featured_link_status', 'stars_count', 'primary_language', 'created_at')
     list_filter = ('project_type_obj', 'visibility', 'is_private_project', 'featured', 'primary_language', 'created_at')
-    search_fields = ('title', 'description', 'detailed_description', 'github_owner', 'primary_language')
-    prepopulated_fields = {'slug': ('title',)}
-    filter_horizontal = ('technologies',)
+    search_fields = ('translations__title', 'translations__description', 'translations__detailed_description', 'github_owner', 'primary_language')
+    filter_horizontal = ('knowledge_bases',)
     ordering = ('order', '-created_at')
 
     fieldsets = (
@@ -276,8 +283,9 @@ class ProjectAdmin(admin.ModelAdmin):
         ('Configuración', {
             'fields': ('visibility', 'featured', 'order')
         }),
-        ('Tecnologías', {
-            'fields': ('technologies',)
+        ('Bases de Conocimiento', {
+            'fields': ('knowledge_bases',),
+            'description': 'Tecnologías, metodologías y áreas de experticia utilizadas en este proyecto'
         }),
         ('Metadatos', {
             'fields': ('created_at', 'updated_at'),
@@ -286,14 +294,18 @@ class ProjectAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('created_at', 'updated_at', 'image_preview')
     
-    def technology_list(self, obj):
-        """Muestra lista de tecnologías del proyecto"""
-        techs = obj.technologies.all()[:3]  # Mostrar solo las primeras 3
-        tech_names = [tech.name for tech in techs]
-        if obj.technologies.count() > 3:
-            tech_names.append(f"... (+{obj.technologies.count() - 3} más)")
-        return ", ".join(tech_names) if tech_names else "Sin tecnologías"
-    technology_list.short_description = "Tecnologías"
+    def knowledge_list(self, obj):
+        """Muestra lista de bases de conocimiento del proyecto"""
+        current_language = translation.get_language()
+        kbs = obj.knowledge_bases.language(current_language).all()[:3]  # Mostrar solo las primeras 3
+        kb_names = [
+            kb.safe_translation_getter('name', any_language=True)
+            for kb in kbs
+        ]
+        if obj.knowledge_bases.count() > 3:
+            kb_names.append(f"... (+{obj.knowledge_bases.count() - 3} más)")
+        return ", ".join(kb_names) if kb_names else "Sin bases de conocimiento"
+    knowledge_list.short_description = "Conocimientos"
     
     def image_preview(self, obj):
         """Muestra preview de la imagen del proyecto"""
@@ -328,11 +340,11 @@ class ProjectAdmin(admin.ModelAdmin):
 
 
 @admin.register(Experience)
-class ExperienceAdmin(admin.ModelAdmin):
+class ExperienceAdmin(TranslatableAdmin):
     """Administración de experiencia laboral"""
     list_display = ('position', 'company', 'start_date', 'end_date', 'current', 'order')
-    list_filter = ('current', 'start_date', 'company')
-    search_fields = ('company', 'position', 'description')
+    list_filter = ('current', 'start_date')
+    search_fields = ('translations__company', 'translations__position', 'translations__description')
     ordering = ('-start_date', 'order')
     date_hierarchy = 'start_date'
     
@@ -351,11 +363,11 @@ class ExperienceAdmin(admin.ModelAdmin):
 
 
 @admin.register(Education)
-class EducationAdmin(admin.ModelAdmin):
+class EducationAdmin(TranslatableAdmin):
     """Administración de educación"""
     list_display = ('degree', 'institution', 'education_type', 'start_date', 'end_date', 'current')
-    list_filter = ('education_type', 'current', 'start_date', 'institution')
-    search_fields = ('institution', 'degree', 'field_of_study', 'description')
+    list_filter = ('education_type', 'current', 'start_date')
+    search_fields = ('translations__institution', 'translations__degree', 'translations__field_of_study', 'translations__description')
     ordering = ('-end_date', '-start_date', 'order')
     date_hierarchy = 'start_date'
     
@@ -378,12 +390,12 @@ class EducationAdmin(admin.ModelAdmin):
 
 
 @admin.register(Skill)
-class SkillAdmin(admin.ModelAdmin):
+class SkillAdmin(TranslatableAdmin):
     """Administración de habilidades"""
     list_display = ('name', 'category', 'proficiency_display', 'years_experience', 'proficiency_bar')
     list_filter = ('category', 'proficiency', 'years_experience')
-    search_fields = ('name', 'category')
-    ordering = ('category', '-proficiency', 'name')
+    search_fields = ('translations__name', 'category')
+    ordering = ('category', '-proficiency', 'translations__name')
     
     def proficiency_display(self, obj):
         """Muestra el nivel de competencia con texto"""
@@ -392,14 +404,14 @@ class SkillAdmin(admin.ModelAdmin):
     
     def proficiency_bar(self, obj):
         """Muestra barra de progreso visual para el nivel"""
-        percentage = obj.get_proficiency_percentage()
+        percentage = (obj.proficiency / 4) * 100  # Calculate percentage directly
         color = {
             1: '#dc3545',  # Rojo para básico
             2: '#ffc107',  # Amarillo para intermedio
             3: '#28a745',  # Verde para avanzado
             4: '#007bff'   # Azul para experto
         }.get(obj.proficiency, '#6c757d')
-        
+
         return format_html(
             '<div style="width: 100px; background-color: #e9ecef; border-radius: 3px;">'
             '<div style="width: {}%; height: 20px; background-color: {}; border-radius: 3px;"></div>'
@@ -410,32 +422,35 @@ class SkillAdmin(admin.ModelAdmin):
 
 
 @admin.register(Language)
-class LanguageAdmin(admin.ModelAdmin):
+class LanguageAdmin(TranslatableAdmin):
     """Administración de idiomas"""
-    list_display = ('name', 'proficiency', 'order')
+    list_display = ('translated_name', 'code', 'proficiency', 'order')
     list_filter = ('proficiency',)
-    search_fields = ('name',)
-    ordering = ('order', 'name')
+    search_fields = ('translations__name', 'code')
+    ordering = ('order', 'translations__name')
     list_editable = ('order',)
     
     fieldsets = (
         ('Información del Idioma', {
-            'fields': ('name', 'proficiency')
+            'fields': ('code', 'name', 'proficiency')
         }),
         ('Configuración', {
             'fields': ('order',)
         })
     )
 
+    def translated_name(self, obj):
+        return obj.safe_translation_getter('name', any_language=True)
+    translated_name.short_description = "Idioma"
+
 
 @admin.register(ProjectType)
-class ProjectTypeAdmin(admin.ModelAdmin):
+class ProjectTypeAdmin(TranslatableAdmin):
     """Administración de tipos de proyectos"""
-    list_display = ('name', 'project_count', 'is_active', 'order')
+    list_display = ('translated_name', 'slug', 'project_count', 'is_active', 'order')
     list_filter = ('is_active', 'created_at')
-    search_fields = ('name', 'description')
-    prepopulated_fields = {'slug': ('name',)}
-    ordering = ('order', 'name')
+    search_fields = ('translations__name', 'translations__description')
+    ordering = ('order', 'translations__name')
     list_editable = ('order', 'is_active')
 
     fieldsets = (
@@ -461,15 +476,18 @@ class ProjectTypeAdmin(admin.ModelAdmin):
         return count
     project_count.short_description = 'Proyectos'
 
+    def translated_name(self, obj):
+        return obj.safe_translation_getter('name', any_language=True)
+    translated_name.short_description = "Nombre"
+
 
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(TranslatableAdmin):
     """Administración de categorías de posts"""
     list_display = ('name', 'post_count', 'is_active', 'order')
     list_filter = ('is_active', 'created_at')
-    search_fields = ('name', 'description')
-    prepopulated_fields = {'slug': ('name',)}
-    ordering = ('order', 'name')
+    search_fields = ('translations__name', 'translations__description')
+    ordering = ('order', 'translations__name')
     list_editable = ('order', 'is_active')
 
     fieldsets = (
@@ -497,12 +515,11 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(BlogPost)
-class BlogPostAdmin(admin.ModelAdmin):
+class BlogPostAdmin(TranslatableAdmin):
     """Administración de posts del blog"""
     list_display = ('title', 'category_display', 'status', 'featured', 'publish_date', 'reading_time')
     list_filter = ('category', 'status', 'featured', 'publish_date', 'created_at')
-    search_fields = ('title', 'content', 'excerpt', 'tags')
-    prepopulated_fields = {'slug': ('title',)}
+    search_fields = ('translations__title', 'translations__content', 'translations__excerpt', 'tags')
     date_hierarchy = 'publish_date'
     ordering = ('-publish_date', '-created_at')
     
@@ -647,6 +664,35 @@ class PageVisitAdmin(admin.ModelAdmin):
         
         self.message_user(request, f'{count} visitas antiguas eliminadas.')
     delete_old_visits.short_description = "Eliminar visitas antiguas (>6 meses)"
+
+
+@admin.register(AutoTranslationRecord)
+class AutoTranslationRecordAdmin(admin.ModelAdmin):
+    """Registro de traducciones automáticas."""
+    list_display = (
+        'content_object', 'language_code', 'source_language',
+        'provider', 'auto_generated', 'status', 'updated_at',
+    )
+    list_filter = (
+        'status', 'auto_generated', 'language_code',
+        'source_language', 'provider', 'content_type',
+    )
+    search_fields = (
+        'object_id', 'language_code', 'source_language',
+        'provider', 'error_message',
+    )
+    readonly_fields = (
+        'content_type', 'object_id', 'language_code', 'source_language',
+        'provider', 'duration_ms', 'auto_generated', 'status',
+        'error_message', 'created_at', 'updated_at',
+    )
+    ordering = ('-updated_at',)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 
 # Personalización del sitio de administración / Admin site customization

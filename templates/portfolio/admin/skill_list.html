@@ -1,12 +1,13 @@
 {% extends "portfolio/admin/base_admin.html" %}
 {% load static %}
+{% load i18n %}
 
-{% block admin_title %}Skills Management{% endblock %}
-{% block admin_subtitle %}Manage your technical skills and competencies{% endblock %}
+{% block admin_title %}{% trans "Skills Management" %}{% endblock %}
+{% block admin_subtitle %}{% trans "Manage your technical skills and competencies" %}{% endblock %}
 
 {% block admin_actions %}
 <a href="{% url 'portfolio:admin-skill-create' %}" class="btn-primary-custom">
-    <i class="fas fa-plus"></i>New Skill
+    <i class="fas fa-plus"></i>{% trans "New Skill" %}
 </a>
 {% endblock %}
 
@@ -15,37 +16,37 @@
 <div class="filters-section">
     <form method="get" class="filters-grid">
         <div>
-            <label class="form-label-custom">Search skills</label>
-            <input type="text" name="search" class="form-control-custom" 
-                   placeholder="Name, category..." value="{{ current_search }}">
+            <label class="form-label-custom">{% trans "Search skills" %}</label>
+            <input type="text" name="search" class="form-control-custom"
+                   placeholder="{% trans 'Name, category...' %}" value="{{ current_search }}">
         </div>
         <div>
-            <label class="form-label-custom">Category</label>
+            <label class="form-label-custom">{% trans "Category" %}</label>
             <select name="category" class="form-control-custom">
-                <option value="">Todas las categorías</option>
+                <option value="">{% trans "All categories" %}</option>
                 {% for category in categories %}
                     <option value="{{ category }}" {% if current_category == category %}selected{% endif %}>{{ category }}</option>
                 {% endfor %}
             </select>
         </div>
         <div>
-            <label class="form-label-custom">Nivel</label>
+            <label class="form-label-custom">{% trans "Level" %}</label>
             <select name="proficiency" class="form-control-custom">
-                <option value="">Todos los niveles</option>
-                <option value="1" {% if current_proficiency == '1' %}selected{% endif %}>Básico</option>
-                <option value="2" {% if current_proficiency == '2' %}selected{% endif %}>Intermedio</option>
-                <option value="3" {% if current_proficiency == '3' %}selected{% endif %}>Avanzado</option>
-                <option value="4" {% if current_proficiency == '4' %}selected{% endif %}>Experto</option>
+                <option value="">{% trans "All levels" %}</option>
+                <option value="1" {% if current_proficiency == '1' %}selected{% endif %}>{% trans "Basic" %}</option>
+                <option value="2" {% if current_proficiency == '2' %}selected{% endif %}>{% trans "Intermediate" %}</option>
+                <option value="3" {% if current_proficiency == '3' %}selected{% endif %}>{% trans "Advanced" %}</option>
+                <option value="4" {% if current_proficiency == '4' %}selected{% endif %}>{% trans "Expert" %}</option>
             </select>
         </div>
         <div>
             <button type="submit" class="btn-primary-custom">
-                <i class="fas fa-search"></i>Filtrar
+                <i class="fas fa-search"></i>{% trans "Filter" %}
             </button>
         </div>
         <div>
             <a href="{% url 'portfolio:admin-skill-list' %}" class="btn-secondary-custom">
-                <i class="fas fa-times"></i>Limpiar
+                <i class="fas fa-times"></i>{% trans "Clear" %}
             </a>
         </div>
     </form>
@@ -55,22 +56,22 @@
 <div class="content-card">
     <div class="card-header-custom">
         <div>
-            <h2 class="card-title-custom">Technical Skills</h2>
-            <p class="card-subtitle-custom">{{ skills|length }} habilidades mostradas • Total: {{ paginator.count }}</p>
+            <h2 class="card-title-custom">{% trans "Technical Skills" %}</h2>
+            <p class="card-subtitle-custom">{{ skills|length }} {% trans "skills shown" %} • {% trans "Total:" %} {{ paginator.count }}</p>
         </div>
     </div>
-    
+
     {% if skills %}
     <div style="overflow-x: auto;">
         <table class="table-custom">
             <thead>
                 <tr>
-                    <th>Habilidad</th>
-                    <th>Category</th>
-                    <th>Nivel</th>
-                    <th>Experience</th>
-                    <th>Progreso</th>
-                    <th width="200">Acciones</th>
+                    <th>{% trans "Skill" %}</th>
+                    <th>{% trans "Category" %}</th>
+                    <th>{% trans "Level" %}</th>
+                    <th>{% trans "Experience" %}</th>
+                    <th>{% trans "Progress" %}</th>
+                    <th width="200">{% trans "Actions" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -87,36 +88,36 @@
                     <td>
                         {% if skill.proficiency == 1 %}
                             <span class="badge-custom badge-info">
-                                <i class="fas fa-star" style="margin-right: 4px;"></i>Básico
+                                <i class="fas fa-star" style="margin-right: 4px;"></i>{% trans "Basic" %}
                             </span>
                         {% elif skill.proficiency == 2 %}
                             <span class="badge-custom badge-primary">
-                                <i class="fas fa-star" style="margin-right: 4px;"></i>Intermedio
+                                <i class="fas fa-star" style="margin-right: 4px;"></i>{% trans "Intermediate" %}
                             </span>
                         {% elif skill.proficiency == 3 %}
                             <span class="badge-custom badge-warning">
-                                <i class="fas fa-star" style="margin-right: 4px;"></i>Avanzado
+                                <i class="fas fa-star" style="margin-right: 4px;"></i>{% trans "Advanced" %}
                             </span>
                         {% elif skill.proficiency == 4 %}
                             <span class="badge-custom badge-success">
-                                <i class="fas fa-star" style="margin-right: 4px;"></i>Experto
+                                <i class="fas fa-star" style="margin-right: 4px;"></i>{% trans "Expert" %}
                             </span>
                         {% endif %}
                     </td>
                     <td>
                         <div style="font-size: 13px; color: #6B6B6B;">
-                            {{ skill.years_experience }} año{{ skill.years_experience|pluralize }}
+                            {{ skill.years_experience }} {% trans "year" %}{{ skill.years_experience|pluralize }}
                         </div>
                     </td>
                     <td>
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <div style="flex: 1; height: 8px; background: #F2F2F2; border-radius: 4px; overflow: hidden;">
-                                <div style="height: 100%; background: 
+                                <div style="height: 100%; background:
                                     {% if skill.proficiency == 1 %}#17a2b8
                                     {% elif skill.proficiency == 2 %}#007bff
                                     {% elif skill.proficiency == 3 %}#ffc107
                                     {% elif skill.proficiency == 4 %}#28a745
-                                    {% endif %}; 
+                                    {% endif %};
                                     width: {{ skill.get_proficiency_percentage }}%; transition: width 0.3s ease;"></div>
                             </div>
                             <span style="font-size: 12px; color: #6B6B6B; min-width: 30px;">{{ skill.get_proficiency_percentage|floatformat:0 }}%</span>
@@ -124,12 +125,12 @@
                     </td>
                     <td>
                         <div class="quick-actions">
-                            <a href="{% url 'portfolio:admin-skill-edit' skill.pk %}" 
-                               class="btn" title="Editar">
+                            <a href="{% url 'portfolio:admin-skill-edit' skill.pk %}"
+                               class="btn" title="{% trans 'Edit' %}">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a href="{% url 'portfolio:admin-skill-delete' skill.pk %}" 
-                               class="btn" title="Eliminar" style="color: #dc3545;">
+                            <a href="{% url 'portfolio:admin-skill-delete' skill.pk %}"
+                               class="btn" title="{% trans 'Delete' %}" style="color: #dc3545;">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </div>
@@ -142,16 +143,16 @@
     {% else %}
     <div class="empty-state">
         <i class="fas fa-cogs"></i>
-        <h3>No hay habilidades registradas</h3>
+        <h3>{% trans "No skills registered" %}</h3>
         <p>
             {% if current_search or current_category or current_proficiency %}
-                No se encontraron habilidades con los filtros aplicados.
+                {% trans "No skills found with the applied filters." %}
             {% else %}
-                Comienza agregando tus primeras habilidades técnicas.
+                {% trans "Start by adding your first technical skills." %}
             {% endif %}
         </p>
         <a href="{% url 'portfolio:admin-skill-create' %}" class="btn-primary-custom">
-            <i class="fas fa-plus"></i>Add Skill
+            <i class="fas fa-plus"></i>{% trans "Add Skill" %}
         </a>
     </div>
     {% endif %}
@@ -170,7 +171,7 @@
     {% endif %}
 
     <span class="page-link active">
-        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        {% trans "Page" %} {{ page_obj.number }} {% trans "of" %} {{ page_obj.paginator.num_pages }}
     </span>
 
     {% if page_obj.has_next %}

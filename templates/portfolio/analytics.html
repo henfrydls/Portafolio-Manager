@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load simple_i18n %}
 
 {% block title %}Analytics - {{ profile.name|default:"Your name" }}{% endblock %}
 
@@ -41,7 +42,7 @@ body {
 
 .nav-right {
     display: flex;
-    gap: 32px;
+    gap: 28px;
 }
 
 .nav-link {
@@ -69,6 +70,53 @@ body {
 .nav-link.active {
     color: #242424 !important;
     font-weight: 500;
+}
+
+.lang-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    background: #f2f2f2;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #424242;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.admin-subnav {
+    background: #ffffff;
+    border-bottom: 1px solid #f2f2f2;
+}
+
+.subnav-container {
+    max-width: 1192px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: flex-start;
+    gap: 16px;
+    padding: 8px 20px;
+}
+
+.subnav-link {
+    font-size: 13px;
+    color: #6b6b6b;
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 999px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.subnav-link:hover {
+    background: #f2f2f2;
+    color: #242424;
+}
+
+.subnav-link.active {
+    background: #242424;
+    color: #ffffff;
 }
 
 /* Main Content */
@@ -376,67 +424,80 @@ body {
         <div class="nav-container">
             <div class="nav-left">
                 <a href="{% url 'portfolio:admin-dashboard' %}" class="nav-link">Dashboard</a>
+                {% if site_config %}
+                <span class="lang-badge">{{ site_config.default_language|default:LANGUAGE_CODE|upper }}</span>
+                {% endif %}
             </div>
             <div class="nav-right">
-                <a href="{% url 'portfolio:admin-project-list' %}" class="nav-link">Proyectos</a>
-                <a href="{% url 'portfolio:admin-blog-list' %}" class="nav-link">Blog</a>
-                <a href="{% url 'portfolio:admin-contact-list' %}" class="nav-link">Mensajes</a>
-                <a href="{% url 'portfolio:admin-cv-hub' %}" class="nav-link">CV</a>
-                <a href="{% url 'portfolio:admin-profile-edit' %}" class="nav-link">Mi Perfil</a>
-                <a href="{% url 'portfolio:admin-analytics' %}" class="nav-link active">Analytics</a>
-                <a href="{% url 'admin:index' %}" class="nav-link">Admin Panel</a>
-                <a href="{% url 'portfolio:home' %}" class="nav-link" target="_blank">Ver Sitio</a>
+                <a href="{% url 'portfolio:admin-blog-list' %}" class="nav-link">{% trans "Context" %}</a>
+                <a href="{% url 'portfolio:admin-contact-list' %}" class="nav-link">{% trans "Inbox" %}</a>
+                <a href="{% url 'portfolio:admin-profile-edit' %}" class="nav-link">{% trans "Profile" %}</a>
+                <a href="{% url 'portfolio:admin-cv-hub' %}" class="nav-link">{% trans "CV" %}</a>
+                <a href="{% url 'portfolio:admin-analytics' %}" class="nav-link active">{% trans "Analytics" %}</a>
+                <a href="{% url 'portfolio:admin-site-configuration' %}" class="nav-link">{% trans "Settings" %}</a>
+                <a href="{% url 'admin:index' %}" class="nav-link">{% trans "Admin" %}</a>
+                <a href="{% url 'portfolio:home' %}" class="nav-link" target="_blank">{% trans "View Site" %}</a>
             </div>
         </div>
     </nav>
+    {% if site_config %}
+    <div class="admin-subnav">
+        <div class="subnav-container">
+            <a href="{% url 'portfolio:admin-blog-list' %}" class="subnav-link">{% trans "Blog Posts" %}</a>
+            <a href="{% url 'portfolio:admin-project-list' %}" class="subnav-link">{% trans "Projects" %}</a>
+            <a href="{% url 'portfolio:admin-cv-hub' %}" class="subnav-link">{% trans "CV Manager" %}</a>
+            <a href="{% url 'portfolio:admin-profile-edit' %}" class="subnav-link">{% trans "Edit Profile" %}</a>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Main Content -->
     <main class="analytics-main">
         <div class="analytics-container">
             <!-- Page Header -->
             <header class="analytics-header">
-                <h1 class="analytics-title">Analytics</h1>
-                <p class="analytics-subtitle">Detailed insights into your portfolio performance and visitor behavior</p>
+                <h1 class="analytics-title">{% trans "Analytics" %}</h1>
+                <p class="analytics-subtitle">{% trans "Detailed insights into your portfolio performance and visitor behavior" %}</p>
             </header>
 
             <!-- Visit Statistics Overview -->
             <div class="stats-overview">
                 <div class="stat-card">
                     <div class="stat-number">{{ visit_stats.total_visits }}</div>
-                    <div class="stat-label">Total Visits</div>
-                    <div class="stat-change neutral">All time</div>
+                    <div class="stat-label">{% trans "Total Visits" %}</div>
+                    <div class="stat-change neutral">{% trans "All time" %}</div>
                 </div>
-                
+
                 <div class="stat-card">
                     <div class="stat-number">{{ visit_stats.today_visits }}</div>
-                    <div class="stat-label">Today</div>
-                    <div class="stat-change neutral">{{ visit_stats.yesterday_visits }} yesterday</div>
+                    <div class="stat-label">{% trans "Today" %}</div>
+                    <div class="stat-change neutral">{{ visit_stats.yesterday_visits }} {% trans "yesterday" %}</div>
                 </div>
-                
+
                 <div class="stat-card">
                     <div class="stat-number">{{ visit_stats.week_visits }}</div>
-                    <div class="stat-label">This Week</div>
+                    <div class="stat-label">{% trans "This Week" %}</div>
                     {% if visit_stats.week_change > 0 %}
                     <div class="stat-change positive">+{{ visit_stats.week_change }}%</div>
                     {% elif visit_stats.week_change < 0 %}
                     <div class="stat-change negative">{{ visit_stats.week_change }}%</div>
                     {% else %}
-                    <div class="stat-change neutral">No change</div>
+                    <div class="stat-change neutral">{% trans "No change" %}</div>
                     {% endif %}
                 </div>
-                
+
                 <div class="stat-card">
                     <div class="stat-number">{{ visit_stats.month_visits }}</div>
-                    <div class="stat-label">Last 30 Days</div>
-                    <div class="stat-change neutral">{{ visit_stats.three_months_visits }} in 90 days</div>
+                    <div class="stat-label">{% trans "Last 30 Days" %}</div>
+                    <div class="stat-change neutral">{{ visit_stats.three_months_visits }} {% trans "in 90 days" %}</div>
                 </div>
             </div>
 
             <!-- Daily Visits Chart -->
             <div class="chart-section">
                 <div class="chart-header">
-                    <h2 class="chart-title">Daily Visits</h2>
-                    <p class="chart-subtitle">Visit trends over the last 30 days</p>
+                    <h2 class="chart-title">{% trans "Daily Visits" %}</h2>
+                    <p class="chart-subtitle">{% trans "Visit trends over the last 30 days" %}</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="dailyVisitsChart"></canvas>
@@ -448,8 +509,8 @@ body {
                 <!-- Hourly Distribution -->
                 <div class="chart-section">
                     <div class="chart-header">
-                        <h2 class="chart-title">Hourly Distribution</h2>
-                        <p class="chart-subtitle">Visits by hour of day (last 7 days)</p>
+                        <h2 class="chart-title">{% trans "Hourly Distribution" %}</h2>
+                        <p class="chart-subtitle">{% trans "Visits by hour of day (last 7 days)" %}</p>
                     </div>
                     <div class="chart-wrapper small">
                         <canvas id="hourlyVisitsChart"></canvas>
@@ -459,8 +520,8 @@ body {
                 <!-- Browser Distribution -->
                 <div class="chart-section">
                     <div class="chart-header">
-                        <h2 class="chart-title">Browsers</h2>
-                        <p class="chart-subtitle">Most used browsers (last 30 days)</p>
+                        <h2 class="chart-title">{% trans "Browsers" %}</h2>
+                        <p class="chart-subtitle">{% trans "Most used browsers (last 30 days)" %}</p>
                     </div>
                     <div class="chart-wrapper small">
                         <canvas id="browserChart"></canvas>
@@ -473,8 +534,8 @@ body {
                 <!-- Monthly Posts -->
                 <div class="chart-section">
                     <div class="chart-header">
-                        <h2 class="chart-title">Content Creation</h2>
-                        <p class="chart-subtitle">Blog posts published by month</p>
+                        <h2 class="chart-title">{% trans "Content Creation" %}</h2>
+                        <p class="chart-subtitle">{% trans "Blog posts published by month" %}</p>
                     </div>
                     <div class="chart-wrapper small">
                         <canvas id="monthlyPostsChart"></canvas>
@@ -484,26 +545,26 @@ body {
                 <!-- Content Stats -->
                 <div class="chart-section">
                     <div class="chart-header">
-                        <h2 class="chart-title">Content Overview</h2>
-                        <p class="chart-subtitle">Current content statistics</p>
+                        <h2 class="chart-title">{% trans "Content Overview" %}</h2>
+                        <p class="chart-subtitle">{% trans "Current content statistics" %}</p>
                     </div>
                     <div style="padding: 20px 0;">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: center;">
                             <div>
                                 <div style="font-size: 24px; font-weight: 700; color: #242424;">{{ content_stats.published_posts }}</div>
-                                <div style="font-size: 12px; color: #6B6B6B; text-transform: uppercase;">Published Posts</div>
+                                <div style="font-size: 12px; color: #6B6B6B; text-transform: uppercase;">{% trans "Published Posts" %}</div>
                             </div>
                             <div>
                                 <div style="font-size: 24px; font-weight: 700; color: #242424;">{{ content_stats.public_projects }}</div>
-                                <div style="font-size: 12px; color: #6B6B6B; text-transform: uppercase;">Public Projects</div>
+                                <div style="font-size: 12px; color: #6B6B6B; text-transform: uppercase;">{% trans "Public Projects" %}</div>
                             </div>
                             <div>
                                 <div style="font-size: 24px; font-weight: 700; color: #242424;">{{ content_stats.draft_posts }}</div>
-                                <div style="font-size: 12px; color: #6B6B6B; text-transform: uppercase;">Draft Posts</div>
+                                <div style="font-size: 12px; color: #6B6B6B; text-transform: uppercase;">{% trans "Draft Posts" %}</div>
                             </div>
                             <div>
                                 <div style="font-size: 24px; font-weight: 700; color: #242424;">{{ content_stats.unread_messages }}</div>
-                                <div style="font-size: 12px; color: #6B6B6B; text-transform: uppercase;">Unread Messages</div>
+                                <div style="font-size: 12px; color: #6B6B6B; text-transform: uppercase;">{% trans "Unread Messages" %}</div>
                             </div>
                         </div>
                     </div>
@@ -512,13 +573,13 @@ body {
 
             <!-- Popular Pages Table -->
             <div class="content-table">
-                <h2 class="table-title">Most Visited Pages</h2>
+                <h2 class="table-title">{% trans "Most Visited Pages" %}</h2>
                 {% if popular_pages %}
                 <table class="analytics-table">
                     <thead>
                         <tr>
-                            <th>Page</th>
-                            <th style="text-align: right;">Visits</th>
+                            <th>{% trans "Page" %}</th>
+                            <th style="text-align: right;">{% trans "Visits" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -538,8 +599,8 @@ body {
                 {% else %}
                 <div class="empty-state">
                     <i class="fas fa-chart-bar"></i>
-                    <h3>No visit data available</h3>
-                    <p>Page visit analytics will appear here once you have traffic</p>
+                    <h3>{% trans "No visit data available" %}</h3>
+                    <p>{% trans "Page visit analytics will appear here once you have traffic" %}</p>
                 </div>
                 {% endif %}
             </div>

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static i18n %}
 
 {% block title %}Contact - {{ profile.name }}{% endblock %}
 
@@ -9,9 +9,9 @@
     <div class="container">
         <div class="row">
             <div class="col-12 text-center">
-                <h1 class="display-4 fw-bold text-dark mb-3">Contáctame</h1>
+                <h1 class="display-4 fw-bold text-dark mb-3">{% trans "Contact Me" %}</h1>
                 <p class="lead text-muted">
-                    ¿Tienes un proyecto en mente? ¡Hablemos sobre cómo puedo ayudarte!
+                    {% trans "Do you have a project in mind? Let's talk about how I can help you!" %}
                 </p>
             </div>
         </div>
@@ -26,7 +26,7 @@
             <div class="col-lg-8">
                 <div class="card border-0 shadow-lg">
                     <div class="card-body p-5">
-                        <h2 class="h3 fw-bold mb-4 text-center">Envíame un mensaje</h2>
+                        <h2 class="h3 fw-bold mb-4 text-center">{% trans "Send Me a Message" %}</h2>
                         
                         <form method="post" novalidate>
                             {% csrf_token %}
@@ -37,7 +37,7 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="{{ form.name.id_for_label }}" class="form-label fw-bold">
-                                        <i class="fas fa-user text-primary me-2"></i>Full name
+                                        <i class="fas fa-user text-primary me-2"></i>{% trans "Full Name" %}
                                     </label>
                                     {{ form.name }}
                                     {% if form.name.errors %}
@@ -66,7 +66,7 @@
                             
                             <div class="mb-3">
                                 <label for="{{ form.subject.id_for_label }}" class="form-label fw-bold">
-                                    <i class="fas fa-tag text-primary me-2"></i>Asunto
+                                    <i class="fas fa-tag text-primary me-2"></i>{% trans "Subject" %}
                                 </label>
                                 {{ form.subject }}
                                 {% if form.subject.errors %}
@@ -80,7 +80,7 @@
                             
                             <div class="mb-4">
                                 <label for="{{ form.message.id_for_label }}" class="form-label fw-bold">
-                                    <i class="fas fa-comment text-primary me-2"></i>Mensaje
+                                    <i class="fas fa-comment text-primary me-2"></i>{% trans "Message" %}
                                 </label>
                                 {{ form.message }}
                                 {% if form.message.errors %}
@@ -94,7 +94,7 @@
                             
                             <div class="text-center">
                                 <button type="submit" class="btn btn-primary btn-lg px-5">
-                                    <i class="fas fa-paper-plane me-2"></i>Send Message
+                                    <i class="fas fa-paper-plane me-2"></i>{% trans "Send Message" %}
                                 </button>
                             </div>
                         </form>
@@ -111,7 +111,7 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-10">
-                <h2 class="h3 fw-bold text-center mb-5">Otras formas de contactarme</h2>
+                <h2 class="h3 fw-bold text-center mb-5">{% trans "Other Ways to Contact Me" %}</h2>
                 
                 <div class="row g-4">
                     <!-- Email -->
@@ -123,8 +123,8 @@
                                      style="width: 60px; height: 60px;">
                                     <i class="fas fa-envelope text-white fa-lg"></i>
                                 </div>
-                                <h3 class="h5 fw-bold mb-2">Email</h3>
-                                <p class="text-muted mb-3">Respondo en 24-48 horas</p>
+                                <h3 class="h5 fw-bold mb-2">{% trans "Email" %}</h3>
+                                <p class="text-muted mb-3">{% trans "I respond within 24-48 hours" %}</p>
                                 <a href="mailto:{{ profile.email }}" class="btn btn-outline-primary btn-sm">
                                     {{ profile.email }}
                                 </a>
@@ -142,10 +142,10 @@
                                      style="width: 60px; height: 60px;">
                                     <i class="fab fa-linkedin text-white fa-lg"></i>
                                 </div>
-                                <h3 class="h5 fw-bold mb-2">LinkedIn</h3>
-                                <p class="text-muted mb-3">Conectemos profesionalmente</p>
+                                <h3 class="h5 fw-bold mb-2">{% trans "LinkedIn" %}</h3>
+                                <p class="text-muted mb-3">{% trans "Let's Connect Professionally" %}</p>
                                 <a href="{{ profile.linkedin_url }}" target="_blank" class="btn btn-outline-primary btn-sm">
-                                    Ver Perfil
+                                    {% trans "View Profile" %}
                                 </a>
                             </div>
                         </div>
@@ -161,10 +161,10 @@
                                      style="width: 60px; height: 60px;">
                                     <i class="fab fa-github text-white fa-lg"></i>
                                 </div>
-                                <h3 class="h5 fw-bold mb-2">GitHub</h3>
-                                <p class="text-muted mb-3">Revisa mi código</p>
+                                <h3 class="h5 fw-bold mb-2">{% trans "GitHub" %}</h3>
+                                <p class="text-muted mb-3">{% trans "Check My Code" %}</p>
                                 <a href="{{ profile.github_url }}" target="_blank" class="btn btn-outline-dark btn-sm">
-                                    Ver Repositorios
+                                    {% trans "View Repositories" %}
                                 </a>
                             </div>
                         </div>
@@ -180,9 +180,9 @@
                                      style="width: 60px; height: 60px;">
                                     <i class="fas fa-map-marker-alt text-white fa-lg"></i>
                                 </div>
-                                <h3 class="h5 fw-bold mb-2">Ubicación</h3>
+                                <h3 class="h5 fw-bold mb-2">{% trans "Location" %}</h3>
                                 <p class="text-muted mb-3">{{ profile.location }}</p>
-                                <span class="badge bg-success">Disponible para remoto</span>
+                                <span class="badge bg-success">{% trans "Available for Remote" %}</span>
                             </div>
                         </div>
                     </div>
@@ -199,70 +199,65 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-8">
-                <h2 class="h3 fw-bold text-center mb-5">Preguntas Frecuentes</h2>
+                <h2 class="h3 fw-bold text-center mb-5">{% trans "Frequently Asked Questions" %}</h2>
                 
                 <div class="accordion" id="faqAccordion">
                     <div class="accordion-item border-0 shadow-sm mb-3">
                         <h3 class="accordion-header" id="faq1">
-                            <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" 
+                            <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse1" aria-expanded="true" aria-controls="collapse1">
-                                ¿Qué tipo de proyectos desarrollas?
+                                {% trans "What type of projects do you develop?" %}
                             </button>
                         </h3>
-                        <div id="collapse1" class="accordion-collapse collapse show" aria-labelledby="faq1" 
+                        <div id="collapse1" class="accordion-collapse collapse show" aria-labelledby="faq1"
                              data-bs-parent="#faqAccordion">
                             <div class="accordion-body">
-                                Me especializo en desarrollo web full-stack, aplicaciones móviles y soluciones de software personalizadas. 
-                                Trabajo con tecnologías modernas como Django, React, Python, JavaScript y más.
+                                {% trans "I specialize in full-stack web development, mobile applications and custom software solutions. I work with modern technologies like Django, React, Python, JavaScript and more." %}
                             </div>
                         </div>
                     </div>
                     
                     <div class="accordion-item border-0 shadow-sm mb-3">
                         <h3 class="accordion-header" id="faq2">
-                            <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" 
+                            <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
-                                ¿Cuánto tiempo toma un proyecto típico?
+                                {% trans "How long does a typical project take?" %}
                             </button>
                         </h3>
-                        <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="faq2" 
+                        <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="faq2"
                              data-bs-parent="#faqAccordion">
                             <div class="accordion-body">
-                                El tiempo varía según la complejidad del proyecto. Un sitio web simple puede tomar 2-4 semanas, 
-                                mientras que aplicaciones más complejas pueden requerir 2-6 meses. Siempre proporciono estimaciones 
-                                detalladas después de entender los requisitos.
+                                {% trans "The time varies depending on the project complexity. A simple website can take 2-4 weeks, while more complex applications may require 2-6 months. I always provide detailed estimates after understanding the requirements." %}
                             </div>
                         </div>
                     </div>
                     
                     <div class="accordion-item border-0 shadow-sm mb-3">
                         <h3 class="accordion-header" id="faq3">
-                            <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" 
+                            <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
-                                ¿Trabajas con clientes internacionales?
+                                {% trans "Do you work with international clients?" %}
                             </button>
                         </h3>
-                        <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="faq3" 
+                        <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="faq3"
                              data-bs-parent="#faqAccordion">
                             <div class="accordion-body">
-                                ¡Absolutamente! Trabajo con clientes de todo el mundo. Estoy disponible para reuniones virtuales 
-                                y me adapto a diferentes zonas horarias para facilitar la comunicación.
+                                {% trans "Absolutely! I work with clients from around the world. I'm available for virtual meetings and adapt to different time zones to facilitate communication." %}
                             </div>
                         </div>
                     </div>
                     
                     <div class="accordion-item border-0 shadow-sm">
                         <h3 class="accordion-header" id="faq4">
-                            <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" 
+                            <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
-                                ¿Ofreces soporte post-lanzamiento?
+                                {% trans "Do you offer post-launch support?" %}
                             </button>
                         </h3>
-                        <div id="collapse4" class="accordion-collapse collapse" aria-labelledby="faq4" 
+                        <div id="collapse4" class="accordion-collapse collapse" aria-labelledby="faq4"
                              data-bs-parent="#faqAccordion">
                             <div class="accordion-body">
-                                Sí, ofrezco diferentes planes de soporte y mantenimiento post-lanzamiento. Esto incluye 
-                                actualizaciones, corrección de errores, optimizaciones y nuevas funcionalidades según sea necesario.
+                                {% trans "Yes, I offer different post-launch support and maintenance plans. This includes updates, bug fixes, optimizations and new features as needed." %}
                             </div>
                         </div>
                     </div>
@@ -277,18 +272,17 @@
     <div class="container text-center">
         <div class="row justify-content-center">
             <div class="col-lg-8">
-                <h2 class="h3 fw-bold mb-3">¿Listo para comenzar tu proyecto?</h2>
+                <h2 class="h3 fw-bold mb-3">{% trans "Ready to Start Your Project?" %}</h2>
                 <p class="lead mb-4">
-                    No importa si tienes una idea clara o solo un concepto inicial. 
-                    Estoy aquí para ayudarte a convertir tu visión en realidad.
+                    {% trans "It doesn't matter if you have a clear idea or just an initial concept. I'm here to help you turn your vision into reality." %}
                 </p>
                 <div class="d-flex flex-wrap gap-3 justify-content-center">
-                    <a href="#" onclick="document.getElementById('name').focus(); return false;" 
+                    <a href="#" onclick="document.getElementById('name').focus(); return false;"
                        class="btn btn-light btn-lg">
-                        <i class="fas fa-envelope me-2"></i>Send Message
+                        <i class="fas fa-envelope me-2"></i>{% trans "Send Message" %}
                     </a>
                     <a href="{% url 'portfolio:project-list' %}" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-eye me-2"></i>Ver Mi Trabajo
+                        <i class="fas fa-eye me-2"></i>{% trans "View My Work" %}
                     </a>
                 </div>
             </div>

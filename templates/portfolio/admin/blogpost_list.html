@@ -2,6 +2,54 @@
 {% load static %}
 {% load simple_i18n %}
 
+{% block extra_css %}
+{{ block.super }}
+<style>
+.translation-status-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.translation-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: #f1f3f5;
+    color: #6b6b6b;
+}
+.translation-badge--ok {
+    background: #e6f4ea;
+    color: #1b7f3b;
+}
+.translation-badge--pending {
+    background: #fff4e6;
+    color: #b26a00;
+}
+.translation-badge--failed {
+    background: #fdecea;
+    color: #c62828;
+}
+.translation-badge--missing {
+    background: #f1f3f5;
+    color: #6b6b6b;
+}
+.translation-badge--base {
+    border: 1px solid currentColor;
+}
+.translation-status-note {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #b26a00;
+}
+</style>
+{% endblock %}
+
 {% block admin_title %}{% trans "Blog Management" %}{% endblock %}
 {% block admin_subtitle %}{% trans "Manage your posts, drafts and published content" %}{% endblock %}
 
@@ -57,6 +105,12 @@
         <div>
             <h2 class="card-title-custom">{% trans "Blog Posts" %}</h2>
             <p class="card-subtitle-custom">{{ posts|length }} {% trans "posts shown" %} • {% trans "Total:" %} {{ paginator.count }}</p>
+            {% if not translation_auto_enabled %}
+            <div class="translation-status-note">
+                <i class="fas fa-info-circle"></i>
+                {% trans "Automatic translation is currently disabled. Translations must be updated manually." %}
+            </div>
+            {% endif %}
         </div>
     </div>
     
@@ -68,6 +122,7 @@
                     <th>{% trans "Post" %}</th>
                     <th>{% trans "Type" %}</th>
                     <th>{% trans "Status" %}</th>
+                    <th>{% trans "Translations" %}</th>
                     <th>{% trans "Featured" %}</th>
                     <th>{% trans "Date" %}</th>
                     <th width="200">{% trans "Actions" %}</th>
@@ -114,6 +169,28 @@
                                 <i class="fas fa-archive" style="margin-right: 4px;"></i>{% trans "Archived" %}
                             </span>
                         {% endif %}
+                    </td>
+                    <td>
+                        {% with lang_statuses=translation_status_map|dict_get:post.id %}
+                        <div class="translation-status-badges">
+                            {% if lang_statuses %}
+                                {% for lang in lang_statuses %}
+                                    <span class="translation-badge translation-badge--{{ lang.state }}{% if lang.role == 'base' %} translation-badge--base{% endif %}" title="{{ lang.tooltip }}">
+                                        {% if lang.role == 'base' %}
+                                            <i class="fas fa-flag"></i>
+                                        {% elif lang.state == 'pending' %}
+                                            <i class="fas fa-sync-alt"></i>
+                                        {% elif lang.state == 'failed' %}
+                                            <i class="fas fa-exclamation-circle"></i>
+                                        {% endif %}
+                                        {{ lang.code }}
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="translation-badge translation-badge--missing">{% trans "N/A" %}</span>
+                            {% endif %}
+                        </div>
+                        {% endwith %}
                     </td>
                     <td>
                         <button class="btn toggle-blog-featured" 

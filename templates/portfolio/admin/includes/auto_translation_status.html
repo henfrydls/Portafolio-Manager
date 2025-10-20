@@ -1,0 +1,81 @@
+{% load i18n %}
+{% if object and object.pk %}
+<div class="content-card" style="margin-bottom: 24px; border: 1px solid #f0f0f0;">
+    <div class="card-header-custom" style="padding-bottom: 8px;">
+        <div>
+            <h3 class="card-title-custom" style="font-size: 18px;">{% trans "Automatic translation status" %}</h3>
+            <p class="card-subtitle-custom" style="font-size: 13px;">{% trans "Review the progress of each translated language variant." %}</p>
+        </div>
+        {% if auto_translation_enabled|default:False %}
+        <span style="padding: 4px 12px; border-radius: 999px; font-size: 11px; background: #E8F5E9; color: #2E7D32; font-weight: 600;">
+            <i class="fas fa-sync-alt" style="margin-right: 4px;"></i> {% trans "Auto-translation enabled" %}
+        </span>
+        {% else %}
+        <span style="padding: 4px 12px; border-radius: 999px; font-size: 11px; background: #F5F5F5; color: #616161; font-weight: 600;">
+            <i class="fas fa-pause-circle" style="margin-right: 4px;"></i> {% trans "Auto-translation disabled" %}
+        </span>
+        {% endif %}
+    </div>
+
+    {% if auto_translation_enabled %}
+    <div style="padding: 16px; display: grid; gap: 12px;">
+        {% if auto_translation_records %}
+        <div style="display: grid; gap: 12px;">
+            {% for record in auto_translation_records %}
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid #eee; border-radius: 8px;">
+                <div>
+                    <p style="font-size: 13px; font-weight: 600; margin: 0;">{{ record.language_code|upper }}</p>
+                    <p style="font-size: 12px; margin: 2px 0 0; color: #757575;">
+                        {% trans "Source" %}: {{ record.source_language|upper }} → {% if record.provider %}{{ record.provider }}{% else %}{% trans "No provider" %}{% endif %}
+                    </p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    {% if record.status == record.STATUS_SUCCESS %}
+                    <span style="padding: 4px 10px; background: #E8F5E9; color: #2E7D32; border-radius: 999px; font-size: 11px; font-weight: 600;">
+                        <i class="fas fa-check-circle"></i> {% trans "Generated" %}
+                    </span>
+                    {% elif record.status == record.STATUS_FAILED %}
+                    <span style="padding: 4px 10px; background: #FDEDED; color: #C62828; border-radius: 999px; font-size: 11px; font-weight: 600;">
+                        <i class="fas fa-exclamation-triangle"></i> {% trans "Failed" %}
+                    </span>
+                    {% else %}
+                    <span style="padding: 4px 10px; background: #FFF8E1; color: #F57C00; border-radius: 999px; font-size: 11px; font-weight: 600;">
+                        <i class="fas fa-clock"></i> {% trans "Pending" %}
+                    </span>
+                    {% endif %}
+                    {% if record.duration_ms %}
+                    <span style="font-size: 11px; color: #757575;">{{ record.duration_ms }}&nbsp;ms</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% if record.error_message %}
+            <div style="font-size: 12px; color: #C62828; background: #FDEDED; border-radius: 6px; padding: 10px; border-left: 3px solid #E53935;">
+                <strong>{% trans "Error:" %}</strong> {{ record.error_message }}
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="font-size: 13px; color: #616161; margin: 0;">{% trans "No automatic translations have been generated for this content yet." %}</p>
+        {% endif %}
+
+        <p style="font-size: 12px; color: #9E9E9E; margin: 0;">
+            {% trans "Base language" %}: <strong>{{ default_language|default:"en"|upper }}</strong> → {% trans "Targets" %}:
+            {% with target_list=target_languages %}
+                {% if target_list %}
+                    {% for lang in target_list %}
+                        <span>{{ lang|upper }}</span>{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <span>{% trans "No additional target languages configured" %}</span>
+                {% endif %}
+            {% endwith %}
+        </p>
+    </div>
+    {% else %}
+    <div style="padding: 12px 16px; font-size: 13px; color: #616161;">
+        {% trans "Enable automatic translation in site settings to generate versions in other languages." %}
+    </div>
+    {% endif %}
+</div>
+{% endif %}

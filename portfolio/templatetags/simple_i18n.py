@@ -8,6 +8,13 @@ from django.utils.safestring import mark_safe
 
 register = template.Library()
 
+@register.filter
+def dict_get(value, key):
+    """Return dictionary access in templates."""
+    if isinstance(value, dict):
+        return value.get(key)
+    return None
+
 @register.filter(name='get_resume_for_language')
 def get_resume_for_language(profile, language_code):
     """

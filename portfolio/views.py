@@ -6,15 +6,159 @@ from django.contrib import messages
 from django.core.files.storage import default_storage
 from django.urls import reverse_lazy, reverse
 from django.db.models import Q
+from django.db import transaction
 from django.http import JsonResponse
+from django.utils import translation
+from django.utils.translation import gettext as _
+from django.utils.text import slugify
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 import os
 import uuid
-from .models import Profile, Project, BlogPost, Technology, Experience, Education, Skill, Language, Contact, PageVisit, Category
+from django.contrib.contenttypes.models import ContentType
+from .models import Profile, Project, BlogPost, KnowledgeBase, Experience, Education, Skill, Language, Contact, PageVisit, Category, SiteConfiguration, AutoTranslationRecord
 from .decorators import AdminRequiredMixin, SuperuserRequiredMixin
-from .forms import SecureProfileForm, SecureProjectForm, SecureBlogPostForm, SecureExperienceForm, SecureEducationForm, SecureSkillForm
+from .forms import SecureProfileForm, SecureProjectForm, SecureBlogPostForm, SecureExperienceForm, SecureEducationForm, SecureSkillForm, SiteConfigurationForm
 from .utils import cleanup_old_page_visits
 from .query_optimizations import QueryOptimizer
 from .seo_utils import SEOGenerator
+from .translation import schedule_auto_translation, _run_auto_translation
+
+LANGUAGE_SESSION_KEY = getattr(translation, 'LANGUAGE_SESSION_KEY', '_language')
+
+
+class EditingLanguageContextMixin:
+    """Provide editing language context and helper notice for admin forms."""
+
+    def _get_editing_language_payload(self):
+        config = SiteConfiguration.get_solo()
+        editing_code = config.default_language or settings.LANGUAGE_CODE
+        language_map = dict(settings.LANGUAGES)
+        editing_label = language_map.get(editing_code, editing_code.upper())
+        target_codes = config.get_target_languages()
+        target_labels = [language_map.get(code, code.upper()) for code in target_codes]
+        return editing_code, editing_label, target_labels, target_codes
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        editing_code, editing_label, target_labels, target_codes = self._get_editing_language_payload()
+        context.setdefault('editing_language_code', editing_code)
+        context.setdefault('editing_language_label', editing_label)
+        context.setdefault('target_language_labels', target_labels)
+        context.setdefault('current_language', editing_code)
+        context.setdefault('default_language', editing_code)
+        context.setdefault('available_languages', settings.LANGUAGES)
+        context.setdefault('target_languages', target_codes)
+        context.setdefault('settings_url', reverse('portfolio:admin-site-configuration'))
+        return context
+
+
+class AutoTranslationStatusMixin(EditingLanguageContextMixin):
+    """Provide auto translation records in context for update views."""
+
+    def get_auto_translation_records(self):
+        obj = getattr(self, 'object', None)
+        if obj is None or obj.pk is None:
+            return []
+        content_type = ContentType.objects.get_for_model(obj.__class__)
+        return AutoTranslationRecord.objects.filter(
+            content_type=content_type,
+            object_id=obj.pk
+        ).order_by('-updated_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if 'auto_translation_records' not in context:
+            context['auto_translation_records'] = self.get_auto_translation_records()
+        config = SiteConfiguration.get_solo()
+        context['auto_translation_enabled'] = config.auto_translate_enabled
+        context['default_language'] = config.default_language
+        context['target_languages'] = config.get_target_languages()
+        return context
+
+
+def _build_translation_status_map(model, objects):
+    """Build a per-object translation status overview for dashboard tables."""
+    items = list(objects)
+    config = SiteConfiguration.get_solo()
+    if not items:
+        default_language = config.default_language or settings.LANGUAGE_CODE
+        return items, {}, config.auto_translate_enabled, default_language
+    default_language = config.default_language or settings.LANGUAGE_CODE
+    target_languages = [code for code in config.get_target_languages() if code != default_language]
+    languages = [default_language] + target_languages
+    language_labels = dict(settings.LANGUAGES)
+
+    content_type = ContentType.objects.get_for_model(model)
+    object_ids = [item.pk for item in items if item.pk]
+    records = AutoTranslationRecord.objects.filter(
+        content_type=content_type,
+        object_id__in=object_ids,
+    )
+
+    record_map = {}
+    for record in records:
+        record_map.setdefault(record.object_id, {})[record.language_code] = record
+
+    status_map = {}
+    for item in items:
+        if (
+            hasattr(item, '_prefetched_objects_cache')
+            and 'translations' in item._prefetched_objects_cache
+        ):
+            translations_qs = item._prefetched_objects_cache['translations']
+            translation_codes = {trans.language_code for trans in translations_qs}
+        else:
+            translation_codes = set(item.translations.values_list('language_code', flat=True))
+
+        entry_list = []
+        for code in languages:
+            label = language_labels.get(code, code.upper())
+            entry = {
+                'code': code.upper(),
+                'label': label,
+                'role': 'base' if code == default_language else 'target',
+            }
+
+            if code == default_language:
+                if code in translation_codes:
+                    entry['state'] = 'ok'
+                    entry['tooltip'] = _('%(language)s content ready (base)') % {'language': label}
+                else:
+                    entry['state'] = 'missing'
+                    entry['tooltip'] = _('%(language)s content missing (base)') % {'language': label}
+            else:
+                record = record_map.get(item.pk, {}).get(code)
+                if code in translation_codes:
+                    entry['state'] = 'ok'
+                    entry['tooltip'] = _('%(language)s translation ready') % {'language': label}
+                elif record:
+                    entry['record_status'] = record.status
+                    if record.status == AutoTranslationRecord.STATUS_FAILED:
+                        entry['state'] = 'failed'
+                        error = (record.error_message or '')[:160]
+                        if error:
+                            entry['tooltip'] = _('%(language)s auto-translation failed: %(error)s') % {
+                                'language': label,
+                                'error': error,
+                            }
+                        else:
+                            entry['tooltip'] = _('%(language)s auto-translation failed') % {'language': label}
+                    elif record.status == AutoTranslationRecord.STATUS_PENDING:
+                        entry['state'] = 'pending'
+                        entry['tooltip'] = _('%(language)s auto-translation pending') % {'language': label}
+                    else:
+                        entry['state'] = 'missing'
+                        entry['tooltip'] = _('%(language)s translation missing') % {'language': label}
+                else:
+                    entry['state'] = 'missing'
+                    entry['tooltip'] = _('%(language)s translation missing') % {'language': label}
+            entry_list.append(entry)
+
+        status_map[item.pk] = entry_list
+
+    return items, status_map, config.auto_translate_enabled, default_language
+
 
 class HomeView(TemplateView):
     """Vista de página principal minimalista con toda la información esencial"""
@@ -96,10 +240,11 @@ class HomeView(TemplateView):
         from django.core.paginator import Paginator
         
         # Use optimized query for projects
-        projects_queryset = Project.objects.filter(
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        projects_queryset = Project.objects.language(current_language).filter(
             visibility='public'
         ).select_related('project_type_obj').prefetch_related(
-            'technologies'
+            'knowledge_bases'
         ).order_by('order', '-created_at')
         
         # Paginación: 10 proyectos por página
@@ -123,7 +268,7 @@ class HomeView(TemplateView):
         
         # Agregar datos dinámicos para el modal de contacto
         context['projects_count'] = Project.objects.filter(visibility='public').count()
-        context['technologies_count'] = Technology.objects.count()
+        context['knowledge_bases_count'] = KnowledgeBase.objects.count()
         
         # Calcular años de experiencia basado en la experiencia más antigua
         oldest_experience = Experience.objects.order_by('start_date').first()
@@ -142,40 +287,41 @@ class HomeView(TemplateView):
 
 
 class ProjectListView(ListView):
-    """Vista de lista de proyectos con filtros por tecnología"""
+    """Vista de lista de proyectos con filtros por tecnologia"""
     model = Project
     template_name = 'portfolio/project_list.html'
     context_object_name = 'projects'
     paginate_by = 12
     
     def get_queryset(self):
-        # Use optimized query with select_related and prefetch_related
-        queryset = Project.objects.filter(
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        queryset = Project.objects.language(current_language).filter(
             visibility='public'
         ).select_related('project_type_obj').prefetch_related(
-            'technologies'
+            'knowledge_bases'
         ).order_by('order', '-created_at')
-        
-        # Filtro por tecnología
+
         tech_filter = self.request.GET.get('tech')
         if tech_filter:
-            queryset = queryset.filter(technologies__name=tech_filter)
-        
-        # Búsqueda por título o descripción
+            queryset = queryset.filter(
+                Q(knowledge_bases__identifier__iexact=tech_filter) |
+                Q(knowledge_bases__translations__name__iexact=tech_filter)
+            )
+
         search = self.request.GET.get('search')
         if search:
             queryset = queryset.filter(
-                Q(title__icontains=search) | 
+                Q(title__icontains=search) |
                 Q(description__icontains=search)
             )
-        
+
         return queryset.distinct()
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
-        # Obtener todas las tecnologías optimizadas para el filtro
-        context['technologies'] = QueryOptimizer.get_optimized_technologies()
+
+        # Obtener todas las bases de conocimiento optimizadas para el filtro
+        context['knowledge_bases'] = QueryOptimizer.get_optimized_knowledge_bases()
         
         # Mantener filtros en el contexto
         context['current_tech'] = self.request.GET.get('tech', '')
@@ -190,106 +336,85 @@ class ProjectDetailView(DetailView):
     context_object_name = 'project'
     
     def get_queryset(self):
-        # Solo mostrar proyectos públicos
-        return Project.objects.filter(visibility='public')
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        return Project.objects.language(current_language).filter(visibility='public')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
-        # Obtener proyectos relacionados (mismas tecnologías)
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
         project = self.get_object()
-        related_projects = Project.objects.filter(
+        related_projects = Project.objects.language(current_language).filter(
             visibility='public',
-            technologies__in=project.technologies.all()
+            knowledge_bases__in=project.knowledge_bases.all()
         ).exclude(id=project.id).distinct()[:3]
-        
+
         context['related_projects'] = related_projects
-        
-        # Agregar contexto SEO
         seo_context = SEOGenerator.generate_project_seo(project, self.request)
         context.update(seo_context)
         
         return context
 
 class ResumeView(TemplateView):
-    """Vista de currículum completo con información organizada"""
+    """Vista de curriculum completo con informacion organizada"""
     template_name = 'portfolio/resume.html'
 
     def get_context_data(self, **kwargs):
         from django.utils import timezone
         context = super().get_context_data(**kwargs)
 
-        # Obtener perfil
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+
         try:
             context['profile'] = Profile.objects.first()
         except Profile.DoesNotExist:
             context['profile'] = None
 
-        # Agregar fecha de última actualización
         context['last_updated'] = timezone.now()
-        
-        # Obtener experiencia laboral ordenada por fecha
-        context['experiences'] = Experience.objects.all().order_by('-start_date')
-        
-        # Obtener educación organizada por tipos
-        education_qs = Education.objects.all()
-        context['formal_education'] = education_qs.filter(
-            education_type='formal'
-        ).order_by('-start_date')
-        context['certifications'] = education_qs.filter(
-            education_type='certification'
-        ).order_by('-end_date')
-        context['online_courses'] = education_qs.filter(
-            education_type='online_course'
-        ).order_by('-end_date')
-        context['bootcamps'] = education_qs.filter(
-            education_type__in=['bootcamp', 'workshop']
-        ).order_by('-end_date')
-        
-        # Obtener habilidades categorizadas
-        skills = Skill.objects.all().order_by('category', '-proficiency')
+
+        context['experiences'] = Experience.objects.language(current_language).all().order_by('-start_date')
+
+        education_qs = Education.objects.language(current_language).all()
+        context['formal_education'] = education_qs.filter(education_type='formal').order_by('-start_date')
+        context['certifications'] = education_qs.filter(education_type='certification').order_by('-end_date')
+        context['online_courses'] = education_qs.filter(education_type='online_course').order_by('-end_date')
+        context['bootcamps'] = education_qs.filter(education_type__in=['bootcamp', 'workshop']).order_by('-end_date')
+
+        skills = Skill.objects.language(current_language).all().order_by('category', '-proficiency')
         skills_by_category = {}
         for skill in skills:
-            if skill.category not in skills_by_category:
-                skills_by_category[skill.category] = []
-            skills_by_category[skill.category].append(skill)
+            skills_by_category.setdefault(skill.category, []).append(skill)
         context['skills_by_category'] = skills_by_category
-        
-        # Obtener idiomas
-        context['languages'] = Language.objects.all().order_by('order')
-        
+
+        context['languages'] = Language.objects.language(current_language).order_by('order', 'translations__name')
         return context
 
 class ResumePDFView(TemplateView):
     template_name = 'portfolio/resume_pdf.html'
 
 class BlogListView(ListView):
-    """Vista de lista de posts del blog con filtros y paginación"""
+    """Vista de lista de posts del blog con filtros y paginacion"""
     model = BlogPost
     template_name = 'portfolio/blog_list.html'
     context_object_name = 'posts'
     paginate_by = 10
-    
-    def get_queryset(self):
-        queryset = BlogPost.objects.filter(status='published').order_by('-publish_date')
 
-        # Filtro por categoría
+    def get_queryset(self):
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        queryset = BlogPost.objects.language(current_language).filter(status='published').order_by('-publish_date')
+
         category_slug = self.request.GET.get('category')
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)
 
-        # Filtro por tag
         tag = self.request.GET.get('tag')
         if tag:
             queryset = queryset.filter(tags__icontains=tag)
 
-        # Búsqueda por título o contenido
         search = self.request.GET.get('search')
         if search:
             queryset = queryset.filter(
-                Q(title__icontains=search) |
-                Q(content__icontains=search) |
-                Q(excerpt__icontains=search)
+                Q(translations__title__icontains=search) |
+                Q(translations__content__icontains=search)
             )
 
         return queryset
@@ -338,96 +463,20 @@ class BlogListView(ListView):
         return context
 
 class BlogDetailView(DetailView):
-    """Vista de detalle de post del blog con tiempo de lectura"""
+    """Vista de detalle de post individual"""
     model = BlogPost
     template_name = 'portfolio/blog_detail.html'
     context_object_name = 'post'
-    
+
     def get_queryset(self):
-        # Solo mostrar posts publicados
-        return BlogPost.objects.filter(status='published')
-    
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        return BlogPost.objects.language(current_language).filter(status='published')
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        # Obtener perfil (asumimos que hay solo uno)
-        try:
-            context['profile'] = Profile.objects.first()
-        except Profile.DoesNotExist:
-            context['profile'] = None
-
-        # Obtener posts relacionados con lógica mejorada
         post = self.get_object()
-        related_posts = []
-        
-        # 1. Primero buscar posts de la misma categoría
-        if post.category:
-            same_category_posts = BlogPost.objects.filter(
-                status='published',
-                category=post.category
-            ).exclude(id=post.id).order_by('-publish_date')[:2]
-            related_posts.extend(same_category_posts)
-        
-        # 2. Si hay tags, buscar posts con tags similares
-        if post.tags and len(related_posts) < 3:
-            post_tags = [tag.strip().lower() for tag in post.tags.split(',')]
-            tag_related_posts = BlogPost.objects.filter(
-                status='published'
-            ).exclude(id=post.id).exclude(
-                id__in=[p.id for p in related_posts]
-            )
-            
-            # Filtrar posts que tengan al menos un tag en común
-            matching_posts = []
-            for related_post in tag_related_posts:
-                if related_post.tags:
-                    related_tags = [tag.strip().lower() for tag in related_post.tags.split(',')]
-                    if any(tag in post_tags for tag in related_tags):
-                        matching_posts.append(related_post)
-            
-            # Ordenar por fecha y tomar los necesarios
-            matching_posts.sort(key=lambda x: x.publish_date, reverse=True)
-            needed = 3 - len(related_posts)
-            related_posts.extend(matching_posts[:needed])
-        
-        # 3. Si aún faltan, agregar posts destacados
-        if len(related_posts) < 3:
-            featured_posts = BlogPost.objects.filter(
-                status='published',
-                featured=True
-            ).exclude(id=post.id).exclude(
-                id__in=[p.id for p in related_posts]
-            ).order_by('-publish_date')
-            
-            needed = 3 - len(related_posts)
-            related_posts.extend(featured_posts[:needed])
-        
-        # 4. Finalmente, completar con posts recientes
-        if len(related_posts) < 3:
-            recent_posts = BlogPost.objects.filter(
-                status='published'
-            ).exclude(id=post.id).exclude(
-                id__in=[p.id for p in related_posts]
-            ).order_by('-publish_date')
-            
-            needed = 3 - len(related_posts)
-            related_posts.extend(recent_posts[:needed])
-
-        context['related_posts'] = related_posts[:3]
-        
-        # Agregar datos dinámicos para el modal de contacto
-        context['projects_count'] = Project.objects.filter(visibility='public').count()
-        context['technologies_count'] = Technology.objects.count()
-        
-        # Calcular años de experiencia basado en la experiencia más antigua
-        oldest_experience = Experience.objects.order_by('start_date').first()
-        if oldest_experience and oldest_experience.start_date:
-            from datetime import date
-            years_diff = date.today().year - oldest_experience.start_date.year
-            context['experience_years'] = years_diff
-        else:
-            context['experience_years'] = 5  # Valor por defecto
-
+        seo_context = SEOGenerator.generate_blog_post_seo(post, self.request)
+        context.update(seo_context)
         return context
 
 class ContactView(TemplateView):
@@ -587,12 +636,20 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
         context['recent_posts'] = BlogPost.objects.order_by('-created_at')[:5]
 
         # Estadísticas de posts por categoría
-        category_stats = BlogPost.objects.filter(
-            category__isnull=False
-        ).values('category__name').annotate(
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        category_stats_qs = BlogPost.objects.filter(
+            category__isnull=False,
+            category__translations__language_code=current_language
+        ).values('category__translations__name').annotate(
             count=Count('id')
         ).order_by('-count')
-        context['category_stats'] = category_stats
+        context['category_stats'] = [
+            {
+                'name': item['category__translations__name'],
+                'count': item['count']
+            }
+            for item in category_stats_qs
+        ]
         
         # Visitas de hoy
         today = timezone.now().date()
@@ -618,6 +675,61 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
         ).count()
         
         return context
+
+
+class SiteConfigurationUpdateView(AdminRequiredMixin, TemplateView):
+    """Vista para gestionar la configuración global del sitio."""
+
+    template_name = 'portfolio/admin/site_configuration.html'
+    form_class = SiteConfigurationForm
+
+    def get(self, request, *args, **kwargs):
+        config = SiteConfiguration.get_solo()
+        form = self.form_class(instance=config)
+        return self.render_to_response(self.get_context_data(form=form, config=config))
+
+    def post(self, request, *args, **kwargs):
+        config = SiteConfiguration.get_solo()
+        form = self.form_class(request.POST, instance=config)
+
+        if form.is_valid():
+            config = form.save()
+            translation.activate(config.default_language)
+            request.session[LANGUAGE_SESSION_KEY] = config.default_language
+            messages.success(request, 'Configuración actualizada correctamente.')
+            return redirect('portfolio:admin-site-configuration')
+
+        messages.error(request, 'No se pudo actualizar la configuración. Revisa los datos e inténtalo de nuevo.')
+        return self.render_to_response(self.get_context_data(form=form, config=config))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        config = kwargs.get('config') or context.get('config') or SiteConfiguration.get_solo()
+        context['config'] = config
+        context['form'] = kwargs.get('form') or context.get('form') or self.form_class(instance=config)
+        context['translation_status'] = self._get_translation_status(config)
+        return context
+
+    def _get_translation_status(self, config):
+        if not config.auto_translate_enabled:
+            return {
+                'state': 'disabled',
+                'message': 'La traducción automática está desactivada.'
+            }
+        try:
+            service = config.get_translation_service()
+        except ImproperlyConfigured as exc:
+            return {
+                'state': 'error',
+                'message': f'Configuración incompleta: {exc}'
+            }
+        else:
+            url = getattr(service, 'api_url', '')
+            return {
+                'state': 'ok',
+                'message': f'{config.get_translation_provider_display()} listo ({url})'
+            }
+
 
 class EmailTestView(AdminRequiredMixin, View):
     """Vista para probar la configuración de email"""
@@ -825,16 +937,24 @@ class AnalyticsView(AdminRequiredMixin, TemplateView):
 # ============================================================================
 
 # Profile Management Views
-class ProfileUpdateView(AdminRequiredMixin, UpdateView):
+class ProfileUpdateView(AutoTranslationStatusMixin, AdminRequiredMixin, UpdateView):
     """Vista para actualizar información del perfil"""
+
     model = Profile
     form_class = SecureProfileForm
     template_name = 'portfolio/admin/profile_form.html'
     success_url = reverse_lazy('portfolio:admin-dashboard')
-    
+
     def get_object(self, queryset=None):
         """Obtener o crear el perfil único (Singleton)"""
         return Profile.get_solo()
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        config = SiteConfiguration.get_solo()
+        language_code = config.default_language or settings.LANGUAGE_CODE
+        kwargs['language_code'] = language_code
+        return kwargs
 
     def post(self, request, *args, **kwargs):
         """Handle post request including CV deletion"""
@@ -843,7 +963,6 @@ class ProfileUpdateView(AdminRequiredMixin, UpdateView):
         # Check if English CV deletion was requested
         if request.POST.get('delete_resume') == 'true':
             if self.object.resume_pdf:
-                # Delete the file from storage
                 self.object.resume_pdf.delete()
                 messages.success(request, 'English CV deleted successfully.')
                 return redirect(self.success_url)
@@ -851,7 +970,6 @@ class ProfileUpdateView(AdminRequiredMixin, UpdateView):
         # Check if Spanish CV deletion was requested
         if request.POST.get('delete_resume_es') == 'true':
             if self.object.resume_pdf_es:
-                # Delete the file from storage
                 self.object.resume_pdf_es.delete()
                 messages.success(request, 'CV en Español eliminado exitosamente.')
                 return redirect(self.success_url)
@@ -861,17 +979,17 @@ class ProfileUpdateView(AdminRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, 'Perfil actualizado exitosamente.')
         return super().form_valid(form)
-    
+
     def form_invalid(self, form):
         messages.error(self.request, 'Error al actualizar el perfil. Revisa los campos.')
         import logging
+
         logger = logging.getLogger('portfolio')
         logger.error(f'Profile form errors: {form.errors}')
         return super().form_invalid(form)
-    
-    def form_invalid(self, form):
-        messages.error(self.request, 'Error al actualizar el perfil. Revisa los campos.')
-        return super().form_invalid(form)
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(**kwargs)
 
 
 # Project Management Views
@@ -883,7 +1001,11 @@ class ProjectListAdminView(AdminRequiredMixin, ListView):
     paginate_by = 20
     
     def get_queryset(self):
-        queryset = Project.objects.all().order_by('order', '-created_at')
+        queryset = (
+            Project.objects.all()
+            .prefetch_related('translations', 'knowledge_bases')
+            .order_by('order', '-created_at')
+        )
         
         # Filtros de búsqueda
         search = self.request.GET.get('search')
@@ -903,16 +1025,32 @@ class ProjectListAdminView(AdminRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['current_search'] = self.request.GET.get('search', '')
         context['current_visibility'] = self.request.GET.get('visibility', '')
+        projects_list = list(context['projects'])
+        projects_list, status_map, auto_enabled, default_language = _build_translation_status_map(
+            Project,
+            projects_list,
+        )
+        context['projects'] = projects_list
+        context['translation_status_map'] = status_map
+        context['translation_auto_enabled'] = auto_enabled
+        context['translation_default_language'] = default_language
         return context
 
 
-class ProjectCreateView(AdminRequiredMixin, CreateView):
+class ProjectCreateView(EditingLanguageContextMixin, AdminRequiredMixin, CreateView):
     """Vista para crear nuevo proyecto"""
     model = Project
     form_class = SecureProjectForm
     template_name = 'portfolio/admin/project_form.html'
     success_url = reverse_lazy('portfolio:admin-project-list')
     
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        config = SiteConfiguration.get_solo()
+        language_code = config.default_language or settings.LANGUAGE_CODE
+        kwargs['language_code'] = language_code
+        return kwargs
+
     def form_valid(self, form):
         messages.success(self.request, f'Proyecto "{form.instance.title}" creado exitosamente.')
         return super().form_valid(form)
@@ -922,13 +1060,20 @@ class ProjectCreateView(AdminRequiredMixin, CreateView):
         return super().form_invalid(form)
 
 
-class ProjectUpdateView(AdminRequiredMixin, UpdateView):
+class ProjectUpdateView(AutoTranslationStatusMixin, AdminRequiredMixin, UpdateView):
     """Vista para actualizar proyecto existente"""
     model = Project
     form_class = SecureProjectForm
     template_name = 'portfolio/admin/project_form.html'
     success_url = reverse_lazy('portfolio:admin-project-list')
     
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        config = SiteConfiguration.get_solo()
+        language_code = config.default_language or settings.LANGUAGE_CODE
+        kwargs['language_code'] = language_code
+        return kwargs
+
     def form_valid(self, form):
         messages.success(self.request, f'Proyecto "{form.instance.title}" actualizado exitosamente.')
         return super().form_valid(form)
@@ -959,7 +1104,11 @@ class BlogPostListAdminView(AdminRequiredMixin, ListView):
     paginate_by = 20
     
     def get_queryset(self):
-        queryset = BlogPost.objects.all().order_by('-created_at')
+        queryset = (
+            BlogPost.objects.all()
+            .prefetch_related('translations')
+            .order_by('-created_at')
+        )
         
         # Filtros de búsqueda
         search = self.request.GET.get('search')
@@ -989,17 +1138,41 @@ class BlogPostListAdminView(AdminRequiredMixin, ListView):
 
         # Use dynamic categories instead of hardcoded POST_TYPES
         from .models import Category
-        context['categories'] = Category.objects.filter(is_active=True).order_by('order', 'name')
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        context['categories'] = (
+            Category.objects.language(current_language)
+            .filter(is_active=True)
+            .order_by('order', 'translations__name')
+        )
+        posts_list = list(context['posts'])
+        posts_list, status_map, auto_enabled, default_language = _build_translation_status_map(
+            BlogPost,
+            posts_list,
+        )
+        context['posts'] = posts_list
+        context['translation_status_map'] = status_map
+        context['translation_auto_enabled'] = auto_enabled
+        context['translation_default_language'] = default_language
 
         return context
 
 
-class BlogPostCreateView(AdminRequiredMixin, CreateView):
+class BlogPostCreateView(EditingLanguageContextMixin, AdminRequiredMixin, CreateView):
     """Vista para crear nuevo post del blog"""
     model = BlogPost
     form_class = SecureBlogPostForm
     template_name = 'portfolio/admin/blogpost_form.html'
     success_url = reverse_lazy('portfolio:admin-blog-list')
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial.setdefault('status', 'published')
+        try:
+            from django.utils import timezone
+            initial.setdefault('publish_date', timezone.now())
+        except Exception:
+            pass
+        return initial
 
     def post(self, request, *args, **kwargs):
         """Handle POST request with multiple submit buttons"""
@@ -1019,14 +1192,24 @@ class BlogPostCreateView(AdminRequiredMixin, CreateView):
 
     def form_valid(self, form):
         messages.success(self.request, f'Post "{form.instance.title}" creado exitosamente.')
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        if 'publish' in self.request.POST:
+            schedule_auto_translation(self.object)
+        return response
 
     def form_invalid(self, form):
         messages.error(self.request, 'Error al crear el post. Revisa los campos.')
         return super().form_invalid(form)
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        config = SiteConfiguration.get_solo()
+        language_code = config.default_language or settings.LANGUAGE_CODE
+        kwargs['language_code'] = language_code
+        return kwargs
 
-class BlogPostUpdateView(AdminRequiredMixin, UpdateView):
+
+class BlogPostUpdateView(AutoTranslationStatusMixin, AdminRequiredMixin, UpdateView):
     """Vista para actualizar post del blog existente"""
     model = BlogPost
     form_class = SecureBlogPostForm
@@ -1051,7 +1234,10 @@ class BlogPostUpdateView(AdminRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         messages.success(self.request, f'Post "{form.instance.title}" actualizado exitosamente.')
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        if 'publish' in self.request.POST:
+            schedule_auto_translation(self.object)
+        return response
 
     def form_invalid(self, form):
         messages.error(self.request, 'Error al actualizar el post. Revisa los campos.')
@@ -1258,224 +1444,289 @@ class CVManagementView(AdminRequiredMixin, TemplateView):
 
 # Experience Management Views
 class ExperienceListAdminView(AdminRequiredMixin, ListView):
-    """Vista de lista de experiencias laborales para administración"""
+    """Vista de lista de experiencias laborales para administracion"""
     model = Experience
     template_name = 'portfolio/admin/experience_list.html'
     context_object_name = 'experiences'
     paginate_by = 20
-    
+
     def get_queryset(self):
-        queryset = Experience.objects.all().order_by('-start_date', 'order')
-        
-        # Filtros de búsqueda
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        queryset = Experience.objects.language(current_language).all().order_by('-start_date', 'order')
+
         search = self.request.GET.get('search')
         if search:
             queryset = queryset.filter(
-                Q(company__icontains=search) | 
-                Q(position__icontains=search) |
-                Q(description__icontains=search)
+                Q(translations__company__icontains=search) |
+                Q(translations__position__icontains=search) |
+                Q(translations__description__icontains=search)
             )
-        
+
         return queryset
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['current_search'] = self.request.GET.get('search', '')
+        context['current_language'] = translation.get_language() or settings.LANGUAGE_CODE
+        context['available_languages'] = settings.LANGUAGES
         return context
 
 
-class ExperienceCreateView(AdminRequiredMixin, CreateView):
+class ExperienceCreateView(EditingLanguageContextMixin, AdminRequiredMixin, CreateView):
     """Vista para crear nueva experiencia laboral"""
     model = Experience
     form_class = SecureExperienceForm
     template_name = 'portfolio/admin/experience_form.html'
     success_url = reverse_lazy('portfolio:admin-experience-list')
-    
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        config = SiteConfiguration.get_solo()
+        language_code = config.default_language or settings.LANGUAGE_CODE
+        kwargs['language_code'] = language_code
+        return kwargs
+
     def form_valid(self, form):
-        messages.success(self.request, f'Experiencia en "{form.instance.company}" creada exitosamente.')
+        company = form.instance.safe_translation_getter('company') or form.instance.company
+        messages.success(self.request, f'Experiencia en {company} creada exitosamente.')
         return super().form_valid(form)
-    
+
     def form_invalid(self, form):
         messages.error(self.request, 'Error al crear la experiencia. Revisa los campos.')
         return super().form_invalid(form)
 
 
-class ExperienceUpdateView(AdminRequiredMixin, UpdateView):
+class ExperienceUpdateView(AutoTranslationStatusMixin, AdminRequiredMixin, UpdateView):
     """Vista para actualizar experiencia laboral existente"""
     model = Experience
     form_class = SecureExperienceForm
     template_name = 'portfolio/admin/experience_form.html'
     success_url = reverse_lazy('portfolio:admin-experience-list')
-    
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        config = SiteConfiguration.get_solo()
+        language_code = config.default_language or settings.LANGUAGE_CODE
+        kwargs['language_code'] = language_code
+        return kwargs
+
     def form_valid(self, form):
-        messages.success(self.request, f'Experiencia en "{form.instance.company}" actualizada exitosamente.')
+        company = form.instance.safe_translation_getter('company') or form.instance.company
+        messages.success(self.request, f'Experiencia en {company} actualizada exitosamente.')
         return super().form_valid(form)
-    
+
     def form_invalid(self, form):
         messages.error(self.request, 'Error al actualizar la experiencia. Revisa los campos.')
         return super().form_invalid(form)
 
 
 class ExperienceDeleteView(AdminRequiredMixin, DeleteView):
-    """Vista para eliminar experiencia laboral con confirmación"""
+    """Vista para eliminar experiencia laboral con confirmacion"""
     model = Experience
     template_name = 'portfolio/admin/experience_confirm_delete.html'
     success_url = reverse_lazy('portfolio:admin-experience-list')
-    
+
     def delete(self, request, *args, **kwargs):
         experience = self.get_object()
-        messages.success(request, f'Experiencia en "{experience.company}" eliminada exitosamente.')
+        company = experience.safe_translation_getter('company') or experience.company
+        messages.success(request, f'Experiencia en {company} eliminada exitosamente.')
         return super().delete(request, *args, **kwargs)
 
 
-# Education Management Views
 class EducationListAdminView(AdminRequiredMixin, ListView):
-    """Vista de lista de educación para administración"""
+    """Vista de lista de educacion para administracion"""
     model = Education
     template_name = 'portfolio/admin/education_list.html'
     context_object_name = 'educations'
     paginate_by = 20
-    
+
     def get_queryset(self):
-        queryset = Education.objects.all().order_by('-end_date', '-start_date', 'order')
-        
-        # Filtros de búsqueda
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        queryset = Education.objects.language(current_language).all().order_by('-end_date', '-start_date', 'order')
+
         search = self.request.GET.get('search')
         if search:
             queryset = queryset.filter(
-                Q(institution__icontains=search) | 
-                Q(degree__icontains=search) |
-                Q(field_of_study__icontains=search)
+                Q(translations__institution__icontains=search) |
+                Q(translations__degree__icontains=search) |
+                Q(translations__field_of_study__icontains=search)
             )
-        
+
         education_type = self.request.GET.get('type')
         if education_type:
             queryset = queryset.filter(education_type=education_type)
-        
+
         return queryset
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['current_search'] = self.request.GET.get('search', '')
         context['current_type'] = self.request.GET.get('type', '')
         context['education_types'] = Education.EDUCATION_TYPES
+        context['current_language'] = translation.get_language() or settings.LANGUAGE_CODE
+        context['available_languages'] = settings.LANGUAGES
         return context
 
 
-class EducationCreateView(AdminRequiredMixin, CreateView):
-    """Vista para crear nueva educación"""
+class EducationCreateView(EditingLanguageContextMixin, AdminRequiredMixin, CreateView):
+    """Vista para crear nueva educacion"""
     model = Education
     form_class = SecureEducationForm
     template_name = 'portfolio/admin/education_form.html'
     success_url = reverse_lazy('portfolio:admin-education-list')
-    
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        config = SiteConfiguration.get_solo()
+        language_code = config.default_language or settings.LANGUAGE_CODE
+        kwargs['language_code'] = language_code
+        return kwargs
+
     def form_valid(self, form):
-        messages.success(self.request, f'Educación "{form.instance.degree}" creada exitosamente.')
+        degree = form.instance.safe_translation_getter('degree') or form.instance.degree
+        messages.success(self.request, f'Educacion {degree} creada exitosamente.')
         return super().form_valid(form)
-    
+
     def form_invalid(self, form):
-        messages.error(self.request, 'Error al crear la educación. Revisa los campos.')
+        messages.error(self.request, 'Error al crear la educacion. Revisa los campos.')
         return super().form_invalid(form)
 
 
-class EducationUpdateView(AdminRequiredMixin, UpdateView):
-    """Vista para actualizar educación existente"""
+class EducationUpdateView(AutoTranslationStatusMixin, AdminRequiredMixin, UpdateView):
+    """Vista para actualizar educacion existente"""
     model = Education
     form_class = SecureEducationForm
     template_name = 'portfolio/admin/education_form.html'
     success_url = reverse_lazy('portfolio:admin-education-list')
-    
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        config = SiteConfiguration.get_solo()
+        language_code = config.default_language or settings.LANGUAGE_CODE
+        kwargs['language_code'] = language_code
+        return kwargs
+
     def form_valid(self, form):
-        messages.success(self.request, f'Educación "{form.instance.degree}" actualizada exitosamente.')
+        degree = form.instance.safe_translation_getter('degree') or form.instance.degree
+        messages.success(self.request, f'Educacion {degree} actualizada exitosamente.')
         return super().form_valid(form)
-    
+
     def form_invalid(self, form):
-        messages.error(self.request, 'Error al actualizar la educación. Revisa los campos.')
+        messages.error(self.request, 'Error al actualizar la educacion. Revisa los campos.')
         return super().form_invalid(form)
 
 
 class EducationDeleteView(AdminRequiredMixin, DeleteView):
-    """Vista para eliminar educación con confirmación"""
+    """Vista para eliminar educacion con confirmacion"""
     model = Education
     template_name = 'portfolio/admin/education_confirm_delete.html'
     success_url = reverse_lazy('portfolio:admin-education-list')
-    
+
     def delete(self, request, *args, **kwargs):
         education = self.get_object()
-        messages.success(request, f'Educación "{education.degree}" eliminada exitosamente.')
+        degree = education.safe_translation_getter('degree') or education.degree
+        messages.success(request, f'Educacion {degree} eliminada exitosamente.')
         return super().delete(request, *args, **kwargs)
 
 
-# Skill Management Views
 class SkillListAdminView(AdminRequiredMixin, ListView):
-    """Vista de lista de habilidades para administración"""
+    """Vista de lista de habilidades para administracion"""
     model = Skill
     template_name = 'portfolio/admin/skill_list.html'
     context_object_name = 'skills'
     paginate_by = 20
-    
+
     def get_queryset(self):
-        queryset = Skill.objects.all().order_by('category', '-proficiency', 'name')
-        
-        # Filtros de búsqueda
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        queryset = Skill.objects.language(current_language).all().order_by('category', '-proficiency', 'name')
+
         search = self.request.GET.get('search')
         if search:
             queryset = queryset.filter(
-                Q(name__icontains=search) | 
+                Q(translations__name__icontains=search) |
                 Q(category__icontains=search)
             )
-        
-        category = self.request.GET.get('category')
-        if category:
-            queryset = queryset.filter(category__icontains=category)
-        
-        proficiency = self.request.GET.get('proficiency')
-        if proficiency:
-            queryset = queryset.filter(proficiency=proficiency)
-        
+
+        category_filter = self.request.GET.get('category')
+        if category_filter:
+            queryset = queryset.filter(category=category_filter)
+
+        proficiency_filter = self.request.GET.get('proficiency')
+        if proficiency_filter:
+            queryset = queryset.filter(proficiency=proficiency_filter)
+
         return queryset
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['current_search'] = self.request.GET.get('search', '')
         context['current_category'] = self.request.GET.get('category', '')
         context['current_proficiency'] = self.request.GET.get('proficiency', '')
         context['proficiency_choices'] = Skill.PROFICIENCY_CHOICES
-        # Get unique categories
-        context['categories'] = Skill.objects.values_list('category', flat=True).distinct().order_by('category')
+        context['current_language'] = translation.get_language() or settings.LANGUAGE_CODE
+        context['available_languages'] = settings.LANGUAGES
         return context
 
 
-class SkillCreateView(AdminRequiredMixin, CreateView):
+class SkillCreateView(EditingLanguageContextMixin, AdminRequiredMixin, CreateView):
     """Vista para crear nueva habilidad"""
     model = Skill
     form_class = SecureSkillForm
     template_name = 'portfolio/admin/skill_form.html'
     success_url = reverse_lazy('portfolio:admin-skill-list')
-    
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        config = SiteConfiguration.get_solo()
+        language_code = config.default_language or settings.LANGUAGE_CODE
+        kwargs['language_code'] = language_code
+        return kwargs
+
     def form_valid(self, form):
-        messages.success(self.request, f'Habilidad "{form.instance.name}" creada exitosamente.')
+        name = form.instance.safe_translation_getter('name') or form.instance.name
+        messages.success(self.request, f'Habilidad {name} creada exitosamente.')
         return super().form_valid(form)
-    
+
     def form_invalid(self, form):
         messages.error(self.request, 'Error al crear la habilidad. Revisa los campos.')
         return super().form_invalid(form)
 
 
-class SkillUpdateView(AdminRequiredMixin, UpdateView):
+class SkillUpdateView(EditingLanguageContextMixin, AdminRequiredMixin, UpdateView):
     """Vista para actualizar habilidad existente"""
     model = Skill
     form_class = SecureSkillForm
     template_name = 'portfolio/admin/skill_form.html'
     success_url = reverse_lazy('portfolio:admin-skill-list')
-    
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        config = SiteConfiguration.get_solo()
+        language_code = config.default_language or settings.LANGUAGE_CODE
+        kwargs['language_code'] = language_code
+        return kwargs
+
     def form_valid(self, form):
-        messages.success(self.request, f'Habilidad "{form.instance.name}" actualizada exitosamente.')
+        name = form.instance.safe_translation_getter('name') or form.instance.name
+        messages.success(self.request, f'Habilidad {name} actualizada exitosamente.')
         return super().form_valid(form)
-    
+
     def form_invalid(self, form):
         messages.error(self.request, 'Error al actualizar la habilidad. Revisa los campos.')
         return super().form_invalid(form)
+
+
+class SkillDeleteView(AdminRequiredMixin, DeleteView):
+    """Vista para eliminar habilidad con confirmacion"""
+    model = Skill
+    template_name = 'portfolio/admin/skill_confirm_delete.html'
+    success_url = reverse_lazy('portfolio:admin-skill-list')
+
+    def delete(self, request, *args, **kwargs):
+        skill = self.get_object()
+        name = skill.safe_translation_getter('name') or skill.name
+        messages.success(request, f'Habilidad {name} eliminada exitosamente.')
+        return super().delete(request, *args, **kwargs)
 
 
 class SkillDeleteView(AdminRequiredMixin, DeleteView):
@@ -1591,13 +1842,15 @@ class LanguageListAPIView(AdminRequiredMixin, View):
     """API view to list all languages"""
     
     def get(self, request, *args, **kwargs):
-        languages = Language.objects.all().order_by('order', 'name')
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+        languages = Language.objects.language(current_language).order_by('order', 'translations__name')
         data = {
             'success': True,
             'languages': [
                 {
                     'id': lang.id,
-                    'name': lang.name,
+                    'code': lang.code,
+                    'name': lang.safe_translation_getter('name', any_language=True),
                     'proficiency': lang.proficiency,
                     'order': lang.order
                 }
@@ -1612,11 +1865,14 @@ class LanguageDetailAPIView(AdminRequiredMixin, View):
     
     def get(self, request, pk, *args, **kwargs):
         try:
+            current_language = translation.get_language() or settings.LANGUAGE_CODE
             language = Language.objects.get(pk=pk)
+            language.set_current_language(current_language)
             data = {
                 'success': True,
                 'id': language.id,
-                'name': language.name,
+                'code': language.code,
+                'name': language.safe_translation_getter('name', any_language=True),
                 'proficiency': language.proficiency,
                 'order': language.order
             }
@@ -1632,6 +1888,7 @@ class LanguageCreateAPIView(AdminRequiredMixin, View):
         import json
         try:
             data = json.loads(request.body)
+            current_language = translation.get_language() or settings.LANGUAGE_CODE
             
             # Validate required fields
             if not data.get('name') or not data.get('proficiency'):
@@ -1639,13 +1896,22 @@ class LanguageCreateAPIView(AdminRequiredMixin, View):
                     'success': False,
                     'error': 'Name and proficiency are required'
                 }, status=400)
+
+            code = data.get('code') or slugify(data['name'])
+            if not code:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Unable to generate language code'
+                }, status=400)
             
-            # Create language
-            language = Language.objects.create(
-                name=data['name'],
+            language = Language(
+                code=code,
                 proficiency=data['proficiency'],
                 order=int(data.get('order', 0))
             )
+            language.set_current_language(current_language)
+            language.name = data['name']
+            language.save()
             
             return JsonResponse({
                 'success': True,
@@ -1668,12 +1934,16 @@ class LanguageUpdateAPIView(AdminRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         import json
         try:
+            current_language = translation.get_language() or settings.LANGUAGE_CODE
             language = Language.objects.get(pk=pk)
             data = json.loads(request.body)
             
             # Update fields
             if 'name' in data:
+                language.set_current_language(current_language)
                 language.name = data['name']
+            if 'code' in data and data['code']:
+                language.code = data['code']
             if 'proficiency' in data:
                 language.proficiency = data['proficiency']
             if 'order' in data:

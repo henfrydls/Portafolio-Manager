@@ -15,6 +15,10 @@ body {
     letter-spacing: -0.004em;
 }
 
+#portfolio-lang-switcher {
+    display: none !important;
+}
+
 /* Top Navigation - Same as blog */
 .admin-top-nav {
     position: sticky;
@@ -38,11 +42,12 @@ body {
 .nav-left {
     display: flex;
     align-items: center;
+    gap: 12px;
 }
 
 .nav-right {
     display: flex;
-    gap: 32px;
+    gap: 28px;
 }
 
 .nav-link {
@@ -70,6 +75,53 @@ body {
 .nav-link.active {
     color: #242424 !important;
     font-weight: 500;
+}
+
+.lang-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    background: #f2f2f2;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #424242;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.admin-subnav {
+    background: #ffffff;
+    border-bottom: 1px solid #f2f2f2;
+}
+
+.subnav-container {
+    max-width: 1192px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: flex-start;
+    gap: 16px;
+    padding: 8px 20px;
+}
+
+.subnav-link {
+    font-size: 13px;
+    color: #6b6b6b;
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 999px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.subnav-link:hover {
+    background: #f2f2f2;
+    color: #242424;
+}
+
+.subnav-link.active {
+    background: #242424;
+    color: #ffffff;
 }
 
 /* Main Content */
@@ -498,19 +550,34 @@ body {
         <div class="nav-container">
             <div class="nav-left">
                 <a href="{% url 'portfolio:admin-dashboard' %}" class="nav-link">{% trans "Dashboard" %}</a>
+                {% if site_config %}
+                <span class="lang-badge">{{ site_config.default_language|default:LANGUAGE_CODE|upper }}</span>
+                {% endif %}
             </div>
             <div class="nav-right">
-                <a href="{% url 'portfolio:admin-project-list' %}" class="nav-link {% if 'project' in request.resolver_match.url_name %}active{% endif %}">{% trans "Projects" %}</a>
-                <a href="{% url 'portfolio:admin-blog-list' %}" class="nav-link {% if 'blog' in request.resolver_match.url_name %}active{% endif %}">{% trans "Blog" %}</a>
-                <a href="{% url 'portfolio:admin-contact-list' %}" class="nav-link {% if 'contact' in request.resolver_match.url_name %}active{% endif %}">{% trans "Messages" %}</a>
+                <a href="{% url 'portfolio:admin-blog-list' %}" class="nav-link {% if 'project' in request.resolver_match.url_name or 'blog' in request.resolver_match.url_name %}active{% endif %}">{% trans "Context" %}</a>
+                <a href="{% url 'portfolio:admin-contact-list' %}" class="nav-link {% if 'contact' in request.resolver_match.url_name %}active{% endif %}">{% trans "Inbox" %}</a>
+                <a href="{% url 'portfolio:admin-profile-edit' %}" class="nav-link {% if request.resolver_match.url_name == 'admin-profile-edit' %}active{% endif %}">{% trans "Profile" %}</a>
                 <a href="{% url 'portfolio:admin-cv-hub' %}" class="nav-link {% if 'cv' in request.resolver_match.url_name or 'experience' in request.resolver_match.url_name or 'education' in request.resolver_match.url_name or 'skill' in request.resolver_match.url_name %}active{% endif %}">{% trans "CV" %}</a>
-                <a href="{% url 'portfolio:admin-profile-edit' %}" class="nav-link {% if request.resolver_match.url_name == 'admin-profile-edit' %}active{% endif %}">{% trans "My Profile" %}</a>
-                <a href="{% url 'portfolio:admin-analytics' %}" class="nav-link">{% trans "Analytics" %}</a>
-                <a href="{% url 'admin:index' %}" class="nav-link">{% trans "Admin Panel" %}</a>
+                <a href="{% url 'portfolio:admin-analytics' %}" class="nav-link {% if request.resolver_match.url_name == 'admin-analytics' %}active{% endif %}">{% trans "Analytics" %}</a>
+                <a href="{% url 'portfolio:admin-site-configuration' %}" class="nav-link {% if request.resolver_match.url_name == 'admin-site-configuration' %}active{% endif %}">{% trans "Settings" %}</a>
+                <a href="{% url 'admin:index' %}" class="nav-link">{% trans "Admin" %}</a>
                 <a href="{% url 'portfolio:home' %}" class="nav-link" target="_blank">{% trans "View Site" %}</a>
             </div>
         </div>
     </nav>
+    {% with url_name=request.resolver_match.url_name %}
+    {% if url_name %}
+        {% if 'project' in url_name or 'blog' in url_name %}
+        <div class="admin-subnav">
+            <div class="subnav-container">
+                <a href="{% url 'portfolio:admin-blog-list' %}" class="subnav-link {% if 'blog' in url_name %}active{% endif %}">{% trans "Blog Posts" %}</a>
+                <a href="{% url 'portfolio:admin-project-list' %}" class="subnav-link {% if 'project' in url_name %}active{% endif %}">{% trans "Projects" %}</a>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+    {% endwith %}
 
     <!-- Main Content -->
     <main class="admin-main">

@@ -1,31 +1,35 @@
 {% extends "portfolio/admin/base_admin.html" %}
 {% load static %}
+{% load i18n %}
 
 {% block admin_title %}
-    {% if object %}Editar Educación{% else %}Nueva Educación{% endif %}
+    {% if object %}{% trans "Edit Education" %}{% else %}{% trans "New Education" %}{% endif %}
 {% endblock %}
 {% block admin_subtitle %}
-    {% if object %}Actualiza la información de esta formación{% else %}Agrega una nueva formación a tu CV{% endif %}
+    {% if object %}{% trans "Update the details for this education entry." %}{% else %}{% trans "Add a new education record to your resume." %}{% endif %}
 {% endblock %}
 
 {% block admin_actions %}
 <a href="{% url 'portfolio:admin-education-list' %}" class="btn-secondary-custom">
-    <i class="fas fa-arrow-left"></i>Volver a Educación
+    <i class="fas fa-arrow-left"></i>{% trans "Back to Education" %}
 </a>
 {% endblock %}
 
 {% block admin_content %}
+{% include "portfolio/admin/includes/auto_translation_status.html" %}
 <div class="content-card">
     <div class="card-header-custom">
         <div>
             <h2 class="card-title-custom">
-                {% if object %}Editar Educación{% else %}Nueva Educación{% endif %}
+                {% if object %}{% trans "Edit Education" %}{% else %}{% trans "New Education" %}{% endif %}
             </h2>
             <p class="card-subtitle-custom">
-                {% if object %}Actualiza los detalles de esta formación{% else %}Completa la información de tu nueva formación{% endif %}
+                {% if object %}{% trans "Update the details for this education record." %}{% else %}{% trans "Fill in the information for your new education record." %}{% endif %}
             </p>
         </div>
     </div>
+
+    {% include "portfolio/admin/includes/editing_language_notice.html" %}
 
     <form method="post" class="form-custom">
         {% csrf_token %}
@@ -36,7 +40,7 @@
                 <span class="required">*</span>
             </label>
             {{ form.education_type }}
-            <div class="form-help">Selecciona el tipo de formación que mejor describe esta educación</div>
+            <div class="form-help">{% trans "Select the type of training that best describes this education." %}</div>
             {% if form.education_type.errors %}
                 <div class="form-error">{{ form.education_type.errors.0 }}</div>
             {% endif %}
@@ -72,7 +76,7 @@
                 <span class="required">*</span>
             </label>
             {{ form.field_of_study }}
-            <div class="form-help">Ej: Ingeniería de Sistemas, Desarrollo Web, Machine Learning, etc.</div>
+            <div class="form-help">{% trans "Example: Computer Engineering, Web Development, Machine Learning, etc." %}</div>
             {% if form.field_of_study.errors %}
                 <div class="form-error">{{ form.field_of_study.errors.0 }}</div>
             {% endif %}
@@ -83,7 +87,7 @@
                 {{ form.description.label }}
             </label>
             {{ form.description }}
-            <div class="form-help">Descripción opcional de lo aprendido, proyectos realizados, etc.</div>
+            <div class="form-help">{% trans "Optional description of achievements, coursework, or notable projects." %}</div>
             {% if form.description.errors %}
                 <div class="form-error">{{ form.description.errors.0 }}</div>
             {% endif %}
@@ -106,7 +110,7 @@
                     {{ form.end_date.label }}
                 </label>
                 {{ form.end_date }}
-                <div class="form-help">Deja vacío si está en curso</div>
+                <div class="form-help">{% trans "Leave blank if you are still completing this program." %}</div>
                 {% if form.end_date.errors %}
                     <div class="form-error">{{ form.end_date.errors.0 }}</div>
                 {% endif %}
@@ -120,7 +124,7 @@
                     {{ form.current.label }}
                 </label>
             </div>
-            <div class="form-help">Marca esta casilla si actualmente estás cursando esta formación</div>
+            <div class="form-help">{% trans "Check this box if you are currently enrolled in this program." %}</div>
             {% if form.current.errors %}
                 <div class="form-error">{{ form.current.errors.0 }}</div>
             {% endif %}
@@ -128,26 +132,26 @@
 
         <div class="form-grid">
             <div class="form-group">
-                <label class="form-label-custom" for="{{ form.credential_id.id_for_label }}">
-                    {{ form.credential_id.label }}
-                </label>
-                {{ form.credential_id }}
-                <div class="form-help">ID del certificado o credencial (si aplica)</div>
-                {% if form.credential_id.errors %}
-                    <div class="form-error">{{ form.credential_id.errors.0 }}</div>
-                {% endif %}
-            </div>
+            <label class="form-label-custom" for="{{ form.credential_id.id_for_label }}">
+                {{ form.credential_id.label }}
+            </label>
+            {{ form.credential_id }}
+            <div class="form-help">{% trans "Certificate or credential ID (if applicable)." %}</div>
+            {% if form.credential_id.errors %}
+                <div class="form-error">{{ form.credential_id.errors.0 }}</div>
+            {% endif %}
+        </div>
 
             <div class="form-group">
-                <label class="form-label-custom" for="{{ form.credential_url.id_for_label }}">
-                    {{ form.credential_url.label }}
-                </label>
-                {{ form.credential_url }}
-                <div class="form-help">URL para verificar el certificado (si aplica)</div>
-                {% if form.credential_url.errors %}
-                    <div class="form-error">{{ form.credential_url.errors.0 }}</div>
-                {% endif %}
-            </div>
+            <label class="form-label-custom" for="{{ form.credential_url.id_for_label }}">
+                {{ form.credential_url.label }}
+            </label>
+            {{ form.credential_url }}
+            <div class="form-help">{% trans "Verification URL for the certificate (if applicable)." %}</div>
+            {% if form.credential_url.errors %}
+                <div class="form-error">{{ form.credential_url.errors.0 }}</div>
+            {% endif %}
+        </div>
         </div>
 
         <div class="form-group">
@@ -155,7 +159,7 @@
                 {{ form.order.label }}
             </label>
             {{ form.order }}
-            <div class="form-help">Orden de visualización (menor número aparece primero)</div>
+            <div class="form-help">{% trans "Display order (lower numbers show first)." %}</div>
             {% if form.order.errors %}
                 <div class="form-error">{{ form.order.errors.0 }}</div>
             {% endif %}
@@ -170,10 +174,10 @@
         <div class="form-actions">
             <button type="submit" class="btn-primary-custom">
                 <i class="fas fa-save"></i>
-                {% if object %}Actualizar Educación{% else %}Crear Educación{% endif %}
+                {% if object %}{% trans "Update Education" %}{% else %}{% trans "Create Education" %}{% endif %}
             </button>
             <a href="{% url 'portfolio:admin-education-list' %}" class="btn-secondary-custom">
-                <i class="fas fa-times"></i>Cancelar
+                <i class="fas fa-times"></i>{% trans "Cancel" %}
             </a>
         </div>
     </form>

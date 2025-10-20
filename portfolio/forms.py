@@ -1,10 +1,25 @@
-"""
+﻿"""
 Forms for the portfolio application with enhanced security.
 """
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.html import escape
-from .models import Contact, Profile, Project, BlogPost, Experience, Education, Skill
+from django.utils import translation
+from django.utils.translation import gettext_lazy as _
+from django.conf import settings
+from parler.forms import TranslatableModelForm
+from .models import (
+    Contact,
+    Profile,
+    Project,
+    KnowledgeBase,
+    ProjectType,
+    BlogPost,
+    Experience,
+    Education,
+    Skill,
+    SiteConfiguration,
+)
 from .validators import validate_no_executable, validate_filename
 
 
@@ -36,7 +51,7 @@ class SecureContactForm(forms.ModelForm):
             }),
             'message': forms.Textarea(attrs={
                 'class': 'form-control',
-                'placeholder': 'Escribe tu mensaje aquí...',
+                'placeholder': 'Escribe tu mensaje aqu├¡...',
                 'rows': 6,
                 'maxlength': 2000,
                 'required': True
@@ -61,7 +76,7 @@ class SecureContactForm(forms.ModelForm):
         name_lower = name.lower()
         for pattern in suspicious_patterns:
             if pattern in name_lower:
-                raise ValidationError('El nombre contiene caracteres no válidos.')
+                raise ValidationError('El nombre contiene caracteres no v├ílidos.')
         
         return name
     
@@ -74,7 +89,7 @@ class SecureContactForm(forms.ModelForm):
         
         # Basic email validation (Django's EmailField handles most of this)
         if '@' not in email or '.' not in email:
-            raise ValidationError('Ingresa un email válido.')
+            raise ValidationError('Ingresa un email v├ílido.')
         
         return email
     
@@ -158,6 +173,60 @@ class HoneypotMixin:
             'autocomplete': 'off'
         })
     )
+
+
+class SiteConfigurationForm(forms.ModelForm):
+    """
+    Formulario para gestionar la configuraci├│n global del sitio.
+    """
+
+    translation_api_url = forms.CharField(required=False, widget=forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://tu-servidor-translate'}))
+    class Meta:
+
+        model = SiteConfiguration
+        fields = [
+            'default_language',
+            'auto_translate_enabled',
+            'translation_provider',
+            'translation_api_url',
+            'translation_api_key',
+            'translation_timeout',
+        ]
+        widgets = {
+            'default_language': forms.Select(attrs={'class': 'form-select'}),
+            'auto_translate_enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'translation_provider': forms.Select(attrs={'class': 'form-select'}),
+            'translation_api_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://tu-servidor-translate'}),
+            'translation_api_key': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Opcional'}),
+            'translation_timeout': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'step': 1}),
+        }
+
+    def clean_default_language(self):
+        lang = self.cleaned_data.get('default_language') or settings.LANGUAGE_CODE
+        language_codes = [code for code, _ in settings.LANGUAGES]
+        if lang not in language_codes:
+            raise ValidationError('Idioma seleccionado no es v├ílido.')
+        return lang
+
+    def clean(self):
+        cleaned = super().clean()
+        use_auto = cleaned.get('auto_translate_enabled')
+        provider = cleaned.get('translation_provider')
+        api_url = cleaned.get('translation_api_url')
+        timeout = cleaned.get('translation_timeout')
+
+        provider_default_url = getattr(settings, 'TRANSLATION_API_URL', 'http://libretranslate:5000')
+        effective_url = api_url or provider_default_url
+
+        if use_auto:
+            if not api_url:
+                cleaned['translation_api_url'] = effective_url
+                self.instance.translation_api_url = effective_url
+
+        if timeout is not None and timeout <= 0:
+            self.add_error('translation_timeout', 'El tiempo de espera debe ser mayor que cero.')
+
+        return cleaned
     
     def clean_honeypot(self):
         """Check honeypot field - should be empty."""
@@ -175,10 +244,54 @@ class SecureContactFormWithHoneypot(HoneypotMixin, SecureContactForm):
 
 
 # Admin forms with enhanced security
-class SecureProfileForm(forms.ModelForm):
+class SecureProfileForm(TranslatableModelForm):
     """
     Profile form with file upload validation.
     """
+
+    def __init__(self, *args, **kwargs):
+        language_code = kwargs.pop('language_code', None)
+        if language_code:
+            self.language_code = language_code
+        super().__init__(*args, **kwargs)
+        tech_language = getattr(self, 'language_code', None) or translation.get_language() or settings.LANGUAGE_CODE
+        if 'knowledge_bases' in self.fields:
+            self.fields['knowledge_bases'].queryset = KnowledgeBase.objects.language(tech_language).order_by('translations__name')
+        if 'project_type_obj' in self.fields:
+            self.fields['project_type_obj'].queryset = ProjectType.objects.language(tech_language).order_by('order', 'translations__name')
+
+        placeholders = {
+            'name': _('Your name'),
+            'title': _('Your professional title (e.g., Full Stack Developer).'),
+            'bio': _('Update your biography to introduce yourself.'),
+            'email': _('contact@example.com'),
+            'phone': _('Phone number (optional)'),
+            'location': _('City, Country'),
+            'linkedin_url': _('https://www.linkedin.com/in/username'),
+            'github_url': _('https://github.com/username'),
+            'medium_url': _('https://medium.com/@username'),
+        }
+        for field, placeholder in placeholders.items():
+            if field in self.fields:
+                self.fields[field].widget.attrs.setdefault('placeholder', placeholder)
+
+        label_overrides = {
+            'name': _('Name'),
+            'title': _('Professional title'),
+            'bio': _('Biography'),
+            'email': _('Email'),
+            'phone': _('Phone'),
+            'location': _('Location'),
+            'linkedin_url': _('LinkedIn URL'),
+            'github_url': _('GitHub URL'),
+            'medium_url': _('Medium URL'),
+            'resume_pdf': _('PDF resume (English)'),
+            'resume_pdf_es': _('PDF resume (Spanish)'),
+            'show_web_resume': _('Display web resume on the site'),
+        }
+        for field, label in label_overrides.items():
+            if field in self.fields:
+                self.fields[field].label = label
     
     class Meta:
         model = Profile
@@ -239,24 +352,41 @@ class SecureProfileForm(forms.ModelForm):
 
         return pdf
 
+    def save(self, commit=True):
+        language_code = getattr(self, 'language_code', None) or translation.get_language() or settings.LANGUAGE_CODE
+        self.instance.set_current_language(language_code)
+        instance = super().save(commit=commit)
+        if commit and instance.pk:
+            default_name = self.cleaned_data.get('name')
+            if default_name and hasattr(instance, 'translations'):
+                translation_model = instance.translations.model
+                translation_model.objects.filter(master_id=instance.pk).update(name=default_name)
+        return instance
 
-class SecureProjectForm(forms.ModelForm):
+
+class SecureProjectForm(TranslatableModelForm):
     """
     Project form with file upload validation.
     """
-    
+
+    def __init__(self, *args, **kwargs):
+        language_code = kwargs.pop('language_code', None)
+        if language_code:
+            self.language_code = language_code
+        super().__init__(*args, **kwargs)
+
     class Meta:
         model = Project
         fields = [
             'title', 'description', 'detailed_description', 'image', 'project_type_obj',
-            'technologies', 'primary_language', 'github_owner', 'github_url',
+            'knowledge_bases', 'primary_language', 'github_owner', 'github_url',
             'demo_url', 'visibility', 'order', 'featured', 'is_private_project',
             'featured_link_type', 'featured_link_post', 'featured_link_pdf'
         ]
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
             'detailed_description': forms.Textarea(attrs={'rows': 6}),
-            'technologies': forms.CheckboxSelectMultiple(),
+            'knowledge_bases': forms.CheckboxSelectMultiple(),
         }
     
     def clean_image(self):
@@ -267,12 +397,23 @@ class SecureProjectForm(forms.ModelForm):
             return clean_uploaded_file(image)
         return image
 
+    def save(self, commit=True):
+        language_code = getattr(self, 'language_code', None) or translation.get_language() or settings.LANGUAGE_CODE
+        self.instance.set_current_language(language_code)
+        return super().save(commit=commit)
 
-class SecureBlogPostForm(forms.ModelForm):
+
+class SecureBlogPostForm(TranslatableModelForm):
     """
     Blog post form with file upload validation.
     """
-    
+
+    def __init__(self, *args, **kwargs):
+        language_code = kwargs.pop('language_code', None)
+        if language_code:
+            self.language_code = language_code
+        super().__init__(*args, **kwargs)
+
     class Meta:
         model = BlogPost
         fields = [
@@ -304,13 +445,24 @@ class SecureBlogPostForm(forms.ModelForm):
         
         return content
 
+    def save(self, commit=True):
+        language_code = getattr(self, 'language_code', None) or translation.get_language() or settings.LANGUAGE_CODE
+        self.instance.set_current_language(language_code)
+        return super().save(commit=commit)
+
 
 # CV Management Forms
-class SecureExperienceForm(forms.ModelForm):
+class SecureExperienceForm(TranslatableModelForm):
     """
     Experience form with validation.
     """
     
+    def __init__(self, *args, **kwargs):
+        language_code = kwargs.pop('language_code', None)
+        if language_code:
+            self.language_code = language_code
+        super().__init__(*args, **kwargs)
+
     class Meta:
         model = Experience
         fields = '__all__'
@@ -337,12 +489,23 @@ class SecureExperienceForm(forms.ModelForm):
         
         return cleaned_data
 
+    def save(self, commit=True):
+        language_code = getattr(self, 'language_code', None) or translation.get_language() or settings.LANGUAGE_CODE
+        self.instance.set_current_language(language_code)
+        return super().save(commit=commit)
 
-class SecureEducationForm(forms.ModelForm):
+
+class SecureEducationForm(TranslatableModelForm):
     """
     Education form with validation.
     """
     
+    def __init__(self, *args, **kwargs):
+        language_code = kwargs.pop('language_code', None)
+        if language_code:
+            self.language_code = language_code
+        super().__init__(*args, **kwargs)
+
     class Meta:
         model = Education
         fields = '__all__'
@@ -359,19 +522,30 @@ class SecureEducationForm(forms.ModelForm):
         start_date = cleaned_data.get('start_date')
         
         if current and end_date:
-            raise ValidationError('No puedes tener fecha de fin si está en curso.')
+            raise ValidationError('No puedes tener fecha de fin si est├í en curso.')
         
         if start_date and end_date and start_date > end_date:
             raise ValidationError('La fecha de inicio no puede ser posterior a la fecha de fin.')
         
         return cleaned_data
 
+    def save(self, commit=True):
+        language_code = getattr(self, 'language_code', None) or translation.get_language() or settings.LANGUAGE_CODE
+        self.instance.set_current_language(language_code)
+        return super().save(commit=commit)
 
-class SecureSkillForm(forms.ModelForm):
+
+class SecureSkillForm(TranslatableModelForm):
     """
     Skill form with validation.
     """
     
+    def __init__(self, *args, **kwargs):
+        language_code = kwargs.pop('language_code', None)
+        if language_code:
+            self.language_code = language_code
+        super().__init__(*args, **kwargs)
+
     class Meta:
         model = Skill
         fields = '__all__'
@@ -382,7 +556,12 @@ class SecureSkillForm(forms.ModelForm):
     def clean_years_experience(self):
         years = self.cleaned_data.get('years_experience')
         if years and years > 50:
-            raise ValidationError('Los años de experiencia no pueden ser más de 50.')
+            raise ValidationError('Los a├▒os de experiencia no pueden ser m├ís de 50.')
         if years and years < 0:
-            raise ValidationError('Los años de experiencia no pueden ser negativos.')
+            raise ValidationError('Los a├▒os de experiencia no pueden ser negativos.')
         return years
+
+    def save(self, commit=True):
+        language_code = getattr(self, 'language_code', None) or translation.get_language() or settings.LANGUAGE_CODE
+        self.instance.set_current_language(language_code)
+        return super().save(commit=commit)

@@ -1,10 +1,60 @@
 from django.utils.deprecation import MiddlewareMixin
 from django.urls import resolve
 from django.conf import settings
-from .models import PageVisit
+from django.utils import translation
+
+SESSION_LANGUAGE_KEY = getattr(translation, 'LANGUAGE_SESSION_KEY', '_language')
+from .models import PageVisit, SiteConfiguration
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+class SiteLanguageMiddleware(MiddlewareMixin):
+    """
+    Middleware para aplicar el idioma global configurado.
+
+    - Fuerza el idioma por defecto en las vistas administrativas.
+    - Define el idioma inicial para visitantes si no han seleccionado uno.
+    """
+
+    ADMIN_PATH_PREFIXES = (
+        '/dashboard',
+        '/manage/',
+        '/analytics',
+        '/admin-dashboard',
+        '/admin-analytics',
+    )
+
+    def process_request(self, request):
+        try:
+            config = SiteConfiguration.get_solo()
+        except Exception:
+            return None
+
+        default_language = config.default_language or settings.LANGUAGE_CODE
+        if not default_language:
+            return None
+
+        session_language = request.session.get(SESSION_LANGUAGE_KEY)
+        cookie_language = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME)
+
+        path = request.path or ''
+        in_admin_area = any(path.startswith(prefix) for prefix in self.ADMIN_PATH_PREFIXES)
+
+        if in_admin_area:
+            if session_language != default_language:
+                translation.activate(default_language)
+                request.session[SESSION_LANGUAGE_KEY] = default_language
+                request.LANGUAGE_CODE = default_language
+            return None
+
+        if not session_language and not cookie_language:
+            translation.activate(default_language)
+            request.session[SESSION_LANGUAGE_KEY] = default_language
+            request.LANGUAGE_CODE = default_language
+
+        return None
 
 
 class PageVisitMiddleware(MiddlewareMixin):

@@ -1,5 +1,6 @@
 {% extends "portfolio/admin/base_admin.html" %}
 {% load static %}
+{% load i18n %}
 {% load simple_i18n %}
 
 {% block admin_title %}
@@ -10,7 +11,7 @@
 {{ block.super }}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
 <style>
-  /* Toolbar en una sola línea (con scroll oculto) */
+  /* Toolbar en una sola lÃ­nea (con scroll oculto) */
   .editor-toolbar{
     display:flex; flex-wrap:nowrap; align-items:center; gap:.35rem;
     overflow-x:auto; overflow-y:hidden; white-space:nowrap;
@@ -18,7 +19,7 @@
   }
   .editor-toolbar::-webkit-scrollbar{ display:none; }
   .editor-toolbar > *{ flex:0 0 auto; }
-  /* Evitar conflicto de Bootstrap .table con el botón "Insert Table" */
+  /* Evitar conflicto de Bootstrap .table con el botÃ³n "Insert Table" */
   .editor-toolbar button.table{ display:inline-block!important; width:auto!important; margin:0!important; padding:0 6px; }
 
   /* Apariencia del editor */
@@ -43,7 +44,7 @@
   .EasyMDEContainer .CodeMirror-hscrollbar{ display:none!important; }
   .EasyMDEContainer .CodeMirror-scroll{ overflow-x:hidden!important; }
 
-  /* Estilo para imágenes en el preview del editor */
+  /* Estilo para imÃ¡genes en el preview del editor */
   .editor-preview img, .editor-preview-side img {
     max-width: 100%;
     height: auto;
@@ -67,6 +68,7 @@
 {% endblock %}
 
 {% block admin_content %}
+{% include "portfolio/admin/includes/auto_translation_status.html" %}
 <div class="row">
   <div class="col-12">
     <!-- Quick Help -->
@@ -81,11 +83,12 @@
       <span><i class="fas fa-keyboard"></i> Ctrl+I = Italic</span>
     </div>
 
-    <div class="card">
+      <div class="card">
       <div class="card-header">
         <h5 class="card-title mb-0"><i class="fas fa-blog me-2"></i> {% if object %}{% trans "Edit Post" %}{% else %}{% trans "New Post" %}{% endif %}</h5>
       </div>
       <div class="card-body">
+        {% include "portfolio/admin/includes/editing_language_notice.html" %}
         <form id="blog-post-form" method="post" enctype="multipart/form-data">
           {% csrf_token %}
 
@@ -118,7 +121,7 @@
               {{ form.featured_image }}
               {% if form.featured_image.errors %}<div class="text-danger small">{{ form.featured_image.errors.0 }}</div>{% endif %}
               {% if object.featured_image %}
-                <div class="mt-2"><small class="text-muted">Imagen actual:</small><br><img src="{{ object.featured_image.url }}" alt="{{ object.title }}" class="img-thumbnail" style="max-width:200px; height:auto;"></div>
+                <div class="mt-2"><small class="text-muted">{% trans "Current image:" %}</small><br><img src="{{ object.featured_image.url }}" alt="{{ object.title }}" class="img-thumbnail" style="max-width:200px; height:auto;"></div>
               {% endif %}
             </div>
           </div>
@@ -256,7 +259,7 @@ document.addEventListener('DOMContentLoaded', function(){
       lineWrapping: true,
       spellChecker: false,
       autofocus: false,
-      autosave: { enabled:true, uniqueId:"blog_post_content_{{ object.id|default:'new' }}", delay:1000, text:"Guardado automático: " },
+      autosave: { enabled:true, uniqueId:"blog_post_content_{{ object.id|default:'new' }}", delay:1000, text:"{% trans 'Auto-save:' %} " },
       toolbar: [
         'bold','italic','heading','|','quote','unordered-list','ordered-list','|',
         'link',{
@@ -267,14 +270,14 @@ document.addEventListener('DOMContentLoaded', function(){
             i.click();
           },
           className:'fas fa-image',
-          title:'Insertar Imagen'
+          title:'Insert Image'
         },'|',
         'code','table','horizontal-rule','|','preview','side-by-side','fullscreen','|','guide'
       ],
-      placeholder:'Escribe el contenido del post aquí...\n\nPuedes usar Markdown para formatear el texto.',
+      placeholder:"{% trans 'Write the post content here...\n\nYou can use Markdown to format the text.' %}",
       renderingConfig:{ singleLineBreaks:false, codeSyntaxHighlighting:true },
       status:['autosave','lines','words','cursor'],
-      previewRender:function(plainText, preview){ setTimeout(function(){ preview.innerHTML = marked.parse(plainText); }, 250); return 'Cargando preview...'; }
+      previewRender:function(plainText, preview){ setTimeout(function(){ preview.innerHTML = marked.parse(plainText); }, 250); return "{% trans 'Loading preview...' %}"; }
     });
 
     // Sincronizar editor -> textarea antes de enviar (evita bloqueo por required)
@@ -297,13 +300,13 @@ document.addEventListener('DOMContentLoaded', function(){
         const contentField = document.querySelector('#id_content');
 
         if(!titleField || !titleField.value.trim()) {
-          alert('El título es requerido');
+          alert('{% trans 'The title is required' %}');
           e.preventDefault();
           return false;
         }
 
         if(!contentField || !contentField.value.trim()) {
-          alert('El contenido es requerido');
+          alert("{% trans 'Content is required' %}");
           e.preventDefault();
           return false;
         }
@@ -325,10 +328,10 @@ document.addEventListener('DOMContentLoaded', function(){
         if(success){ const cm = editor.codemirror; cm.replaceRange(`![${file.name}](${url})`, cm.getCursor()); }
         else{ errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + (message||'Error al subir la imagen'); errorDiv.style.display='block'; setTimeout(()=> errorDiv.style.display='none', 5000); }
       })
-      .catch(()=>{ statusDiv.style.display='none'; errorDiv.innerHTML='<i class="fas fa-exclamation-circle"></i> Error de conexión al subir la imagen'; errorDiv.style.display='block'; setTimeout(()=> errorDiv.style.display='none', 5000); });
+      .catch(()=>{ statusDiv.style.display='none'; errorDiv.innerHTML='<i class="fas fa-exclamation-circle"></i> {% trans 'Connection error while uploading the image' %}'; errorDiv.style.display='block'; setTimeout(()=> errorDiv.style.display='none', 5000); });
     }
 
-    // Tiempo de lectura automático
+    // {% trans 'Automatic reading time' %}
     easyMDE.codemirror.on('change', function(){
       const content = easyMDE.value();
       const words = content.trim()? content.trim().split(/\s+/).length : 0;
@@ -338,7 +341,7 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
-  // Fecha de publicación por defecto (ahora)
+  // {% trans 'Default publish date (current time)' %}
   const publishDateField = document.querySelector('#id_publish_date');
   if(publishDateField && !publishDateField.value){
     const now=new Date();
@@ -346,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function(){
     publishDateField.value = local;
   }
 
-  // Función auxiliar para sincronizar contenido
+  // {% trans 'Helper function to synchronize editor content' %}
   function syncEditorContent() {
     try {
       const contentField = document.querySelector('#id_content');
@@ -368,13 +371,13 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   }
 
-  // Botones de estado - Mejorado para sincronizar antes del envío
+  // {% trans 'Status buttons - ensure synchronization before submit' %}
   const saveDraftBtn = document.querySelector('button[name="save_draft"]');
   const publishBtn = document.querySelector('button[name="publish"]');
 
   if(saveDraftBtn){
     saveDraftBtn.addEventListener('click', function(e){
-      e.preventDefault(); // Prevenir envío inmediato
+      e.preventDefault(); // {% trans 'Prevent immediate submission' %}
 
       // Sincronizar contenido primero
       syncEditorContent();

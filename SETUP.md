@@ -27,6 +27,21 @@ git --version
 
 ---
 
+## Branch Selection
+
+- Use **`main`** for the single-language starter (no django-parler or automatic machine translation).
+- Use **`i18n`** (this guide) for multilingual editing, django-parler models, and LibreTranslate integration.
+
+Switch before installing dependencies:
+
+```bash
+git checkout main   # classic template
+# or
+git checkout i18n   # multilingual with auto translation
+```
+
+---
+
 ## 🚀 Installation Steps
 
 ### Step 1: Clone the Repository
@@ -158,6 +173,22 @@ python manage.py runserver
 # Quit the server with CTRL-BREAK.
 ```
 
+
+### Optional: Docker Compose (Web + LibreTranslate)
+
+If you prefer a containerised setup, Docker can run the Django app and LibreTranslate service together.
+
+```bash
+cp .env.example .env  # customise with your values
+docker compose up --build
+```
+
+The stack exposes:
+- Portfolio: http://127.0.0.1:8000/
+- LibreTranslate API: http://127.0.0.1:5000/
+
+Stop the stack with `docker compose down`. Code changes are synced through the mounted volume.
+
 ### Step 9: Access the Application
 
 Open your browser and navigate to:
@@ -280,6 +311,20 @@ See [Email Setup Guide](docs/EMAIL_SETUP.md) for detailed instructions.
 The site supports English and Spanish:
 - Default language: English
 - Language switcher in top-right corner
+### Automatic Translation Setup (i18n branch)
+
+1. Ensure a translation provider is reachable. `docker compose up` starts LibreTranslate on port 5000.
+2. Go to **Dashboard ?? Settings** and set:
+   - Default language (source language you edit in)
+   - Enable automatic translation
+   - Provider: `libretranslate`
+   - API URL: `http://libretranslate:5000` (or your hosted instance)
+   - Timeout: seconds to wait per request
+3. Save the form. The settings page shows whether the connection is healthy.
+4. Edit your profile/projects/blog posts in the default language. After saving, the edit screen displays the status for each translated language.
+
+**Tip**: to disable auto translation temporarily, uncheck the toggle in Settings. Existing manual translations are preserved.
+
 - Upload CVs in both languages
 
 ### Database

@@ -94,7 +94,10 @@ class SEOGenerator:
         
         title = f"{project.title} - Proyecto"
         description = cls._clean_text(project.description)[:160]
-        keywords = f"proyecto, {project.title}, " + ", ".join([tech.name for tech in project.technologies.all()[:5]])
+        keywords = f"proyecto, {project.title}, " + ", ".join([
+            tech.safe_translation_getter('name', any_language=True) or tech.identifier
+            for tech in project.technologies.all()[:5]
+        ])
         image_url = cls._get_image_url(project.image, request)
         canonical_url = f"{base_context['base_url']}{project.get_absolute_url()}"
         
