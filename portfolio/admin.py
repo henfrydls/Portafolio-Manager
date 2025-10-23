@@ -1,4 +1,6 @@
+from django import forms
 from django.contrib import admin
+from django.conf import settings
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.safestring import mark_safe
@@ -9,6 +11,7 @@ from .models import (
     Skill, Language, BlogPost, Contact, PageVisit, Category, ProjectType,
     AutoTranslationRecord,
 )
+from .forms import build_primary_language_choices
 
 
 class KnowledgeBaseInline(admin.TabularInline):
@@ -248,9 +251,36 @@ class KnowledgeBaseAdmin(TranslatableAdmin):
     apply_all_suggestions.short_description = "Aplicar todas las sugerencias"
 
 
+class ProjectAdminForm(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        language_code = translation.get_language() or settings.LANGUAGE_CODE
+        current_value = ''
+        if self.instance and getattr(self.instance, 'pk', None):
+            current_value = self.instance.primary_language or ''
+        original_field = self.fields.get('primary_language')
+        if original_field:
+            help_text = original_field.help_text
+            label = original_field.label
+            choices, initial_value = build_primary_language_choices(language_code, current_value)
+            self.fields['primary_language'] = forms.ChoiceField(
+                choices=choices,
+                required=False,
+                label=label,
+                help_text=help_text,
+            )
+            self.fields['primary_language'].initial = initial_value
+            self.fields['primary_language'].widget.attrs.setdefault('class', 'vSelect')
+
+
 @admin.register(Project)
 class ProjectAdmin(TranslatableAdmin):
     """Administración de proyectos"""
+    form = ProjectAdminForm
     list_display = ('title', 'project_type_obj', 'visibility', 'is_private_project', 'featured', 'featured_link_status', 'stars_count', 'primary_language', 'created_at')
     list_filter = ('project_type_obj', 'visibility', 'is_private_project', 'featured', 'primary_language', 'created_at')
     search_fields = ('translations__title', 'translations__description', 'translations__detailed_description', 'github_owner', 'primary_language')
@@ -306,6 +336,16 @@ class ProjectAdmin(TranslatableAdmin):
             kb_names.append(f"... (+{obj.knowledge_bases.count() - 3} más)")
         return ", ".join(kb_names) if kb_names else "Sin bases de conocimiento"
     knowledge_list.short_description = "Conocimientos"
+
+    def formfield_for_manytomany(self, db_field, request=None, **kwargs):
+        """
+        Use language-scoped queryset to avoid duplicated KnowledgeBase entries caused by translations.
+        """
+        if db_field.name == 'knowledge_bases':
+            language_code = getattr(request, 'LANGUAGE_CODE', None) or translation.get_language() or settings.LANGUAGE_CODE
+            queryset = KnowledgeBase.objects.language(language_code).distinct()
+            kwargs['queryset'] = queryset
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
     
     def image_preview(self, obj):
         """Muestra preview de la imagen del proyecto"""
@@ -347,7 +387,7 @@ class ExperienceAdmin(TranslatableAdmin):
     search_fields = ('translations__company', 'translations__position', 'translations__description')
     ordering = ('-start_date', 'order')
     date_hierarchy = 'start_date'
-    
+
     fieldsets = (
         ('Información del Trabajo', {
             'fields': ('company', 'position', 'description')
@@ -370,7 +410,7 @@ class EducationAdmin(TranslatableAdmin):
     search_fields = ('translations__institution', 'translations__degree', 'translations__field_of_study', 'translations__description')
     ordering = ('-end_date', '-start_date', 'order')
     date_hierarchy = 'start_date'
-    
+
     fieldsets = (
         ('Información Académica', {
             'fields': ('institution', 'degree', 'field_of_study', 'education_type')
@@ -396,7 +436,7 @@ class SkillAdmin(TranslatableAdmin):
     list_filter = ('category', 'proficiency', 'years_experience')
     search_fields = ('translations__name', 'category')
     ordering = ('category', '-proficiency', 'translations__name')
-    
+
     def proficiency_display(self, obj):
         """Muestra el nivel de competencia con texto"""
         return obj.get_proficiency_display()
@@ -429,7 +469,7 @@ class LanguageAdmin(TranslatableAdmin):
     search_fields = ('translations__name', 'code')
     ordering = ('order', 'translations__name')
     list_editable = ('order',)
-    
+
     fieldsets = (
         ('Información del Idioma', {
             'fields': ('code', 'name', 'proficiency')
@@ -452,6 +492,13 @@ class ProjectTypeAdmin(TranslatableAdmin):
     search_fields = ('translations__name', 'translations__description')
     ordering = ('order', 'translations__name')
     list_editable = ('order', 'is_active')
+
+    def get_queryset(self, request):
+        """Override to avoid duplicate project types (one per translation)"""
+        qs = super().get_queryset(request)
+        # Use current language to avoid showing duplicates
+        language_code = getattr(request, 'LANGUAGE_CODE', None) or translation.get_language() or settings.LANGUAGE_CODE
+        return qs.language(language_code).distinct()
 
     fieldsets = (
         ('Información Básica', {
@@ -490,6 +537,13 @@ class CategoryAdmin(TranslatableAdmin):
     ordering = ('order', 'translations__name')
     list_editable = ('order', 'is_active')
 
+    def get_queryset(self, request):
+        """Override to avoid duplicate categories (one per translation)"""
+        qs = super().get_queryset(request)
+        # Use current language to avoid showing duplicates
+        language_code = getattr(request, 'LANGUAGE_CODE', None) or translation.get_language() or settings.LANGUAGE_CODE
+        return qs.language(language_code).distinct()
+
     fieldsets = (
         ('Información Básica', {
             'fields': ('name', 'slug', 'description')
@@ -522,7 +576,7 @@ class BlogPostAdmin(TranslatableAdmin):
     search_fields = ('translations__title', 'translations__content', 'translations__excerpt', 'tags')
     date_hierarchy = 'publish_date'
     ordering = ('-publish_date', '-created_at')
-    
+
     fieldsets = (
         ('Contenido Principal', {
             'fields': ('title', 'slug', 'excerpt', 'content')

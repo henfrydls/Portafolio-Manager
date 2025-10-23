@@ -20,7 +20,7 @@ class ImageOptimizer:
     
     # Image quality settings
     QUALITY_SETTINGS = {
-        'high': 85,
+        'high': 100,  # Maximum quality for profile images
         'medium': 75,
         'low': 65,
         'thumbnail': 60
@@ -28,7 +28,7 @@ class ImageOptimizer:
     
     # Maximum dimensions for different image types
     MAX_DIMENSIONS = {
-        'profile': (250, 250),  # Exact size for profile images
+        'profile': (500, 500),  # Exact size for profile images (increased for better quality)
         'project': (1200, 800),
         'blog': (1200, 800),
         'thumbnail': (300, 300)
@@ -38,15 +38,15 @@ class ImageOptimizer:
     SUPPORTED_FORMATS = ['JPEG', 'PNG', 'WEBP']
     
     @classmethod
-    def optimize_profile_image(cls, image_file, target_size=250, quality='high'):
+    def optimize_profile_image(cls, image_file, target_size=500, quality='high'):
         """
         Optimize a profile image to exact square dimensions.
-        
+
         Args:
             image_file: Django UploadedFile or file-like object
-            target_size: Target width and height (default 250px)
+            target_size: Target width and height (default 500px)
             quality: Quality level for optimization
-            
+
         Returns:
             ContentFile: Optimized square image file
         """
@@ -303,8 +303,8 @@ def optimize_uploaded_image(image_field, image_type='project', quality='medium')
         # Use specific optimization for profile images
         if image_type == 'profile':
             optimized_file = ImageOptimizer.optimize_profile_image(
-                original_file, 
-                target_size=250,
+                original_file,
+                target_size=500,
                 quality=quality
             )
         else:

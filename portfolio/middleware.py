@@ -150,8 +150,9 @@ class PageVisitMiddleware(MiddlewareMixin):
         '/manifest.json',
         '/api/',  # Excluir todas las URLs de API
         '/manage/ajax/',  # Excluir llamadas AJAX del admin
-        
+
         # Páginas de administración del portfolio
+        '/setup/',  # Configuración inicial
         '/dashboard/',
         '/analytics/',
         '/admin-dashboard/',  # Ruta alternativa de dashboard

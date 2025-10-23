@@ -6,19 +6,14 @@ from django.utils.text import slugify
 
 CATEGORIES = [
     {
-        "order": 0,
+        "order": 1,
         "en": {"name": "Idea", "description": "Early concepts, brainstorming and product discovery notes."},
         "es": {"name": "Idea", "description": "Conceptos iniciales, lluvia de ideas y notas de descubrimiento."},
     },
     {
-        "order": 1,
+        "order": 2,
         "en": {"name": "Tutorial", "description": "How-to guides and walkthroughs to learn new skills."},
         "es": {"name": "Tutorial", "description": "Guías paso a paso para aprender nuevas habilidades."},
-    },
-    {
-        "order": 2,
-        "en": {"name": "Case Study", "description": "Detailed analyses of delivered projects and outcomes."},
-        "es": {"name": "Caso de estudio", "description": "Análisis detallados de proyectos entregados y resultados."},
     },
     {
         "order": 3,
@@ -30,38 +25,40 @@ CATEGORIES = [
         "en": {"name": "Review", "description": "Opinions on tools, books, events or industry trends."},
         "es": {"name": "Reseña", "description": "Opiniones sobre herramientas, libros, eventos o tendencias."},
     },
+    {
+        "order": 5,
+        "en": {"name": "Case Study", "description": "Detailed analyses of delivered projects and outcomes."},
+        "es": {"name": "Caso de estudio", "description": "Análisis detallados de proyectos entregados y resultados."},
+    },
 ]
-
 
 def create_default_categories(apps, schema_editor):
     Category = apps.get_model("portfolio", "Category")
     CategoryTranslation = apps.get_model("portfolio", "CategoryTranslation")
 
     for entry in CATEGORIES:
-        en_name = entry["en"]["name"]
-        slug = slugify(en_name)
+        slug = slugify(entry["en"]["name"])
 
-        if Category.objects.filter(slug=slug).exists():
-            continue
-
-        category = Category.objects.create(
+        category, _ = Category.objects.get_or_create(
             slug=slug,
-            is_active=True,
-            order=entry["order"],
+            defaults={"is_active": True, "order": entry["order"]},
         )
 
-        CategoryTranslation.objects.create(
-            master=category,
-            language_code="en",
-            name=entry["en"]["name"],
-            description=entry["en"]["description"],
+        CategoryTranslation.objects.update_or_create(
+            master=category, language_code="en",
+            defaults={
+                "name": entry["en"]["name"],
+                "description": entry["en"]["description"],
+            },
         )
-        CategoryTranslation.objects.create(
-            master=category,
-            language_code="es",
-            name=entry["es"]["name"],
-            description=entry["es"]["description"],
+        CategoryTranslation.objects.update_or_create(
+            master=category, language_code="es",
+            defaults={
+                "name": entry["es"]["name"],
+                "description": entry["es"]["description"],
+            },
         )
+
 
 
 def remove_default_categories(apps, schema_editor):

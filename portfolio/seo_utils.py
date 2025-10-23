@@ -16,8 +16,8 @@ class SEOGenerator:
     
     # Default SEO settings
     DEFAULT_TITLE = "Portfolio - Desarrollador Full Stack"
-    DEFAULT_DESCRIPTION = "Portfolio profesional de desarrollo web, proyectos innovadores y experiencia en tecnologías modernas."
-    DEFAULT_KEYWORDS = "desarrollador, full stack, web development, portfolio, proyectos, tecnología"
+    DEFAULT_DESCRIPTION = "Portfolio profesional de desarrollo web, proyectos innovadores y experiencia en tecnolog?as modernas."
+    DEFAULT_KEYWORDS = "desarrollador, full stack, web development, portfolio, proyectos, tecnolog?a"
     DEFAULT_AUTHOR = "Portfolio Developer"
     
     @classmethod
@@ -96,7 +96,7 @@ class SEOGenerator:
         description = cls._clean_text(project.description)[:160]
         keywords = f"proyecto, {project.title}, " + ", ".join([
             tech.safe_translation_getter('name', any_language=True) or tech.identifier
-            for tech in project.technologies.all()[:5]
+            for tech in project.knowledge_bases.all()[:5]
         ])
         image_url = cls._get_image_url(project.image, request)
         canonical_url = f"{base_context['base_url']}{project.get_absolute_url()}"
@@ -174,18 +174,18 @@ class SEOGenerator:
         
         if category:
             title = f"Blog - {category.name}"
-            description = f"Artículos sobre {category.name.lower()}. {category.description or 'Contenido especializado y actualizado.'}"
+            description = f"Art?culos sobre {category.name.lower()}. {category.description or 'Contenido especializado y actualizado.'}"
             canonical_url = f"{base_context['base_url']}{reverse('portfolio:post-list')}?category={category.slug}"
         else:
-            title = "Blog - Artículos y Noticias"
-            description = "Artículos sobre desarrollo web, tecnología y proyectos. Contenido actualizado regularmente."
+            title = "Blog - Art?culos y Noticias"
+            description = "Art?culos sobre desarrollo web, tecnolog?a y proyectos. Contenido actualizado regularmente."
             canonical_url = f"{base_context['base_url']}{reverse('portfolio:post-list')}"
         
         return {
             **base_context,
             'title': title,
             'description': description,
-            'keywords': "blog, artículos, desarrollo web, tecnología, noticias",
+            'keywords': "blog, art?culos, desarrollo web, tecnolog?a, noticias",
             'canonical_url': canonical_url,
             'og_type': 'website',
             'og_title': title,
@@ -210,11 +210,11 @@ class SEOGenerator:
         
         if profile:
             title = f"CV - {profile.name}"
-            description = f"Currículum profesional de {profile.name}. {profile.title}. Experiencia, educación y habilidades."
+            description = f"Curr?culum profesional de {profile.name}. {profile.title}. Experiencia, educaci?n y habilidades."
             author = profile.name
         else:
-            title = "CV - Currículum Profesional"
-            description = "Currículum profesional con experiencia, educación y habilidades técnicas."
+            title = "CV - Curr?culum Profesional"
+            description = "Curr?culum profesional con experiencia, educaci?n y habilidades t?cnicas."
             author = cls.DEFAULT_AUTHOR
         
         canonical_url = f"{base_context['base_url']}{reverse('portfolio:resume')}"
@@ -223,7 +223,7 @@ class SEOGenerator:
             **base_context,
             'title': title,
             'description': description,
-            'keywords': "cv, currículum, experiencia, educación, habilidades, profesional",
+            'keywords': "cv, curr?culum, experiencia, educaci?n, habilidades, profesional",
             'author': author,
             'canonical_url': canonical_url,
             'og_type': 'profile',
@@ -336,3 +336,5 @@ class SEOGenerator:
         clean_text = re.sub(r'\s+', ' ', clean_text).strip()
         
         return clean_text
+
+

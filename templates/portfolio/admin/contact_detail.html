@@ -1,14 +1,14 @@
 {% extends "portfolio/admin/base_admin.html" %}
-{% load static %}
+{% load static i18n %}
 
-{% block admin_title %}Mensaje de {{ object.name }}{% endblock %}
+{% block admin_title %}{% trans "Message from" %} {{ object.name }}{% endblock %}
 
 {% block admin_actions %}
 <a href="{% url 'portfolio:admin-contact-list' %}" class="btn btn-outline-secondary">
-    <i class="fas fa-arrow-left me-1"></i>Volver a Mensajes
+    <i class="fas fa-arrow-left me-1"></i>{% trans "Back to Messages" %}
 </a>
 <a href="mailto:{{ object.email }}?subject=Re: {{ object.subject }}" class="btn btn-success">
-    <i class="fas fa-reply me-1"></i>Responder
+    <i class="fas fa-reply me-1"></i>{% trans "Reply" %}
 </a>
 {% endblock %}
 
@@ -22,9 +22,9 @@
                 </h5>
                 <div>
                     {% if not object.read %}
-                        <span class="badge bg-warning">Nuevo</span>
+                        <span class="badge bg-warning">{% trans "New" %}</span>
                     {% else %}
-                        <span class="badge bg-secondary">Leído</span>
+                        <span class="badge bg-secondary">{% trans "Read" %}</span>
                     {% endif %}
                 </div>
             </div>
@@ -33,19 +33,19 @@
                     <div class="mb-4 p-3 bg-light rounded">
                         <div class="row">
                             <div class="col-md-6">
-                                <strong>De:</strong> {{ object.name }}<br>
-                                <strong>Email:</strong> 
+                                <strong>{% trans "From:" %}</strong> {{ object.name }}<br>
+                                <strong>{% trans "Email:" %}</strong>
                                 <a href="mailto:{{ object.email }}">{{ object.email }}</a>
                             </div>
                             <div class="col-md-6 text-md-end">
-                                <strong>Fecha:</strong> {{ object.created_at|date:"d/m/Y H:i" }}<br>
-                                <strong>Asunto:</strong> {{ object.subject }}
+                                <strong>{% trans "Date:" %}</strong> {{ object.created_at|date:"d/m/Y H:i" }}<br>
+                                <strong>{% trans "Subject:" %}</strong> {{ object.subject }}
                             </div>
                         </div>
                     </div>
 
                     <div class="message-body">
-                        <h6>Mensaje:</h6>
+                        <h6>{% trans "Message:" %}</h6>
                         <div class="border rounded p-3 bg-white">
                             {{ object.message|linebreaks }}
                         </div>
@@ -55,20 +55,20 @@
             <div class="card-footer">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <button class="btn btn-outline-secondary toggle-read" 
+                        <button class="btn btn-outline-secondary toggle-read"
                                 data-contact-id="{{ object.id }}"
                                 data-read="{{ object.read|yesno:'true,false' }}">
                             {% if object.read %}
-                                <i class="fas fa-envelope me-1"></i>Marcar como no leído
+                                <i class="fas fa-envelope me-1"></i>{% trans "Mark as unread" %}
                             {% else %}
-                                <i class="fas fa-envelope-open me-1"></i>Marcar como leído
+                                <i class="fas fa-envelope-open me-1"></i>{% trans "Mark as read" %}
                             {% endif %}
                         </button>
                     </div>
                     <div>
-                        <a href="{% url 'portfolio:admin-contact-delete' object.pk %}" 
+                        <a href="{% url 'portfolio:admin-contact-delete' object.pk %}"
                            class="btn btn-outline-danger">
-                            <i class="fas fa-trash me-1"></i>Eliminar
+                            <i class="fas fa-trash me-1"></i>{% trans "Delete" %}
                         </a>
                     </div>
                 </div>
@@ -80,7 +80,7 @@
         <div class="card">
             <div class="card-header">
                 <h6 class="card-title mb-0">
-                    <i class="fas fa-user me-2"></i>Información del Remitente
+                    <i class="fas fa-user me-2"></i>{% trans "Sender Information" %}
                 </h6>
             </div>
             <div class="card-body">
@@ -98,11 +98,11 @@
 
                 <div class="d-grid gap-2">
                     <a href="mailto:{{ object.email }}" class="btn btn-primary">
-                        <i class="fas fa-envelope me-1"></i>Enviar Email
+                        <i class="fas fa-envelope me-1"></i>{% trans "Send Email" %}
                     </a>
-                    <a href="mailto:{{ object.email }}?subject=Re: {{ object.subject }}&body=Hola {{ object.name }},%0D%0A%0D%0AGracias por tu mensaje. " 
+                    <a href="mailto:{{ object.email }}?subject=Re: {{ object.subject }}&body={% trans 'Hello' %} {{ object.name }},%0D%0A%0D%0A{% trans 'Thank you for your message.' %} "
                        class="btn btn-outline-primary">
-                        <i class="fas fa-reply me-1"></i>Responder
+                        <i class="fas fa-reply me-1"></i>{% trans "Reply" %}
                     </a>
                 </div>
             </div>
@@ -111,30 +111,30 @@
         <div class="card mt-3">
             <div class="card-header">
                 <h6 class="card-title mb-0">
-                    <i class="fas fa-info-circle me-2"></i>Detalles del Mensaje
+                    <i class="fas fa-info-circle me-2"></i>{% trans "Message Details" %}
                 </h6>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-12">
-                        <small class="text-muted">Recibido:</small><br>
+                        <small class="text-muted">{% trans "Received:" %}</small><br>
                         <strong>{{ object.created_at|date:"d/m/Y" }}</strong><br>
                         <small>{{ object.created_at|date:"H:i" }}</small>
                     </div>
                 </div>
-                
+
                 <hr>
-                
+
                 <div class="row">
                     <div class="col-12">
-                        <small class="text-muted">Estado:</small><br>
+                        <small class="text-muted">{% trans "Status:" %}</small><br>
                         {% if object.read %}
                             <span class="badge bg-success">
-                                <i class="fas fa-check me-1"></i>Leído
+                                <i class="fas fa-check me-1"></i>{% trans "Read" %}
                             </span>
                         {% else %}
                             <span class="badge bg-warning">
-                                <i class="fas fa-exclamation me-1"></i>Nuevo
+                                <i class="fas fa-exclamation me-1"></i>{% trans "New" %}
                             </span>
                         {% endif %}
                     </div>
@@ -144,9 +144,9 @@
 
                 <div class="row">
                     <div class="col-12">
-                        <small class="text-muted">Longitud del mensaje:</small><br>
-                        <strong>{{ object.message|wordcount }} palabras</strong><br>
-                        <small>{{ object.message|length }} caracteres</small>
+                        <small class="text-muted">{% trans "Message length:" %}</small><br>
+                        <strong>{{ object.message|wordcount }} {% trans "words" %}</strong><br>
+                        <small>{{ object.message|length }} {% trans "characters" %}</small>
                     </div>
                 </div>
             </div>
@@ -156,18 +156,18 @@
         <div class="card mt-3">
             <div class="card-header">
                 <h6 class="card-title mb-0">
-                    <i class="fas fa-bolt me-2"></i>Acciones Rápidas
+                    <i class="fas fa-bolt me-2"></i>{% trans "Quick Actions" %}
                 </h6>
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <button class="btn btn-outline-success btn-sm copy-email" 
+                    <button class="btn btn-outline-success btn-sm copy-email"
                             data-email="{{ object.email }}">
-                        <i class="fas fa-copy me-1"></i>Copiar Email
+                        <i class="fas fa-copy me-1"></i>{% trans "Copy Email" %}
                     </button>
-                    <button class="btn btn-outline-info btn-sm copy-message" 
+                    <button class="btn btn-outline-info btn-sm copy-message"
                             data-message="{{ object.message }}">
-                        <i class="fas fa-copy me-1"></i>Copiar Mensaje
+                        <i class="fas fa-copy me-1"></i>{% trans "Copy Message" %}
                     </button>
                 </div>
             </div>
@@ -183,47 +183,47 @@
 document.querySelector('.toggle-read').addEventListener('click', function() {
     const contactId = this.dataset.contactId;
     const isRead = this.dataset.read === 'true';
-    
-    quickToggle('{% url "portfolio:ajax-toggle-contact-read" %}', 
-        { contact_id: contactId }, 
+
+    quickToggle('{% url "portfolio:ajax-toggle-contact-read" %}',
+        { contact_id: contactId },
         (data) => {
             // Update button appearance
             const icon = this.querySelector('i');
-            
+
             if (data.read) {
                 icon.className = 'fas fa-envelope me-1';
-                this.innerHTML = '<i class="fas fa-envelope me-1"></i>Marcar como no leído';
+                this.innerHTML = '<i class="fas fa-envelope me-1"></i>{% trans "Mark as unread" %}';
                 this.dataset.read = 'true';
-                
+
                 // Update badge in header
                 const badge = document.querySelector('.card-header .badge');
                 badge.className = 'badge bg-secondary';
-                badge.textContent = 'Leído';
-                
+                badge.textContent = '{% trans "Read" %}';
+
                 // Update status in sidebar
                 const statusBadge = document.querySelector('.badge.bg-success, .badge.bg-warning');
                 if (statusBadge) {
                     statusBadge.className = 'badge bg-success';
-                    statusBadge.innerHTML = '<i class="fas fa-check me-1"></i>Leído';
+                    statusBadge.innerHTML = '<i class="fas fa-check me-1"></i>{% trans "Read" %}';
                 }
             } else {
                 icon.className = 'fas fa-envelope-open me-1';
-                this.innerHTML = '<i class="fas fa-envelope-open me-1"></i>Marcar como leído';
+                this.innerHTML = '<i class="fas fa-envelope-open me-1"></i>{% trans "Mark as read" %}';
                 this.dataset.read = 'false';
-                
+
                 // Update badge in header
                 const badge = document.querySelector('.card-header .badge');
                 badge.className = 'badge bg-warning';
-                badge.textContent = 'Nuevo';
-                
+                badge.textContent = '{% trans "New" %}';
+
                 // Update status in sidebar
                 const statusBadge = document.querySelector('.badge.bg-success, .badge.bg-warning');
                 if (statusBadge) {
                     statusBadge.className = 'badge bg-warning';
-                    statusBadge.innerHTML = '<i class="fas fa-exclamation me-1"></i>Nuevo';
+                    statusBadge.innerHTML = '<i class="fas fa-exclamation me-1"></i>{% trans "New" %}';
                 }
             }
-            
+
             // Show success message
             showSuccessMessage(data.message);
         }
@@ -234,14 +234,14 @@ document.querySelector('.toggle-read').addEventListener('click', function() {
 document.querySelector('.copy-email').addEventListener('click', function() {
     const email = this.dataset.email;
     navigator.clipboard.writeText(email).then(() => {
-        showSuccessMessage('Email copiado al portapapeles');
+        showSuccessMessage('{% trans "Email copied to clipboard" %}');
     });
 });
 
 document.querySelector('.copy-message').addEventListener('click', function() {
     const message = this.dataset.message;
     navigator.clipboard.writeText(message).then(() => {
-        showSuccessMessage('Mensaje copiado al portapapeles');
+        showSuccessMessage('{% trans "Message copied to clipboard" %}');
     });
 });
 

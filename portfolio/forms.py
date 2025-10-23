@@ -469,6 +469,45 @@ class SecureProfileForm(TranslatableModelForm):
         return instance
 
 
+def build_primary_language_choices(language_code, current_value=""):
+    """
+    Build select options for the primary knowledge base field.
+
+    Returns (choices, initial_value).
+    """
+    queryset = (
+        KnowledgeBase.objects.language(language_code)
+        .order_by('translations__name')
+        .distinct()
+    )
+    choices = [('', _("Select primary knowledge base"))]
+    seen_identifiers = set()
+    value_map = {}
+
+    for kb in queryset:
+        identifier = (kb.identifier or str(kb.pk)).strip()
+        if not identifier or identifier in seen_identifiers:
+            continue
+        label = kb.safe_translation_getter('name', any_language=True) or identifier
+        choices.append((identifier, label))
+        seen_identifiers.add(identifier)
+        value_map[identifier.lower()] = identifier
+        if label:
+            value_map[label.lower()] = identifier
+
+    initial_value = ""
+    if current_value:
+        stored = current_value.strip()
+        match = value_map.get(stored.lower())
+        if match:
+            initial_value = match
+        else:
+            choices.append((stored, stored))
+            initial_value = stored
+
+    return choices, initial_value
+
+
 class SecureProjectForm(TranslatableModelForm):
     """
     Project form with file upload validation.
@@ -479,6 +518,23 @@ class SecureProjectForm(TranslatableModelForm):
         if language_code:
             self.language_code = language_code
         super().__init__(*args, **kwargs)
+        active_language = getattr(self, 'language_code', None) or translation.get_language() or settings.LANGUAGE_CODE
+        current_value = ''
+        if self.instance and getattr(self.instance, 'pk', None):
+            current_value = self.instance.primary_language or ''
+        original_field = self.fields.get('primary_language')
+        if original_field:
+            help_text = original_field.help_text
+            label = original_field.label or _("Primary knowledge base")
+            choices, initial_value = build_primary_language_choices(active_language, current_value)
+            self.fields['primary_language'] = forms.ChoiceField(
+                choices=choices,
+                required=False,
+                label=label,
+                help_text=help_text,
+            )
+            self.fields['primary_language'].initial = initial_value
+            self.fields['primary_language'].widget.attrs.setdefault('class', 'form-select')
 
     class Meta:
         model = Project

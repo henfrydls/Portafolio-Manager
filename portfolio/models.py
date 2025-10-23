@@ -345,14 +345,23 @@ class KnowledgeBase(TranslatableModel):
         'REST API': 'fas fa-exchange-alt',
 
         # Áreas de Conocimiento - Energía y Ingeniería
-        'BESS': 'fas fa-battery-full',
+        'Battery Energy Storage': 'fas fa-battery-full',
         'Renewable Energy': 'fas fa-solar-panel',
         'AutoCAD': 'fas fa-drafting-compass',
+        'Microgrid Planning': 'fas fa-plug',
 
         # Áreas de Conocimiento - Negocios y Gestión
         'Business Development': 'fas fa-chart-line',
         'Project Management': 'fas fa-tasks',
         'Innovation Management': 'fas fa-lightbulb',
+        'Design Thinking': 'fas fa-lightbulb',
+        'Sustainability Strategy': 'fas fa-leaf',
+        'Agile': 'fas fa-sync-alt',
+
+        # Áreas de Conocimiento - Tecnología y Datos
+        'Data Analytics': 'fas fa-chart-line',
+        'Machine Learning': 'fas fa-brain',
+        'Edge Computing': 'fas fa-network-wired',
     }
     
     translations = TranslatedFields(
@@ -478,13 +487,23 @@ class KnowledgeBase(TranslatableModel):
 
             # Áreas de Conocimiento - Energía y Ingeniería
             'BESS': '#28a745',
+            'Battery Energy Storage': '#4CAF50',
             'Renewable Energy': '#8bc34a',
             'AutoCAD': '#e51937',
+            'Microgrid Planning': '#4A90E2',
 
             # Áreas de Conocimiento - Negocios y Gestión
             'Business Development': '#0066cc',
             'Project Management': '#ff6b6b',
             'Innovation Management': '#ffd700',
+            'Design Thinking': '#E67E22',
+            'Sustainability Strategy': '#2ECC71',
+            'Agile': '#009688',
+
+            # Áreas de Conocimiento - Tecnología y Datos
+            'Data Analytics': '#8E44AD',
+            'Machine Learning': '#F39C12',
+            'Edge Computing': '#2C3E50',
         }
         key = self.identifier or self.safe_translation_getter('name', any_language=True)
         return color_mapping.get(key, '#000000')

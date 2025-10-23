@@ -71,13 +71,21 @@ COMMON_KNOWLEDGE_ICONS = {
     "GraphQL": "fas fa-project-diagram",
     "REST API": "fas fa-exchange-alt",
     # Knowledge Areas - Energy and Engineering
-    "BESS": "fas fa-battery-full",
+    "Battery Energy Storage": "fas fa-battery-full",
     "Renewable Energy": "fas fa-solar-panel",
     "AutoCAD": "fas fa-drafting-compass",
+    "Microgrid Planning": "fas fa-plug",
     # Knowledge Areas - Business and Management
     "Business Development": "fas fa-chart-line",
     "Project Management": "fas fa-tasks",
     "Innovation Management": "fas fa-lightbulb",
+    "Design Thinking": "fas fa-lightbulb",
+    "Sustainability Strategy": "fas fa-leaf",
+    "Agile": "fas fa-sync-alt",
+    # Knowledge Areas - Technology and Data
+    "Data Analytics": "fas fa-chart-line",
+    "Machine Learning": "fas fa-brain",
+    "Edge Computing": "fas fa-network-wired",
 }
 
 
@@ -140,11 +148,19 @@ COLOR_MAPPING = {
     "GraphQL": "#e10098",
     "REST API": "#009688",
     "BESS": "#28a745",
+    "Battery Energy Storage": "#4CAF50",
     "Renewable Energy": "#8bc34a",
     "AutoCAD": "#e51937",
+    "Microgrid Planning": "#4A90E2",
     "Business Development": "#0066cc",
     "Project Management": "#ff6b6b",
     "Innovation Management": "#ffd700",
+    "Design Thinking": "#E67E22",
+    "Sustainability Strategy": "#2ECC71",
+    "Agile": "#009688",
+    "Data Analytics": "#8E44AD",
+    "Machine Learning": "#F39C12",
+    "Edge Computing": "#2C3E50",
 }
 
 
