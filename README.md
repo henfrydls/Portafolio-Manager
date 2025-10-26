@@ -1,415 +1,138 @@
-# Django Portfolio - Professional Portfolio Website
+# Portfolio Manager (Django)
 
-A professional Django-based portfolio website featuring a modern design, comprehensive admin panel, and bilingual support. Perfect for developers, designers, and professionals who want to showcase their work online.
+A professional portfolio and blog platform for developers and technology consultants. The application is built on Django 5.2, ships with a modern front-end, and includes tooling to manage projects, blog posts, skills, languages, and resumes from a friendly admin dashboard. English and Spanish translations are handled through django-parler with optional LibreTranslate automation.
 
-> **⚠️ Important**: All content and configuration must be set through environment variables and the admin panel.
+> Important: All runtime configuration (branding, personal data, content catalogs, etc.) is managed through environment variables and the Django admin. Edit the codebase only when you want to extend features or adjust the layout.
 
-## ✨ Features
+## Repository
 
-- **Modern Portfolio Design** with fixed sidebar layout and responsive design
-- **Comprehensive Admin Panel** for content management with analytics dashboard
-- **Blog System** with Medium-style posts, categories, and rich content editing
-- **Project Showcase** with catalog-driven filtering and public/private visibility
-- **Catalog Management** for categories, project types, and knowledge bases
-- **Resume Management** with web version and PDF download
-- **Contact System** with secure forms and email notifications
-- **Analytics Tracking** with visit statistics and performance metrics
-- **Bilingual Support** (English/Spanish) with custom translation system
-- **SEO Optimization** with meta tags, sitemaps, and structured data
-- **Security Features** including CSRF protection, file validation, and rate limiting
-- **Automatic Translation Pipeline** (branch `i18n`) with LibreTranslate integration and per-language status tracking
+- GitHub: https://github.com/henfrydls/Portafolio-Manager.git
+- Default branch: `main`
 
-## Project Variants
+## Highlights
 
-- **`main`** – single-language template without django-parler or automatic translation. Ideal when you just need the classic portfolio.
-- **`i18n`** – multilingual template (this branch) with django-parler, automatic translation, and LibreTranslate integration. Requires the additional setup described below.
+- Responsive portfolio layout with fixed sidebar navigation.
+- Admin analytics dashboard summarizing visits, inbox messages, and catalog stats.
+- Project catalog with rich metadata, ordering, visibility control, and knowledge base links.
+- Medium-style blog with categories, tags, featured images, and publication workflow.
+- Resume module that renders a public HTML profile and generates PDF downloads.
+- Secure contact form with rate limiting, server-side validation, and inbox management.
+- Automatic translation pipeline (EN ↔ ES) powered by django-parler and LibreTranslate.
+- Hardened uploads with file-type checks, image optimization, and safe storage.
+- SEO helpers including sitemaps, canonical metadata, and structured data snippets.
 
-Clone the branch that best matches your needs. You can keep both branches up-to-date by cherry-picking neutral improvements from `i18n` into `main`.
+## Technology Stack
 
-## 🛠️ Technologies
+- Django 5.2 LTS
+- SQLite for local development (swap for PostgreSQL/MySQL in production)
+- Bootstrap-based theme bundled with WhiteNoise for static delivery
+- Pillow for image processing
+- Optional Docker Compose stack for LibreTranslate integration
 
-- **Backend**: Django 5.2 LTS
-- **Database**: SQLite (development)
-- **Frontend**: HTML5, CSS3, JavaScript, Bootstrap 5
-- **Static Files**: WhiteNoise for efficient static file serving
-- **Email**: Django Email Backend with SMTP support
-- **Image Processing**: Pillow for image optimization
-- **Security**: Django security middleware and custom protections
+## Prerequisites
 
-## 📋 Prerequisites
-
-- Python 3.10 or higher
-- pip (Python package manager)
+- Python 3.10+
+- pip
 - Git
-- Code editor (VS Code recommended)
+- (optional) Docker Desktop 4.0+ if you plan to run the compose stack
 
-## 🚀 Quick Start
-
-### 1. Clone and Setup
+## Quick Start
 
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd portfolio
+git clone https://github.com/henfrydls/Portafolio-Manager.git
+cd Portafolio-Manager
 
-# Create virtual environment
+# Create a virtual environment
 python -m venv .venv
-
-# Activate virtual environment
-# On Windows:
-.venv\Scripts\activate
-# On macOS/Linux:
-source .venv/bin/activate
+.venv\Scripts\activate        # Windows
+# source .venv/bin/activate   # macOS / Linux
 
 # Install dependencies
+pip install --upgrade pip
 pip install -r requirements/development.txt
 ```
 
-### 2. Configure Environment
+Copy the example environment file and customise the values:
 
 ```bash
-# Copy environment template
-cp .env.example .env
-
-# Edit .env file with your settings
-# At minimum, set:
-# - SECRET_KEY (generate a new one)
-# - DEBUG=True (for development)
-# - ALLOWED_HOSTS=localhost,127.0.0.1
+copy .env.example .env        # Windows
+# cp .env.example .env        # macOS / Linux
 ```
 
-### 3. Initialize Database
+Minimum variables to review:
+
+- `SECRET_KEY` – generate a unique value (`python -c "from django.core.management.utils import get_random_secret_key as g; print(g())"`)
+- `DEBUG=True` for local development
+- `ALLOWED_HOSTS=localhost,127.0.0.1`
+- Email settings if you need outbound notifications
+
+Initialize the database and start the development server:
 
 ```bash
-# Run migrations
 python manage.py migrate
-
-# Create superuser
 python manage.py createsuperuser
-
-# Collect static files
 python manage.py collectstatic --noinput
-```
-
-### 4. Run Development Server
-
-```bash
-# Start the development server
 python manage.py runserver
-
-# Access the application:
-# - Portfolio: http://127.0.0.1:8000/
-# - Admin Panel: http://127.0.0.1:8000/admin/
 ```
 
-### Optional: Docker Compose (app + LibreTranslate)
+Visit the following URLs:
 
-For a ready-to-run stack (Django + LibreTranslate), make sure Docker Desktop is running and then:
+- Portfolio: <http://127.0.0.1:8000/>
+- Admin dashboard: <http://127.0.0.1:8000/admin/>
+
+## Docker Compose (Optional)
+
+Run the entire stack (Django + LibreTranslate) with Docker:
 
 ```bash
-cp .env.example .env  # populate with your values
+cp .env.example .env          # or use copy on Windows
 docker compose up --build
 ```
 
-Services exposed:
+Services:
 
-- Portfolio: http://127.0.0.1:8000/
-- LibreTranslate API: http://127.0.0.1:5000/
+- Django app: <http://127.0.0.1:8000/>
+- LibreTranslate API: <http://127.0.0.1:5000/>
 
-The `web` container mounts your local project, so code changes reload automatically. Stop the stack with `docker compose down`.
+The `web` container mounts the project directory, so code edits trigger a reload. Stop the stack with `docker compose down`.
 
-## 📝 Initial Setup
+## Initial Configuration Checklist
 
-After running the server, configure your portfolio:
+1. Sign in to the Django admin and complete your **Profile** record.
+2. Review the autogenerated catalog entries (project types, categories, knowledge bases). They are seeded via migrations; if you re-run migrations on a fresh database you will always get exactly one record per slug.
+3. Add projects, blog posts, skills, experiences, languages, and resume entries.
+4. Configure **Dashboard → Settings** to enable automatic translations. Point `translation_api_url` to LibreTranslate (local or hosted) and toggle `auto_translate_enabled`.
+5. Test the public website and contact form to confirm emails and analytics tracking are working.
 
-1. **Login to Admin Panel**: http://127.0.0.1:8000/admin/
-2. **Create Profile**: Add your personal information
-3. **Add Projects**: Showcase your work
-4. **Write Blog Posts**: Share your thoughts
-5. **Configure Skills**: List your expertise
-6. **Add Experience**: Your work history
+## Documentation Index
 
-See [Admin Usage Guide](docs/ADMIN_USAGE.md) for detailed instructions.
+- `SETUP.md` – detailed installation, troubleshooting, and maintenance guide.
+- `docs/CONFIGURATION_GUIDE.md` – environment variables, production hints, and security settings.
+- `docs/ADMIN_USAGE.md` – workflows for managing profile, projects, blog posts, and catalogs.
+- `docs/EMAIL_SETUP.md` – SMTP configuration for Gmail, Outlook, and custom providers.
+- `docs/TEST_DATA.md` – using the management command to populate sample content.
+- `docs/DOCUMENTATION_INDEX.md` – master table of contents that links every guide.
 
-## 🔧 Configuration
+## Developer Utilities
 
-### Environment Variables
+- Run tests: `python manage.py test`
+- Seed demo content: `python manage.py populate_test_data`
+- Review translation status: `python verify_translations.py`
 
-Key environment variables in `.env`:
+## Production Considerations
 
-```env
-# Django Settings
-SECRET_KEY=your-secret-key-here
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
+- Set `DEBUG=False`, configure strong `SECRET_KEY`, and lock down `ALLOWED_HOSTS`.
+- Switch the database to a managed service (PostgreSQL recommended) and update `.env`.
+- Serve static files via a CDN or reverse proxy; configure media storage (S3, Azure Blob, etc.).
+- Use HTTPS and apply Django security middleware settings (`SECURE_*`, `SESSION_COOKIE_SECURE`, etc.).
+- Provision a robust email backend (e.g., SendGrid, Mailgun, SES).
+- Add monitoring/logging (Sentry, ELK, or similar) as part of your deployment pipeline.
 
-# Database (SQLite by default)
-# No configuration needed for development
+## Contributing
 
-# Email Configuration (optional)
-EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USE_TLS=True
-EMAIL_HOST_USER=your-email@gmail.com
-EMAIL_HOST_PASSWORD=your-app-password
-DEFAULT_FROM_EMAIL=your-email@gmail.com
+Issues and pull requests are welcome. Please describe the motivation for changes and reference any relevant documentation updates in your PR.
 
-# Security (for production)
-SECURE_SSL_REDIRECT=False
-SESSION_COOKIE_SECURE=False
-CSRF_COOKIE_SECURE=False
-```
+## License
 
-See [Configuration Guide](docs/CONFIGURATION_GUIDE.md) for all options.
-
-## 📧 Email Configuration
-
-For contact form functionality, configure email settings:
-
-1. **Development**: Uses console backend (emails printed to console)
-2. **Production**: Configure SMTP settings in `.env`
-
-See [Email Setup Guide](docs/EMAIL_SETUP.md) for detailed instructions.
-
-## 🎨 Customization
-
-### Adding Content
-
-All content is managed through the admin panel:
-- **Profile**: Personal information and social links
-- **Projects**: Portfolio items with images and descriptions
-- **Blog Posts**: Articles and tutorials
-- **Catalogs**: Categories, project types, and knowledge bases that feed filters
-- **Skills**: Technical skills and proficiency levels
-- **Experience**: Work history
-- **Education**: Academic background and certifications
-
-### Bilingual Support
-
-The site supports English and Spanish:
-- **Language Switcher**: Top-right corner for easy language switching
-- **Translatable UI**: All interface text is translatable
-- **Multilingual CVs**: Upload separate PDF resumes for English and Spanish
-  - System automatically serves the correct CV based on visitor's language
-  - Falls back to available CV if requested language is not available
-  - Manage both versions through the admin panel
-- **Automatic Detection**: Language preference is detected and applied automatically
-
-## 🗂️ Project Structure
-
-```
-portfolio/
-├── config/                     # Django settings
-│   ├── settings/
-│   │   ├── base.py            # Base settings
-│   │   └── development.py     # Development settings
-│   ├── urls.py                # URL configuration
-│   └── wsgi.py                # WSGI configuration
-│
-├── portfolio/                  # Main application
-│   ├── models.py              # Database models
-│   ├── views.py               # View logic
-│   ├── admin.py               # Admin configuration
-│   ├── forms.py               # Form definitions
-│   └── templatetags/          # Custom template tags
-│
-├── templates/                  # HTML templates
-│   ├── base.html              # Base template
-│   └── portfolio/             # App templates
-│
-├── static/                     # Static files (CSS, JS, images)
-├── media/                      # User-uploaded files
-├── locale/                     # Translation files
-├── requirements/               # Dependencies
-│   ├── base.txt               # Base dependencies
-│   └── development.txt        # Development dependencies
-│
-├── docs/                       # Documentation
-├── .env.example               # Environment variables template
-├── manage.py                  # Django management script
-└── README.md                  # This file
-```
-
-## 🧪 Development
-
-### Running Tests
-
-```bash
-# Run all tests
-python manage.py test
-
-# Run specific app tests
-python manage.py test portfolio
-
-# Run with coverage
-coverage run --source='.' manage.py test
-coverage report
-```
-
-### Database Management
-
-```bash
-# Create migrations
-python manage.py makemigrations
-
-# Apply migrations
-python manage.py migrate
-
-# Reset database (careful!)
-python manage.py flush
-
-# Create superuser
-python manage.py createsuperuser
-```
-
-- **Translation (i18n branch)**
-
-```env
-TRANSLATION_PROVIDER=libretranslate
-TRANSLATION_API_URL=http://libretranslate:5000
-TRANSLATION_API_KEY=            # optional if your server requires it
-```
-
-- If you run `docker compose up`, these defaults already point to the bundled LibreTranslate service.
-- After enabling “Auto translate” in **Dashboard → Settings**, the site will attempt to translate new/updated content into every language listed in `settings.LANGUAGES` except the default one.
-
-### Static Files
-
-```bash
-# Collect static files
-python manage.py collectstatic
-
-# Clear collected static files
-python manage.py collectstatic --clear
-```
-
-### Translation Verification
-
-```bash
-# Verify all translations are complete
-python verify_translations.py
-```
-
-### Automatic Translation Workflow (i18n branch)
-
-1. Ensure a translation provider is reachable. The included docker compose file launches LibreTranslate on port 5000.
-2. Add/update the configuration in **Dashboard → Settings**:
-   - Default language (source language for content entry)
-   - Enable automatic translation
-   - Provider: `libretranslate`
-   - API URL: e.g. `http://libretranslate:5000`
-   - Timeout (seconds) according to your environment
-3. Edit your profile, projects, blog posts, etc. in the default language.
-4. After saving, the edit view shows the status of every target language (generated, pending, or failed). Failures include the returned error so you can retry.
-5. You can regenerate translations manually by editing the item again after fixing the root cause (e.g., API downtime).
-
-## 📚 Documentation
-
-### Getting Started
-1. **[SETUP.md](SETUP.md)** - Complete installation guide
-   - Prerequisites and requirements
-   - Step-by-step installation
-   - Initial configuration
-   - Troubleshooting
-
-2. **[docs/CONFIGURATION_GUIDE.md](docs/CONFIGURATION_GUIDE.md)** - System configuration
-   - Environment variables
-   - Settings configuration
-   - Security settings
-
-### User Guides
-3. **[docs/ADMIN_USAGE.md](docs/ADMIN_USAGE.md)** - Admin panel guide
-   - Content management
-   - Profile setup
-   - Projects and blog management
-   - Skills and experience
-
-4. **[docs/EMAIL_SETUP.md](docs/EMAIL_SETUP.md)** - Email configuration
-   - SMTP setup
-   - Email testing
-   - Troubleshooting
-
-5. **[docs/MULTILINGUAL_CV.md](docs/MULTILINGUAL_CV.md)** - CV feature
-   - Upload CVs in multiple languages
-   - Automatic language detection
-   - Admin interface
-
-### Maintenance Tools
-- **verify_translations.py** - Verify translation completeness
-  ```bash
-  python verify_translations.py
-  ```
-
-## 🔒 Security
-
-### Development
-- DEBUG mode enabled
-- Console email backend
-- Permissive CORS settings
-
-### Production Considerations
-- Set `DEBUG=False`
-- Configure proper `ALLOWED_HOSTS`
-- Use strong `SECRET_KEY`
-- Enable HTTPS settings
-- Configure real email backend
-- Set up proper database (PostgreSQL recommended)
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**Port already in use**:
-```bash
-# Use different port
-python manage.py runserver 8001
-```
-
-**Static files not loading**:
-```bash
-# Collect static files
-python manage.py collectstatic --noinput
-```
-
-**Database errors**:
-```bash
-# Reset migrations (development only!)
-python manage.py migrate --run-syncdb
-```
-
-**Translation issues**:
-```bash
-# Verify translations
-python verify_translations.py
-```
-
-**Template syntax errors**:
-```bash
-# If you see "Invalid block tag" errors:
-# - Check that template tags are not split across multiple lines
-# - Ensure {% if %}, {% for %}, {% trans %} tags are properly closed
-# - Django template tags must be on single lines or properly indented
-```
-
-## 📄 License
-
-This project is open source and available under the MIT License.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📞 Support
-
-For questions, issues, or contributions:
-- **Documentation**: Check the `docs/` folder for detailed guides
-- **Issues**: Create an issue on your GitHub repository
-- **Django Community**: https://forum.djangoproject.com/
-
----
-
-**Version**: 1.0  
-**Django**: 5.2 LTS  
-**Python**: 3.10+  
-**Status**: Production Ready
+This project is available under the MIT License. See `LICENSE` for the full text.

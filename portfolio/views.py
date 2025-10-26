@@ -1192,8 +1192,7 @@ class CategoryListAdminView(AdminRequiredMixin, ListView):
     def get_queryset(self):
         current_language = translation.get_language() or settings.LANGUAGE_CODE
         queryset = (
-            Category.objects.language(current_language)
-            .all()
+            Category.objects.active_translations(current_language)
             .order_by('order', 'translations__name')
         )
 
@@ -1311,8 +1310,7 @@ class ProjectTypeListAdminView(AdminRequiredMixin, ListView):
     def get_queryset(self):
         current_language = translation.get_language() or settings.LANGUAGE_CODE
         queryset = (
-            ProjectType.objects.language(current_language)
-            .all()
+            ProjectType.objects.active_translations(current_language)
             .order_by('order', 'translations__name')
         )
 

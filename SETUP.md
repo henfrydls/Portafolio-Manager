@@ -1,531 +1,179 @@
-# Setup Guide - Django Portfolio
+# Setup Guide – Portfolio Manager
 
-Complete installation and configuration guide for the Django Portfolio system.
+This guide walks you through installing, configuring, and maintaining the Portfolio Manager project.
 
-## 📋 Prerequisites
+## 1. Prerequisites
 
-Before you begin, ensure you have:
+Make sure you have the following tools:
 
-- **Python 3.10 or higher** installed
-- **pip** (Python package manager)
-- **Git** for version control
-- **Code editor** (VS Code, PyCharm, or similar)
-- **Virtual environment** tool (venv, included with Python)
+- Python 3.10 or later
+- pip
+- Git
+- A code editor (VS Code, PyCharm, etc.)
+- Optional: Docker Desktop 4.0+ if you plan to run LibreTranslate via Docker
 
-### Verify Prerequisites
+### Verify Installation
 
 ```bash
-# Check Python version
-python --version  # Should be 3.10 or higher
-
-# Check pip
+python --version
 pip --version
-
-# Check git
 git --version
 ```
 
----
-
-## Branch Selection
-
-- Use **`main`** for the single-language starter (no django-parler or automatic machine translation).
-- Use **`i18n`** (this guide) for multilingual editing, django-parler models, and LibreTranslate integration.
-
-Switch before installing dependencies:
+## 2. Clone the Repository
 
 ```bash
-git checkout main   # classic template
-# or
-git checkout i18n   # multilingual with auto translation
+git clone https://github.com/henfrydls/Portafolio-Manager.git
+cd Portafolio-Manager
 ```
 
----
+If you downloaded a ZIP archive, extract it and open the extracted folder instead.
 
-## 🚀 Installation Steps
-
-### Step 1: Clone the Repository
+## 3. Create and Activate a Virtual Environment
 
 ```bash
-# Clone the repository
-git clone <your-repository-url>
-cd portfolio
-
-# Or if you downloaded as ZIP
-unzip portfolio.zip
-cd portfolio
-```
-
-### Step 2: Create Virtual Environment
-
-```bash
-# Create virtual environment
 python -m venv .venv
-
-# Activate virtual environment
-# On Windows:
-.venv\Scripts\activate
-
-# On macOS/Linux:
-source .venv/bin/activate
-
-# You should see (.venv) in your terminal prompt
+.venv\Scripts\activate        # Windows
+# source .venv/bin/activate   # macOS / Linux
 ```
 
-### Step 3: Install Dependencies
+You should see `(.venv)` at the beginning of your terminal prompt.
+
+## 4. Install Dependencies
 
 ```bash
-# Install development dependencies
+pip install --upgrade pip
 pip install -r requirements/development.txt
+```
 
-# Verify installation
+Check the installed packages if desired:
+
+```bash
 pip list
 ```
 
-### Step 4: Configure Environment Variables
+## 5. Configure Environment Variables
+
+Copy the example configuration:
 
 ```bash
-# Copy the example environment file
-cp .env.example .env
-
-# On Windows (if cp doesn't work):
-copy .env.example .env
+copy .env.example .env        # Windows
+# cp .env.example .env        # macOS / Linux
 ```
 
-Edit `.env` file with your settings:
+Open `.env` in your editor and update:
 
-```env
-# Django Settings
-SECRET_KEY=your-secret-key-here-change-this
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
+- `SECRET_KEY` – generate a unique value (`python -c "from django.core.management.utils import get_random_secret_key as g; print(g())"`)
+- `DEBUG=True` for local development
+- `ALLOWED_HOSTS=localhost,127.0.0.1`
+- Email backend credentials if you need outbound mail in development
+- Translation service URL (`translation_api_url`) if you will use LibreTranslate
 
-# Database (SQLite - no configuration needed)
-
-# Email Configuration (optional for development)
-EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USE_TLS=True
-EMAIL_HOST_USER=your-email@gmail.com
-EMAIL_HOST_PASSWORD=your-app-password
-DEFAULT_FROM_EMAIL=your-email@gmail.com
-
-# Security (keep False for development)
-SECURE_SSL_REDIRECT=False
-SESSION_COOKIE_SECURE=False
-CSRF_COOKIE_SECURE=False
-SECURE_HSTS_SECONDS=0
-```
-
-**Important**: Generate a new SECRET_KEY:
-
-```python
-# In Python shell:
-from django.core.management.utils import get_random_secret_key
-print(get_random_secret_key())
-```
-
-### Step 5: Initialize Database
+## 6. Database Setup
 
 ```bash
-# Run migrations to create database tables
 python manage.py migrate
-
-# You should see output like:
-# Operations to perform:
-#   Apply all migrations: admin, auth, contenttypes, portfolio, sessions
-# Running migrations:
-#   Applying contenttypes.0001_initial... OK
-#   ...
-```
-
-### Step 6: Create Superuser
-
-```bash
-# Create admin user
 python manage.py createsuperuser
-
-# Follow the prompts:
-# Username: admin
-# Email: your-email@example.com
-# Password: (enter a strong password)
-# Password (again): (confirm password)
-```
-
-### Step 7: Collect Static Files
-
-```bash
-# Collect static files
 python manage.py collectstatic --noinput
-
-# This copies all static files to the staticfiles/ directory
 ```
 
-### Step 8: Run Development Server
+This will also populate default catalog entries (categories, project types, knowledge bases).
+
+## 7. Start the Development Server
 
 ```bash
-# Start the development server
 python manage.py runserver
-
-# You should see:
-# Starting development server at http://127.0.0.1:8000/
-# Quit the server with CTRL-BREAK.
 ```
 
+Open the following URLs:
 
-### Optional: Docker Compose (Web + LibreTranslate)
+- Portfolio: <http://127.0.0.1:8000/>
+- Admin: <http://127.0.0.1:8000/admin/>
 
-If you prefer a containerised setup, Docker can run the Django app and LibreTranslate service together.
+Log in with the superuser you created and complete your profile, projects, and blog content.
+
+## 8. Optional: Docker Compose Setup
+
+If you want LibreTranslate running locally:
 
 ```bash
-cp .env.example .env  # customise with your values
+cp .env.example .env          # ensure the file exists
 docker compose up --build
 ```
 
-The stack exposes:
-- Portfolio: http://127.0.0.1:8000/
-- LibreTranslate API: http://127.0.0.1:5000/
+Services exposed:
 
-Stop the stack with `docker compose down`. Code changes are synced through the mounted volume.
+- Django app: <http://127.0.0.1:8000/>
+- LibreTranslate: <http://127.0.0.1:5000/>
 
-### Step 9: Access the Application
+Stop and remove containers with `docker compose down`.
 
-Open your browser and navigate to:
+## 9. Useful Management Commands
 
-- **Portfolio**: http://127.0.0.1:8000/
-- **Admin Panel**: http://127.0.0.1:8000/admin/
-
-Login with the superuser credentials you created.
-
----
-
-## 🎨 Initial Configuration
-
-### 1. Create Your Profile
-
-1. Go to **Admin Panel** → **Profiles** → **Add Profile**
-2. Fill in your information:
-   - Name
-   - Professional title
-   - Bio
-   - Email
-   - Location
-   - Social media links (LinkedIn, GitHub, Medium)
-   - Upload profile image
-   - Upload CV (optional)
-
-### 2. Add Technologies
-
-1. Go to **Technologies** → **Add Technology**
-2. Add technologies you use:
-   - Name (e.g., "Python", "Django", "React")
-   - Icon class (e.g., "fab fa-python")
-   - Color (hex code, e.g., "#3776ab")
-
-**Tip**: The system suggests icons and colors for common technologies!
-
-### 3. Add Projects
-
-1. Go to **Projects** → **Add Project**
-2. Fill in project details:
-   - Title and description
-   - Project type
-   - Technologies used
-   - GitHub URL (optional)
-   - Demo URL (optional)
-   - Upload project image
-   - Set visibility (public/private)
-   - Mark as featured (optional)
-
-### 4. Write Blog Posts
-
-1. Go to **Blog Posts** → **Add Blog Post**
-2. Create your first post:
-   - Title and slug
-   - Content (supports Markdown)
-   - Excerpt
-   - Category
-   - Tags
-   - Featured image
-   - Set status (draft/published)
-   - Set publish date
-
-### 5. Add Skills
-
-1. Go to **Skills** → **Add Skill**
-2. Add your skills:
-   - Skill name
-   - Proficiency level (1-4)
-   - Years of experience
-   - Category (e.g., "Programming", "Cloud", "Business")
-
-### 6. Add Experience
-
-1. Go to **Experience** → **Add Experience**
-2. Add work history:
-   - Company and position
-   - Description
-   - Start and end dates
-   - Mark as current (if applicable)
-
-### 7. Add Education
-
-1. Go to **Education** → **Add Education**
-2. Add academic background:
-   - Institution and degree
-   - Field of study
-   - Education type (formal, certification, online course, etc.)
-   - Dates
-   - Credential ID and URL (for certifications)
-
----
-
-## 🔧 Configuration Options
-
-### Email Setup
-
-For contact form functionality, configure email in `.env`:
-
-**Development (Console Backend)**:
-```env
-EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
-```
-Emails will be printed to the console.
-
-**Production (SMTP)**:
-```env
-EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USE_TLS=True
-EMAIL_HOST_USER=your-email@gmail.com
-EMAIL_HOST_PASSWORD=your-app-password
-DEFAULT_FROM_EMAIL=your-email@gmail.com
-```
-
-See [Email Setup Guide](docs/EMAIL_SETUP.md) for detailed instructions.
-
-### Language Settings
-
-The site supports English and Spanish:
-- Default language: English
-- Language switcher in top-right corner
-### Automatic Translation Setup (i18n branch)
-
-1. Ensure a translation provider is reachable. `docker compose up` starts LibreTranslate on port 5000.
-2. Go to **Dashboard ?? Settings** and set:
-   - Default language (source language you edit in)
-   - Enable automatic translation
-   - Provider: `libretranslate`
-   - API URL: `http://libretranslate:5000` (or your hosted instance)
-   - Timeout: seconds to wait per request
-3. Save the form. The settings page shows whether the connection is healthy.
-4. Edit your profile/projects/blog posts in the default language. After saving, the edit screen displays the status for each translated language.
-
-**Tip**: to disable auto translation temporarily, uncheck the toggle in Settings. Existing manual translations are preserved.
-
-- Upload CVs in both languages
-
-### Database
-
-By default, the project uses SQLite:
-- Database file: `db_development.sqlite3`
-- No additional configuration needed
-- Perfect for development
-
-For production, consider PostgreSQL or MySQL.
-
----
-
-## 🧪 Verification
-
-### Test the Installation
-
-1. **Homepage**: http://127.0.0.1:8000/
-   - Should display your portfolio
-   - Profile sidebar should show your information
-
-2. **Admin Panel**: http://127.0.0.1:8000/admin/
-   - Should be accessible with superuser credentials
-   - All models should be visible
-
-3. **Contact Form**: Test the contact form
-   - Fill out the form
-   - Check console for email output (development mode)
-
-4. **Language Switcher**: Test bilingual support
-   - Click EN/ES switcher in top-right
-   - UI should change language
-
-5. **Translations**: Verify translations
-   ```bash
-   python verify_translations.py
-   ```
-
----
-
-## 🐛 Troubleshooting
-
-### Virtual Environment Issues
-
-**Problem**: Virtual environment not activating
 ```bash
-# Windows
-.venv\Scripts\activate.bat  # Try this instead
-
-# macOS/Linux
-source .venv/bin/activate
+python manage.py populate_test_data    # Seed demo content
+python manage.py list_translations     # Example custom command if added later
+python verify_translations.py          # Check translation coverage
 ```
 
-### Installation Errors
+## 10. Troubleshooting
 
-**Problem**: pip install fails
+### Port 8000 Already in Use
+
 ```bash
-# Upgrade pip first
-python -m pip install --upgrade pip
-
-# Then try again
-pip install -r requirements/development.txt
-```
-
-**Problem**: Pillow installation fails
-```bash
-# Install Pillow separately
-pip install Pillow==10.0.0
-
-# Then install rest
-pip install -r requirements/development.txt
-```
-
-### Database Issues
-
-**Problem**: Migration errors
-```bash
-# Delete database and start fresh (development only!)
-rm db_development.sqlite3  # On Windows: del db_development.sqlite3
-python manage.py migrate
-python manage.py createsuperuser
-```
-
-**Problem**: "Table already exists" error
-```bash
-# Run migrations with --run-syncdb
-python manage.py migrate --run-syncdb
-```
-
-### Static Files Issues
-
-**Problem**: CSS/JS not loading
-```bash
-# Collect static files again
-python manage.py collectstatic --clear --noinput
-```
-
-**Problem**: Images not displaying
-```bash
-# Check MEDIA_ROOT and MEDIA_URL in settings
-# Ensure media/ directory exists
-mkdir media
-```
-
-### Port Issues
-
-**Problem**: Port 8000 already in use
-```bash
-# Use different port
 python manage.py runserver 8001
+```
 
-# Or find and kill the process using port 8000
-# Windows:
+On Windows you can find the process with:
+
+```bash
 netstat -ano | findstr :8000
 taskkill /PID <PID> /F
+```
 
-# macOS/Linux:
+macOS / Linux:
+
+```bash
 lsof -ti:8000 | xargs kill -9
 ```
 
-### Permission Issues
+### Static Files Missing
 
-**Problem**: Permission denied errors
 ```bash
-# Windows: Run terminal as Administrator
-# macOS/Linux: Check file permissions
-chmod +x manage.py
+python manage.py collectstatic --noinput
 ```
 
----
-
-## 📚 Next Steps
-
-After successful installation:
-
-1. **Read Documentation**:
-   - [Admin Usage Guide](docs/ADMIN_USAGE.md)
-   - [Configuration Guide](docs/CONFIGURATION_GUIDE.md)
-   - [Email Setup Guide](docs/EMAIL_SETUP.md)
-
-2. **Customize Your Portfolio**:
-   - Add your projects
-   - Write blog posts
-   - Update your profile
-   - Upload your CV
-
-3. **Test Features**:
-   - Contact form
-   - Language switching
-   - Admin panel
-   - Blog functionality
-
-4. **Explore Admin Panel**:
-   - Dashboard with analytics
-   - Content management
-   - User messages
-   - Visit tracking
-
----
-
-## 🔄 Updating
-
-To update the project:
+### Database Errors During Development
 
 ```bash
-# Pull latest changes
-git pull origin main
-
-# Activate virtual environment
-.venv\Scripts\activate  # Windows
-source .venv/bin/activate  # macOS/Linux
-
-# Install new dependencies
-pip install -r requirements/development.txt
-
-# Run migrations
+del db_development.sqlite3           # Windows
+# rm db_development.sqlite3          # macOS / Linux
 python manage.py migrate
+```
 
-# Collect static files
+### Translation Failures
+
+- Confirm LibreTranslate is running and reachable.
+- Re-run `python verify_translations.py` to identify missing locales.
+- Disable `auto_translate_enabled` temporarily if the service is unavailable.
+
+## 11. Updating the Project
+
+```bash
+git pull origin main
+.venv\Scripts\activate                # or source .venv/bin/activate
+pip install -r requirements/development.txt
+python manage.py migrate
 python manage.py collectstatic --noinput
-
-# Restart server
 python manage.py runserver
 ```
 
----
+## 12. Next Steps
 
-## 📞 Support
-
-If you encounter issues:
-
-1. Check this guide's troubleshooting section
-2. Review the [Documentation Index](DOCUMENTATION_INDEX.md)
-3. Check the [Admin Usage Guide](docs/ADMIN_USAGE.md)
-4. Verify your `.env` configuration
-5. Ensure all prerequisites are installed
+1. Review `docs/ADMIN_USAGE.md` to learn the admin workflows.
+2. Customize branding, colors, and copy through the admin.
+3. Set up a production environment with HTTPS, a managed database, and persistent media storage.
 
 ---
 
-**Setup Complete!** 🎉
-
-Your Django Portfolio is now ready to use. Start by logging into the admin panel and adding your content.
-
-For detailed usage instructions, see the [Admin Usage Guide](docs/ADMIN_USAGE.md).
+Your development environment is now ready. Enjoy building your portfolio!
