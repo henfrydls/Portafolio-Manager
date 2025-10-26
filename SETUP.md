@@ -111,7 +111,9 @@ Stop and remove containers with `docker compose down`.
 ## 9. Useful Management Commands
 
 ```bash
-python manage.py populate_test_data    # Seed demo content
+python manage.py populate_test_data    # Seed demo content (local shell)
+docker compose exec web python manage.py populate_test_data    # Seed demo content (Docker)
+python manage.py populate_test_data --reset    # Reset seeded data (or delete db_development.sqlite3)
 python manage.py list_translations     # Example custom command if added later
 python verify_translations.py          # Check translation coverage
 ```

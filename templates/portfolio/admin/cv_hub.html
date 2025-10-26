@@ -63,6 +63,23 @@
     </div>
 </div>
 
+<!-- Languages -->
+<div class="content-card">
+    <div class="card-header-custom" style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 class="card-title-custom">{% trans "Languages" %}</h2>
+            <p class="card-subtitle-custom">{% trans "Track the languages you speak and their proficiency level." %}</p>
+        </div>
+        <button type="button" id="add-language-btn" class="btn-primary-custom">
+            <i class="fas fa-plus"></i>{% trans "Add Language" %}
+        </button>
+    </div>
+
+    <div id="languages-list" style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- Filled dynamically -->
+    </div>
+</div>
+
 <!-- Quick Actions -->
 <div class="content-card">
     <div class="card-header-custom">
@@ -81,5 +98,259 @@
         </a>
     </div>
 </div>
+
+<!-- Language Modal -->
+<div id="language-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: #fff; border-radius: 8px; padding: 24px; max-width: 500px; width: 90%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h4 style="font-size: 18px; font-weight: 600; color: #242424; margin: 0;">{% trans "Add / Edit Language" %}</h4>
+            <button type="button" id="close-modal-btn" style="background: none; border: none; font-size: 24px; color: #6B6B6B; cursor: pointer; padding: 0; line-height: 1;">&times;</button>
+        </div>
+
+        <form id="language-form">
+            <input type="hidden" id="language-id" name="language_id">
+
+            <div style="margin-bottom: 16px;">
+                <label class="form-label-custom" for="language-name">{% trans "Language" %}</label>
+                <input type="text" id="language-name" name="name" class="form-control-custom" placeholder="{% trans 'E.g: English, Spanish, French' %}">
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label class="form-label-custom" for="language-code">{% trans "Code" %}</label>
+                <input type="text" id="language-code" name="code" class="form-control-custom" placeholder="{% trans 'E.g: en, es, fr' %}">
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label class="form-label-custom" for="language-proficiency">{% trans "Proficiency Level" %}</label>
+                <select id="language-proficiency" name="proficiency" class="form-control-custom">
+                    <option value="">{% trans "Select a level" %}</option>
+                    <option value="A1">A1 - {% trans "Beginner" %}</option>
+                    <option value="A2">A2 - {% trans "Elementary" %}</option>
+                    <option value="B1">B1 - {% trans "Intermediate" %}</option>
+                    <option value="B2">B2 - {% trans "Upper Intermediate" %}</option>
+                    <option value="C1">C1 - {% trans "Advanced" %}</option>
+                    <option value="C2">C2 - {% trans "Proficient" %}</option>
+                    <option value="Native">{% trans "Native" %}</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label class="form-label-custom" for="language-order">{% trans "Display Order" %}</label>
+                <input type="number" id="language-order" name="order" class="form-control-custom" value="0" min="0">
+            </div>
+
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" id="cancel-language-btn" class="btn-secondary-custom">
+                    <i class="fas fa-times"></i>{% trans "Cancel" %}
+                </button>
+                <button type="submit" class="btn-primary-custom">
+                    <i class="fas fa-save"></i>{% trans "Save" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const languagesList = document.getElementById('languages-list');
+    const languageModal = document.getElementById('language-modal');
+    const languageForm = document.getElementById('language-form');
+    const addLanguageBtn = document.getElementById('add-language-btn');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const cancelLanguageBtn = document.getElementById('cancel-language-btn');
+    const csrfToken = (typeof getCookie === 'function' && getCookie('csrftoken')) || (document.querySelector('[name=csrfmiddlewaretoken]') || {value: ''}).value || '';
+
+    if (!languagesList || !languageModal || !languageForm) {
+        return;
+    }
+
+    const EMPTY_LANGUAGES_MSG = "{{ _('No languages added yet. Click \'Add Language\' to begin.')|escapejs }}";
+    const ERROR_LOADING_LANGUAGES_MSG = "{{ _('Error loading languages.')|escapejs }}";
+    const ERROR_LOADING_LANGUAGE_MSG = "{{ _('Error loading language.')|escapejs }}";
+    const ERROR_DELETING_LANGUAGE_MSG = "{{ _('Error deleting language.')|escapejs }}";
+    const ERROR_SAVING_LANGUAGE_MSG = "{{ _('Error saving language.')|escapejs }}";
+    const UNKNOWN_ERROR_MSG = "{{ _('Unknown error')|escapejs }}";
+    const LEVEL_LABEL = "{{ _('Level')|escapejs }}";
+    const ORDER_LABEL = "{{ _('Order')|escapejs }}";
+    const DELETE_CONFIRM_MSG = "{{ _('Are you sure you want to delete this language?')|escapejs }}";
+    const NO_CODE_LABEL = "{{ _('Not provided')|escapejs }}";
+
+    function renderLanguages(languages) {
+        languagesList.innerHTML = '';
+
+        if (!languages.length) {
+            languagesList.innerHTML = `<div style="padding: 16px; text-align: center; color: #6B6B6B; background: #f8f8f8; border-radius: 6px;">${EMPTY_LANGUAGES_MSG}</div>`;
+            return;
+        }
+
+        languages.forEach(lang => {
+            const card = document.createElement('div');
+            card.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #f8f8f8; border-radius: 6px; border: 1px solid #F2F2F2;';
+            card.innerHTML = `
+                <div>
+                    <div style="font-size: 14px; font-weight: 500; color: #242424; margin-bottom: 4px;">
+                        <i class="fas fa-language" style="margin-right: 6px; color: #1976D2;"></i>
+                        ${lang.name}
+                        <span style="color: #6B6B6B; font-weight: 400;">(${lang.code || '&mdash;'})</span>
+                    </div>
+                    <div style="font-size: 12px; color: #6B6B6B;">
+                        ${LEVEL_LABEL}: <strong>${lang.proficiency || NO_CODE_LABEL}</strong> · ${ORDER_LABEL}: ${lang.order}
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="edit-language-btn" data-language-id="${lang.id}" style="background: #1976D2; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                        <i class="fas fa-edit"></i>{% trans "Edit" %}
+                    </button>
+                    <button type="button" class="delete-language-btn" data-language-id="${lang.id}" style="background: #dc3545; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                        <i class="fas fa-trash"></i>{% trans "Delete" %}
+                    </button>
+                </div>
+            `;
+            languagesList.appendChild(card);
+        });
+
+        languagesList.querySelectorAll('.edit-language-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const languageId = this.getAttribute('data-language-id');
+                editLanguage(languageId);
+            });
+        });
+
+        languagesList.querySelectorAll('.delete-language-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const languageId = this.getAttribute('data-language-id');
+                deleteLanguage(languageId);
+            });
+        });
+    }
+
+    function loadLanguages() {
+        fetch('/admin-panel/languages/list/')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    throw new Error(data.error || UNKNOWN_ERROR_MSG);
+                }
+                renderLanguages(data.languages || []);
+            })
+            .catch(error => {
+                console.error('Error loading languages:', error);
+                languagesList.innerHTML = `<div style="padding: 16px; text-align: center; color: #dc3545; background: #f8d7da; border-radius: 6px;">${ERROR_LOADING_LANGUAGES_MSG}</div>`;
+            });
+    }
+
+    function openModal() {
+        languageForm.reset();
+        document.getElementById('language-id').value = '';
+        document.getElementById('language-order').value = 0;
+        languageModal.style.display = 'flex';
+    }
+
+    function closeModal() {
+        languageModal.style.display = 'none';
+    }
+
+    function editLanguage(languageId) {
+        fetch(`/admin-panel/languages/${languageId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    throw new Error(data.error || UNKNOWN_ERROR_MSG);
+                }
+                document.getElementById('language-id').value = data.id;
+                document.getElementById('language-name').value = data.name || '';
+                document.getElementById('language-code').value = data.code || '';
+                document.getElementById('language-proficiency').value = data.proficiency || '';
+                document.getElementById('language-order').value = data.order ?? 0;
+                languageModal.style.display = 'flex';
+            })
+            .catch(error => {
+                console.error('Error loading language:', error);
+                alert(ERROR_LOADING_LANGUAGE_MSG);
+            });
+    }
+
+    function deleteLanguage(languageId) {
+        if (!confirm(DELETE_CONFIRM_MSG)) {
+            return;
+        }
+
+        fetch(`/admin-panel/languages/${languageId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadLanguages();
+                } else {
+                    throw new Error(data.error || UNKNOWN_ERROR_MSG);
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting language:', error);
+                alert(ERROR_DELETING_LANGUAGE_MSG);
+            });
+    }
+
+    languageForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const languageId = document.getElementById('language-id').value;
+        const payload = {
+            name: document.getElementById('language-name').value,
+            code: document.getElementById('language-code').value,
+            proficiency: document.getElementById('language-proficiency').value,
+            order: document.getElementById('language-order').value
+        };
+
+        const url = languageId
+            ? `/admin-panel/languages/${languageId}/update/`
+            : '/admin-panel/languages/create/';
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeModal();
+                    loadLanguages();
+                } else {
+                    throw new Error(data.error || UNKNOWN_ERROR_MSG);
+                }
+            })
+            .catch(error => {
+                console.error('Error saving language:', error);
+                alert(`${ERROR_SAVING_LANGUAGE_MSG}: ${error.message || UNKNOWN_ERROR_MSG}`);
+            });
+    });
+
+    addLanguageBtn.addEventListener('click', openModal);
+    closeModalBtn.addEventListener('click', closeModal);
+    cancelLanguageBtn.addEventListener('click', closeModal);
+
+    languageModal.addEventListener('click', function(event) {
+        if (event.target === languageModal) {
+            closeModal();
+        }
+    });
+
+    loadLanguages();
+});
+</script>
 {% endblock %}
 

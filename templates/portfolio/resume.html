@@ -148,8 +148,7 @@
                         <div class="skill-item">
                             <div class="skill-info">
                                 <span class="skill-name">{{ skill.name }}</span>
-                                <span class="skill-meta">{{ skill.years_experience }}y • {{
-                                    skill.get_proficiency_display }}</span>
+                                <span class="skill-meta">{{ skill.years_experience }}y &middot; {{ skill.proficiency_label }}</span>
                             </div>
                             <div class="skill-indicator">
                                 {% for i in "1234" %}

@@ -424,6 +424,236 @@ class Command(BaseCommand):
                     },
                 },
             },
+            {
+                "order": 4,
+                "education_type": "online_course",
+                "start": date(2024, 2, 1),
+                "end": date(2024, 3, 15),
+                "current": False,
+                "credential_id": "DL-OPS-2024",
+                "credential_url": "https://www.coursera.org/learn/data-ops",
+                "translations": {
+                    "en": {
+                        "institution": "Coursera - Duke University",
+                        "degree": "DataOps for Analytics Teams",
+                        "field_of_study": "Data Engineering",
+                        "description": "Automating pipelines, versioning datasets and instituting quality checks for analytics squads.",
+                    },
+                    "es": {
+                        "institution": "Coursera - Duke University",
+                        "degree": "DataOps para Equipos de Analitica",
+                        "field_of_study": "Ingenieria de Datos",
+                        "description": "Automatizacion de pipelines, versionamiento de datos y controles de calidad para equipos de analitica.",
+                    },
+                },
+            },
+            {
+                "order": 5,
+                "education_type": "online_course",
+                "start": date(2023, 10, 1),
+                "end": date(2023, 12, 1),
+                "current": False,
+                "credential_id": "GRID-AI-23",
+                "credential_url": "https://www.edx.org/course/ai-for-grid-operators",
+                "translations": {
+                    "en": {
+                        "institution": "edX - IEEE",
+                        "degree": "AI for Grid Operations",
+                        "field_of_study": "Power Systems Analytics",
+                        "description": "Use cases for anomaly detection, outage prediction and dispatch optimisation with explainable AI.",
+                    },
+                    "es": {
+                        "institution": "edX - IEEE",
+                        "degree": "IA para Operaciones de Red",
+                        "field_of_study": "Analitica de Sistemas Electricos",
+                        "description": "Casos de uso de deteccion de anomalas, prediccion de fallas y despacho optimizado con IA explicable.",
+                    },
+                },
+            },
+            {
+                "order": 6,
+                "education_type": "online_course",
+                "start": date(2023, 5, 1),
+                "end": date(2023, 7, 1),
+                "current": False,
+                "credential_id": "SUST-LEAD-23",
+                "credential_url": "https://www.futurelearn.com/courses/sustainable-leadership",
+                "translations": {
+                    "en": {
+                        "institution": "FutureLearn - University of Cambridge",
+                        "degree": "Sustainable Leadership",
+                        "field_of_study": "Sustainability Strategy",
+                        "description": "Frameworks for embedding sustainability metrics and climate risk into corporate strategy.",
+                    },
+                    "es": {
+                        "institution": "FutureLearn - University of Cambridge",
+                        "degree": "Liderazgo Sostenible",
+                        "field_of_study": "Estrategia de Sostenibilidad",
+                        "description": "Marcos para integrar mtricas de sostenibilidad y riesgo climatico en la estrategia corporativa.",
+                    },
+                },
+            },
+            {
+                "order": 7,
+                "education_type": "online_course",
+                "start": date(2022, 9, 1),
+                "end": date(2022, 11, 1),
+                "current": False,
+                "credential_id": "UX-ENERGY-22",
+                "credential_url": "https://www.interaction-design.org/courses/ux-for-iot",
+                "translations": {
+                    "en": {
+                        "institution": "Interaction Design Foundation",
+                        "degree": "UX for IoT Interfaces",
+                        "field_of_study": "Product Design",
+                        "description": "Designing operator dashboards, alarm flows and edge device controls for critical infrastructure.",
+                    },
+                    "es": {
+                        "institution": "Interaction Design Foundation",
+                        "degree": "UX para Interfaces IoT",
+                        "field_of_study": "Diseo de Producto",
+                        "description": "Diseno de tableros, flujos de alarmas y controles de dispositivos edge para infraestructura critica.",
+                    },
+                },
+            },
+            {
+                "order": 8,
+                "education_type": "online_course",
+                "start": date(2022, 4, 1),
+                "end": date(2022, 6, 1),
+                "current": False,
+                "credential_id": "PM-MICROGRID-22",
+                "credential_url": "https://www.udemy.com/course/microgrid-project-management/",
+                "translations": {
+                    "en": {
+                        "institution": "Udemy",
+                        "degree": "Managing Microgrid Projects",
+                        "field_of_study": "Project Management",
+                        "description": "Risk management, stakeholder alignment and commissioning plans for microgrid deployments.",
+                    },
+                    "es": {
+                        "institution": "Udemy",
+                        "degree": "Gestion de Proyectos de Microredes",
+                        "field_of_study": "Gestion de Proyectos",
+                        "description": "Gestion de riesgos, alineamiento de interesados y planes de puesta en marcha para microredes.",
+                    },
+                },
+            },
+            {
+                "order": 9,
+                "education_type": "online_course",
+                "start": date(2021, 11, 1),
+                "end": date(2021, 12, 15),
+                "current": False,
+                "credential_id": "EDGE-CLOUD-21",
+                "credential_url": "https://cloud.google.com/training/edgedistributed",
+                "translations": {
+                    "en": {
+                        "institution": "Google Cloud Training",
+                        "degree": "Architecting Edge-to-Cloud Solutions",
+                        "field_of_study": "Cloud Architecture",
+                        "description": "Hybrid deployment patterns, service meshes and observability for distributed energy workloads.",
+                    },
+                    "es": {
+                        "institution": "Google Cloud Training",
+                        "degree": "Arquitecturas Edge-to-Cloud",
+                        "field_of_study": "Arquitectura en la Nube",
+                        "description": "Patrones de despliegue hibridos, service mesh y observabilidad para cargas distribuidas de energia.",
+                    },
+                },
+            },
+            {
+                "order": 10,
+                "education_type": "online_course",
+                "start": date(2021, 6, 1),
+                "end": date(2021, 8, 1),
+                "current": False,
+                "credential_id": "CS-CLIMATE-21",
+                "credential_url": "https://www.edx.org/course/climate-change-mitigation-in-developing-countries",
+                "translations": {
+                    "en": {
+                        "institution": "edX - University of Cape Town",
+                        "degree": "Climate Change Mitigation in Emerging Markets",
+                        "field_of_study": "Climate Policy",
+                        "description": "Policy instruments, financing mechanisms and regional case studies for decarbonisation.",
+                    },
+                    "es": {
+                        "institution": "edX - University of Cape Town",
+                        "degree": "Mitigacion del Cambio Climatico en Mercados Emergentes",
+                        "field_of_study": "Politica Climtica",
+                        "description": "Instrumentos de politica, mecanismos de financiamiento y casos regionales para descarbonizacion.",
+                    },
+                },
+            },
+            {
+                "order": 11,
+                "education_type": "online_course",
+                "start": date(2020, 9, 1),
+                "end": date(2020, 11, 1),
+                "current": False,
+                "credential_id": "CLEAN-CODES-20",
+                "credential_url": "https://www.pluralsight.com/courses/clean-code",
+                "translations": {
+                    "en": {
+                        "institution": "Pluralsight",
+                        "degree": "Clean Code Practices",
+                        "field_of_study": "Software Engineering",
+                        "description": "Refactoring techniques, unit testing discipline and code review patterns for large Python codebases.",
+                    },
+                    "es": {
+                        "institution": "Pluralsight",
+                        "degree": "Practicas de Clean Code",
+                        "field_of_study": "Ingenieria de Software",
+                        "description": "Tecnicas de refactorizacion, disciplina de pruebas unitarias y patrones de code review para grandes bases Python.",
+                    },
+                },
+            },
+            {
+                "order": 12,
+                "education_type": "online_course",
+                "start": date(2020, 3, 1),
+                "end": date(2020, 4, 15),
+                "current": False,
+                "credential_id": "NEGOT-ENERGY-20",
+                "credential_url": "https://www.coursera.org/learn/negotiation-skills",
+                "translations": {
+                    "en": {
+                        "institution": "Coursera - ESSEC Business School",
+                        "degree": "Negotiation Skills for Energy Partnerships",
+                        "field_of_study": "Business Negotiation",
+                        "description": "Structuring public-private partnerships, negotiating PPAs and crafting vendor scorecards.",
+                    },
+                    "es": {
+                        "institution": "Coursera - ESSEC Business School",
+                        "degree": "Negociacion para Alianzas Energeticas",
+                        "field_of_study": "Negociacion Empresarial",
+                        "description": "Estructuracion de alianzas publico-privadas, negociacion de PPAs y matrices de evaluacion de proveedores.",
+                    },
+                },
+            },
+            {
+                "order": 13,
+                "education_type": "online_course",
+                "start": date(2019, 4, 1),
+                "end": date(2019, 6, 1),
+                "current": False,
+                "credential_id": "SCRUM-ENERGY-19",
+                "credential_url": "https://www.scrumstudy.com/",
+                "translations": {
+                    "en": {
+                        "institution": "SCRUMstudy",
+                        "degree": "Scrum Product Owner Certified",
+                        "field_of_study": "Agile Delivery",
+                        "description": "Backlog strategies, stakeholder demos and release planning for cross-functional energy teams.",
+                    },
+                    "es": {
+                        "institution": "SCRUMstudy",
+                        "degree": "Certificado Scrum Product Owner",
+                        "field_of_study": "Entrega Agile",
+                        "description": "Estrategias de backlog, demostraciones con interesados y planificacion de releases para equipos energticos.",
+                    },
+                },
+            },
         ]
 
         educations = []
@@ -515,16 +745,16 @@ class Command(BaseCommand):
             (
                 "renewable-energy",
                 2,
-                "Renewable Energy Systems",
-                "Sistemas de Energia Renovable",
+                "Renewable Energy",
+                "Energia Renovable",
                 "Design notes for solar, wind, storage, and microgrids.",
                 "Notas de diseno para solar, eolica, almacenamiento y microredes.",
             ),
             (
                 "sustainability",
                 3,
-                "Sustainability and Strategy",
-                "Sostenibilidad y Estrategia",
+                "Sustainability",
+                "Sostenibilidad",
                 "Frameworks that connect net-zero targets with daily decisions.",
                 "Marcos que conectan objetivos net zero con decisiones diarias.",
             ),
@@ -577,93 +807,246 @@ class Command(BaseCommand):
         self.stdout.write(f"  Created/updated {len(categories)} categories")
         return categories
     def create_project_types(self):
-        types_data = [
-            (
-                "energy-platforms",
-                1,
-                "Energy Platforms",
-                "Plataformas de Energia",
-                "Digital products that run renewable infrastructure.",
-                "Productos digitales que operan infraestructura renovable.",
-            ),
-            (
-                "analytics-solutions",
-                2,
-                "Analytics Solutions",
-                "Soluciones de Analitica",
-                "Data products that support forecasting and operations.",
-                "Productos de datos para pronosticos y operaciones.",
-            ),
-            (
-                "research-initiative",
-                3,
-                "Research Initiatives",
-                "Iniciativas de Investigacion",
-                "Exploratory projects that test ideas with partners.",
-                "Proyectos exploratorios para probar ideas con socios.",
-            ),
-            (
-                "product-experiences",
-                4,
-                "Product Experiences",
-                "Experiencias de Producto",
-                "Apps and sites that communicate complex energy stories.",
-                "Aplicaciones y sitios que comunican historias de energia complejas.",
-            ),
-            (
-                "consulting-engagement",
-                5,
-                "Consulting Engagements",
-                "Proyectos de Consultoria",
-                "Short engagements focused on roadmaps and capability building.",
-                "Proyectos cortos enfocados en hojas de ruta y desarrollo de capacidades.",
-            ),
-        ]
+        """
+        Map demo slugs to the canonical project types that ship with the migrations.
+        Creates the defaults if for some reason they were removed.
+        """
+        required_types = {
+            "energy-platforms": {
+                "slug": "implementation",
+                "order": 2,
+                "translations": {
+                    "en": {
+                        "name": "Implementation",
+                        "description": "Technical rollouts, integrations and deployments with measurable impact.",
+                    },
+                    "es": {
+                        "name": "Implementacion",
+                        "description": "Despliegues tecnicos, integraciones y puestas en marcha con impacto medible.",
+                    },
+                },
+            },
+            "analytics-solutions": {
+                "slug": "business-intelligence",
+                "order": 6,
+                "translations": {
+                    "en": {
+                        "name": "Business Intelligence",
+                        "description": "Analytics solutions, dashboards and data products for decision making.",
+                    },
+                    "es": {
+                        "name": "Business Intelligence",
+                        "description": "Soluciones analiticas, tableros y productos de datos para la toma de decisiones.",
+                    },
+                },
+            },
+            "research-initiative": {
+                "slug": "research-development",
+                "order": 3,
+                "translations": {
+                    "en": {
+                        "name": "Research & Development",
+                        "description": "Proofs of concept, experimentation and innovation initiatives.",
+                    },
+                    "es": {
+                        "name": "Research & Development",
+                        "description": "Pruebas de concepto, experimentacion e iniciativas de innovacion.",
+                    },
+                },
+            },
+            "product-experiences": {
+                "slug": "product-development",
+                "order": 1,
+                "translations": {
+                    "en": {
+                        "name": "Product Development",
+                        "description": "Digital products, SaaS platforms and mobile experiences end-to-end.",
+                    },
+                    "es": {
+                        "name": "Desarrollo de Productos",
+                        "description": "Productos digitales, plataformas SaaS y experiencias moviles de punta a punta.",
+                    },
+                },
+            },
+            "consulting-engagement": {
+                "slug": "consulting",
+                "order": 0,
+                "translations": {
+                    "en": {
+                        "name": "Consulting",
+                        "description": "Advisory engagements delivering assessments, roadmaps and expert guidance.",
+                    },
+                    "es": {
+                        "name": "Consultoria",
+                        "description": "Acompanamiento experto con diagnosticos, hojas de ruta y talleres.",
+                    },
+                },
+            },
+        }
 
+        canonical_slugs = {cfg["slug"] for cfg in required_types.values()}
+        existing = ProjectType.objects.filter(slug__in=canonical_slugs).in_bulk(field_name="slug")
+
+        created = []
         project_types = {}
-        for slug, order, name_en, name_es, desc_en, desc_es in types_data:
-            project_type, _ = ProjectType.objects.update_or_create(
-                slug=slug,
-                defaults={"order": order, "is_active": True},
+        for seed_slug, cfg in required_types.items():
+            canonical_slug = cfg["slug"]
+            project_type = existing.get(canonical_slug)
+            if not project_type:
+                project_type, _ = ProjectType.objects.update_or_create(
+                    slug=canonical_slug,
+                    defaults={"order": cfg.get("order", 0), "is_active": True},
+                )
+                self.assign_translations(project_type, cfg["translations"])
+                created.append(canonical_slug)
+            project_types[seed_slug] = project_type
+
+        if created:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"  Created missing project types: {', '.join(created)}"
+                )
             )
-            translations = {
-                "en": {"name": name_en, "description": desc_en},
-                "es": {"name": name_es, "description": desc_es},
-            }
-            self.assign_translations(project_type, translations)
-            project_types[slug] = project_type
-        self.stdout.write(f"  Created/updated {len(project_types)} project types")
+        self.stdout.write(f"  Linked {len(project_types)} project types to demo dataset")
         return project_types
 
     def create_knowledge_bases(self):
-        knowledge_data = [
-            ("python", "Python", "Python", "fab fa-python", "#3776AB"),
-            ("django", "Django", "Django", "fas fa-server", "#092E20"),
-            ("react", "React", "React", "fab fa-react", "#61DAFB"),
-            ("docker", "Docker", "Docker", "fab fa-docker", "#2496ED"),
-            ("aws", "Amazon Web Services", "Amazon Web Services", "fab fa-aws", "#FF9900"),
-            ("postgresql", "PostgreSQL", "PostgreSQL", "fas fa-database", "#336791"),
-            ("kubernetes", "Kubernetes", "Kubernetes", "fas fa-dharmachakra", "#326CE5"),
-            ("bess", "Battery Energy Storage", "Almacenamiento de Energia en Baterias", "fas fa-battery-full", "#4CAF50"),
-            ("microgrids", "Microgrid Planning", "Planificacion de Microredes", "fas fa-plug", "#4A90E2"),
-            ("sustainability", "Sustainability Strategy", "Estrategia de Sostenibilidad", "fas fa-leaf", "#2ECC71"),
-            ("data-analytics", "Data Analytics", "Analitica de Datos", "fas fa-chart-line", "#8E44AD"),
-            ("machine-learning", "Machine Learning", "Aprendizaje Automatico", "fas fa-brain", "#F39C12"),
-            ("design-thinking", "Design Thinking", "Design Thinking", "fas fa-lightbulb", "#E67E22"),
-            ("edge-computing", "Edge Computing", "Edge Computing", "fas fa-network-wired", "#2C3E50"),
-            ("power-bi", "Power BI", "Power BI", "fas fa-chart-pie", "#F2C811"),
-        ]
+        """
+        Reuse the default knowledge bases shipped via migrations.
+        Creates missing ones if needed and returns a dictionary keyed by the demo identifiers.
+        """
+        knowledge_requirements = {
+            "python": {
+                "identifier": "python",
+                "name_en": "Python",
+                "name_es": "Python",
+                "icon": "fab fa-python",
+                "color": "#3776AB",
+            },
+            "django": {
+                "identifier": "django",
+                "name_en": "Django",
+                "name_es": "Django",
+                "icon": "fas fa-server",
+                "color": "#092E20",
+            },
+            "react": {
+                "identifier": "react",
+                "name_en": "React",
+                "name_es": "React",
+                "icon": "fab fa-react",
+                "color": "#61DAFB",
+            },
+            "docker": {
+                "identifier": "docker",
+                "name_en": "Docker",
+                "name_es": "Docker",
+                "icon": "fab fa-docker",
+                "color": "#2496ED",
+            },
+            "aws": {
+                "identifier": "aws",
+                "name_en": "Amazon Web Services",
+                "name_es": "Amazon Web Services",
+                "icon": "fab fa-aws",
+                "color": "#FF9900",
+            },
+            "postgresql": {
+                "identifier": "postgresql",
+                "name_en": "PostgreSQL",
+                "name_es": "PostgreSQL",
+                "icon": "fas fa-database",
+                "color": "#336791",
+            },
+            "kubernetes": {
+                "identifier": "kubernetes",
+                "name_en": "Kubernetes",
+                "name_es": "Kubernetes",
+                "icon": "fas fa-dharmachakra",
+                "color": "#326CE5",
+            },
+            "bess": {
+                "identifier": "battery-energy-storage",
+                "name_en": "Battery Energy Storage",
+                "name_es": "Almacenamiento de Energia en Baterias",
+                "icon": "fas fa-battery-full",
+                "color": "#4CAF50",
+            },
+            "microgrids": {
+                "identifier": "microgrid-planning",
+                "name_en": "Microgrid Planning",
+                "name_es": "Planificacion de Microredes",
+                "icon": "fas fa-plug",
+                "color": "#4A90E2",
+            },
+            "sustainability": {
+                "identifier": "sustainability-strategy",
+                "name_en": "Sustainability Strategy",
+                "name_es": "Estrategia de Sostenibilidad",
+                "icon": "fas fa-leaf",
+                "color": "#2ECC71",
+            },
+            "data-analytics": {
+                "identifier": "data-analytics",
+                "name_en": "Data Analytics",
+                "name_es": "Analitica de Datos",
+                "icon": "fas fa-chart-line",
+                "color": "#8E44AD",
+            },
+            "machine-learning": {
+                "identifier": "machine-learning",
+                "name_en": "Machine Learning",
+                "name_es": "Aprendizaje Automatico",
+                "icon": "fas fa-brain",
+                "color": "#F39C12",
+            },
+            "design-thinking": {
+                "identifier": "design-thinking",
+                "name_en": "Design Thinking",
+                "name_es": "Design Thinking",
+                "icon": "fas fa-lightbulb",
+                "color": "#E67E22",
+            },
+            "edge-computing": {
+                "identifier": "edge-computing",
+                "name_en": "Edge Computing",
+                "name_es": "Edge Computing",
+                "icon": "fas fa-network-wired",
+                "color": "#2C3E50",
+            },
+            "power-bi": {
+                "identifier": "power-bi",
+                "name_en": "Power BI",
+                "name_es": "Power BI",
+                "icon": "fas fa-chart-pie",
+                "color": "#F2C811",
+            },
+        }
 
         knowledge = {}
-        for identifier, name_en, name_es, icon, color in knowledge_data:
-            kb, _ = KnowledgeBase.objects.update_or_create(
+        created = []
+        for alias, cfg in knowledge_requirements.items():
+            identifier = cfg["identifier"]
+            kb, was_created = KnowledgeBase.objects.get_or_create(
                 identifier=identifier,
-                defaults={"icon": icon, "color": color},
+                defaults={"icon": cfg["icon"], "color": cfg["color"]},
             )
-            translations = {"en": {"name": name_en}, "es": {"name": name_es}}
-            self.assign_translations(kb, translations)
-            knowledge[identifier] = kb
-        self.stdout.write(f"  Created/updated {len(knowledge)} knowledge bases")
+            if was_created:
+                translations = {
+                    "en": {"name": cfg["name_en"]},
+                    "es": {"name": cfg["name_es"]},
+                }
+                self.assign_translations(kb, translations)
+                created.append(identifier)
+            knowledge[alias] = kb
+
+        if created:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"  Created missing knowledge bases: {', '.join(created)}"
+                )
+            )
+        self.stdout.write(f"  Linked {len(knowledge)} knowledge bases to demo dataset")
         return knowledge
     def create_projects(self, project_types, knowledge_bases, blog_posts):
         projects_data = [

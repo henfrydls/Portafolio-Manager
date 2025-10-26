@@ -891,6 +891,30 @@ class Skill(TranslatableModel):
     category = models.CharField(max_length=100, verbose_name="Categoria",
                                help_text="Ej: Programming, Cloud, Business, Methodologies, etc.")
 
+    @property
+    def proficiency_label(self):
+        """Return a human-friendly proficiency label in the active language."""
+        from django.utils import translation
+
+        language = (translation.get_language() or settings.LANGUAGE_CODE or "en")[:2]
+        localized_labels = {
+            "en": {
+                1: "Beginner",
+                2: "Intermediate",
+                3: "Advanced",
+                4: "Expert",
+            },
+            "es": {
+                1: "Basico",
+                2: "Intermedio",
+                3: "Avanzado",
+                4: "Experto",
+            },
+        }
+        return localized_labels.get(language, {}).get(
+            self.proficiency, self.get_proficiency_display()
+        )
+
     class Meta:
         verbose_name = "Habilidad"
         verbose_name_plural = "Habilidades"

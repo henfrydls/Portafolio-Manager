@@ -136,6 +136,17 @@ class PageVisitMiddleware(MiddlewareMixin):
     - Bots conocidos (opcional)
     """
     
+    # Rutas públicas que sí deben ser registradas
+    TRACKED_EXACT_PATHS = {
+        '/',
+        '/posts/',
+        '/resume/',
+    }
+    TRACKED_PREFIX_PATHS = (
+        '/post/',
+        '/project/',
+    )
+    
     # URLs que se excluyen del tracking
     EXCLUDED_PATHS = [
         '/admin/',
@@ -225,6 +236,10 @@ class PageVisitMiddleware(MiddlewareMixin):
         # Obtener la ruta de la URL
         path = request.path
         
+        # Solo registrar las rutas explícitamente permitidas
+        if not self._is_tracked_path(path):
+            return None
+        
         # Verificar si la ruta debe ser excluida
         if self._should_exclude_path(path):
             return None
@@ -260,6 +275,15 @@ class PageVisitMiddleware(MiddlewareMixin):
             logger.error(f"Error registrando visita: {e}")
         
         return None
+    
+    def _is_tracked_path(self, path):
+        """
+        Determina si la ruta actual está dentro del conjunto de páginas públicas que
+        deben registrar visitas.
+        """
+        if path in self.TRACKED_EXACT_PATHS:
+            return True
+        return any(path.startswith(prefix) for prefix in self.TRACKED_PREFIX_PATHS)
     
     def _should_exclude_path(self, path):
         """

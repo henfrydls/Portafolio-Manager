@@ -12,6 +12,12 @@ Hemos consolidado todos los comandos de datos de prueba en un solo comando: `pop
 python manage.py populate_test_data
 ```
 
+### Uso en Docker
+
+```bash
+docker compose exec web python manage.py populate_test_data
+```
+
 Este comando creará:
 - ✅ Usuario admin (username: `admin`, password: `admin123`)
 - ✅ Perfil completo con información personal
@@ -33,6 +39,8 @@ Este comando creará:
 ```bash
 python manage.py populate_test_data --reset
 ```
+
+> Nota: En entornos locales también puedes borrar el archivo `db_development.sqlite3` para reiniciar completamente la base de datos antes de volver a ejecutar el comando.
 
 ⚠️ **ADVERTENCIA**: Esto eliminará todos los datos existentes antes de crear los nuevos.
 

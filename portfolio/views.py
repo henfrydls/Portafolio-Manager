@@ -464,7 +464,10 @@ class ResumeView(TemplateView):
             skills_by_category.setdefault(skill.category, []).append(skill)
         context['skills_by_category'] = skills_by_category
 
-        context['languages'] = Language.objects.language(current_language).order_by('order', 'translations__name')
+        context['languages'] = (
+            Language.objects.active_translations(current_language)
+            .order_by('order', 'translations__name')
+        )
         return context
 
 class ResumePDFView(TemplateView):
@@ -507,8 +510,14 @@ class BlogListView(ListView):
         except Profile.DoesNotExist:
             context['profile'] = None
 
+        current_language = translation.get_language() or settings.LANGUAGE_CODE
+
         # Obtener categorías activas para el filtro
-        context['categories'] = Category.objects.filter(is_active=True).order_by('order')
+        context['categories'] = (
+            Category.objects.active_translations(current_language)
+            .filter(is_active=True)
+            .order_by('order', 'translations__name')[:6]
+        )
 
         # Obtener todos los tags únicos
         all_posts = BlogPost.objects.filter(status='published')
