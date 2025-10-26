@@ -137,4 +137,4 @@ Issues and pull requests are welcome. Please describe the motivation for changes
 
 ## License
 
-This project is available under the MIT License. See `LICENSE` for the full text.
+This project is available under the MIT License. See [LICENSE](https://github.com/henfrydls/Portafolio-Manager/blob/main/LICENSE) for the full text.
