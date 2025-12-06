@@ -220,24 +220,27 @@ class Profile(TranslatableModel):
             default_email = getattr(settings, 'PROFILE_EMAIL', getattr(settings, 'DEFAULT_FROM_EMAIL', 'contact@example.com'))
             default_bio = getattr(settings, 'PROFILE_BIO', 'Update your biography to introduce yourself.')
             with transaction.atomic():
-                obj = cls.objects.create(
-                    pk=1,
-                    email=default_email,
-                    phone='',
-                    linkedin_url='',
-                    github_url='',
-                    medium_url='',
-                    profile_image='',
-                    resume_pdf='',
-                    resume_pdf_es='',
-                    show_web_resume=True,
+                # Use raw SQL to handle legacy columns (name, title, bio, location) in PostgreSQL
+                from django.db import connection
+                cursor = connection.cursor()
+                cursor.execute(
+                    "INSERT INTO portfolio_profile (id, email, phone, linkedin_url, github_url, medium_url, "
+                    "profile_image, resume_pdf, resume_pdf_es, show_web_resume, created_at, updated_at, "
+                    "name, title, bio, location) "
+                    "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW(), %s, %s, %s, %s)",
+                    [1, default_email, '', '', '', '', '', '', '', True,
+                     default_name, default_title, default_bio, default_location]
                 )
-                obj.set_current_language(default_language)
-                obj.name = default_name
-                obj.title = default_title
-                obj.bio = default_bio
-                obj.location = default_location
-                obj.save()
+
+                # Create translations for name, title, bio, location
+                cursor.execute(
+                    "INSERT INTO portfolio_profile_translation (master_id, language_code, name, title, bio, location) "
+                    "VALUES (%s, %s, %s, %s, %s, %s)",
+                    [1, default_language, default_name, default_title, default_bio, default_location]
+                )
+
+                # Fetch the created object
+                obj = cls.objects.get(pk=1)
 
         else:
             default_language = getattr(settings, 'LANGUAGE_CODE', 'en')

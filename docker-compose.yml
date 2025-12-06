@@ -1,19 +1,51 @@
 services:
   web:
     build: .
-    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    command: >
+      bash -c "python manage.py migrate &&
+               python manage.py collectstatic --noinput &&
+               gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 60"
     ports:
       - "8000:8000"
     env_file:
       - .env
     environment:
       DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-config.settings.development}
+      DATABASE_URL: ${DATABASE_URL:-postgres://portfolio:portfolio@db:5432/portfolio}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       TRANSLATION_API_URL: ${TRANSLATION_API_URL:-http://libretranslate:5000}
       TRANSLATION_PROVIDER: ${TRANSLATION_PROVIDER:-libretranslate}
     volumes:
       - .:/app
     depends_on:
+      - db
+      - redis
       - libretranslate
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-portfolio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-portfolio}
+      POSTGRES_DB: ${POSTGRES_DB:-portfolio}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-portfolio}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   libretranslate:
     image: libretranslate/libretranslate:latest
@@ -23,3 +55,7 @@ services:
       LT_HOST: 0.0.0.0
       LT_PORT: 5000
       LT_LOAD_ONLY: en,es
+
+volumes:
+  pgdata:
+  redisdata:

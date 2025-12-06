@@ -25,13 +25,8 @@ SESSION_COOKIE_AGE = int(os.environ.get('SESSION_COOKIE_AGE_DEV', 604800))  # De
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Persist across browser sessions
 SESSION_COOKIE_SECURE = False  # HTTP allowed in development
 
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db_development.sqlite3',
-    }
-}
+# Database (PostgreSQL recommended via DATABASE_URL; fallback to SQLite)
+DATABASES = load_database_config('db_development.sqlite3')
 
 # Email configuration for development
 # Use SMTP backend to actually send emails
@@ -62,8 +57,8 @@ if csrf_origins_env:
 # Static files configuration for development
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
-# Cache configuration for development (using local memory cache)
-CACHES = {
+# Cache configuration (Redis if REDIS_URL is set; otherwise LocMem)
+DEFAULT_CACHE = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'portfolio-dev-cache',
@@ -73,6 +68,12 @@ CACHES = {
         }
     }
 }
+CACHES = load_cache_config(DEFAULT_CACHE)
+
+# Use cache-backed sessions when Redis is available
+if CACHES['default']['BACKEND'] == 'django_redis.cache.RedisCache' and should_use_cache_sessions():
+    SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+    SESSION_CACHE_ALIAS = 'default'
 
 # Logging configuration for development
 LOGGING = {

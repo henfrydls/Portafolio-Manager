@@ -1,6 +1,21 @@
-# Datos de Prueba del Portfolio
+# Portfolio Test Data / Datos de prueba
+
+**Bilingual summary / Resumen bilingüe**  
+- EN: Use `python manage.py populate_test_data` (or via Docker) to seed demo content, with `--reset` and custom admin password options. Access admin at `/admin/` and dashboard at `/admin-dashboard/`.  
+- ES: Usa `python manage.py populate_test_data` (o con Docker) para cargar datos demo; soporta `--reset` y contraseña de admin personalizada. Accede al admin en `/admin/` y dashboard en `/admin-dashboard/`.
 
 Este documento explica cómo poblar el portfolio con datos de prueba para desarrollo y demostración.
+
+## English quick guide
+
+- Seed data (local): `python manage.py populate_test_data`
+- Seed data (Docker): `docker compose exec web python manage.py populate_test_data`
+- Reset and reseed: add `--reset`
+- Custom admin password: `--admin-password mypass`
+- Access after seeding:
+  - Public: http://localhost:8000/
+  - Admin: http://localhost:8000/admin/ (admin/admin123 by default)
+  - Dashboard: http://localhost:8000/admin-dashboard/
 
 ## Comando Unificado
 

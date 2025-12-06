@@ -2,6 +2,40 @@
 
 This guide walks you through installing, configuring, and maintaining the Portfolio Manager project.
 
+## Resumen rápido en Español
+
+- Clona el repositorio y crea un entorno virtual:
+  ```bash
+  git clone https://github.com/henfrydls/Portafolio-Manager.git
+  cd Portafolio-Manager
+  python -m venv .venv
+  source .venv/bin/activate  # en Windows: .venv\Scripts\activate
+  ```
+- Instala dependencias y configura variables:
+  ```bash
+  pip install --upgrade pip
+  pip install -r requirements/development.txt
+  cp .env.example .env
+  ```
+- Prepara la base de datos y estáticos:
+  ```bash
+  python manage.py migrate
+  python manage.py collectstatic --noinput
+  python manage.py createsuperuser  # o populate_test_data
+  python manage.py runserver
+  ```
+- Docker Compose (Postgres + Redis + LibreTranslate):
+  ```bash
+  cp .env.example .env
+  docker compose up --build
+  docker compose exec web python manage.py migrate
+  ```
+- Despliegue tipo producción (EC2 + Gunicorn + Nginx):
+  1) Ajusta `.env` con `DJANGO_SETTINGS_MODULE=config.settings.production`, `DATABASE_URL` (Postgres), `REDIS_URL`, dominios y correo.  
+  2) En el servidor: instala dependencias del sistema, crea venv, `pip install -r requirements/base.txt`.  
+  3) Ejecuta `collectstatic`, `migrate`, crea usuario admin o usa `populate_test_data`.  
+  4) Corre Gunicorn como servicio y configura Nginx como proxy con TLS.
+
 ## 1. Prerequisites
 
 Make sure you have the following tools:
@@ -92,21 +126,35 @@ Open the following URLs:
 
 Log in with the superuser you created and complete your profile, projects, and blog content.
 
-## 8. Optional: Docker Compose Setup
-
-If you want LibreTranslate running locally:
+## 8. Optional: Docker Compose Setup (Postgres + Redis + LibreTranslate)
 
 ```bash
 cp .env.example .env          # ensure the file exists
+# Optional: override DATABASE_URL/REDIS_URL in .env if you want other hosts
 docker compose up --build
 ```
 
 Services exposed:
 
-- Django app: <http://127.0.0.1:8000/>
+- Django app (Gunicorn): <http://127.0.0.1:8000/>
+- Postgres: `db` service (internal)
+- Redis: `redis` service (internal)
 - LibreTranslate: <http://127.0.0.1:5000/>
 
-Stop and remove containers with `docker compose down`.
+Data volumes:
+
+- Postgres: `pgdata`
+- Redis: `redisdata`
+
+Useful Docker commands:
+
+```bash
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py populate_test_data
+```
+
+Stop and remove containers with `docker compose down` (add `-v` to drop data).
 
 ## 9. Useful Management Commands
 
@@ -170,7 +218,46 @@ python manage.py collectstatic --noinput
 python manage.py runserver
 ```
 
-## 12. Next Steps
+## 12. Deploying to EC2 (PostgreSQL, Redis, Gunicorn, Nginx)
+
+1. Copy `.env.example` to `.env` and set:  
+   - `DJANGO_SETTINGS_MODULE=config.settings.production` (or `config.settings.staging` for staging)  
+   - `DATABASE_URL=postgres://user:password@host:5432/dbname` (set `DB_SSL_REQUIRED=True` if RDS enforces SSL)  
+   - `REDIS_URL=redis://default:password@host:6379/0` (optional but recommended for cache/sessions)  
+   - `ALLOWED_HOSTS_*`, `CSRF_TRUSTED_ORIGINS_*`, `PRODUCTION_DOMAIN`, email creds.
+2. Install system packages on the EC2 instance:
+   ```bash
+   sudo apt-get update
+   sudo apt-get install -y build-essential libpq-dev nginx
+   ```
+3. Install Python deps:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate
+   pip install --upgrade pip
+   pip install -r requirements/base.txt
+   ```
+4. Build and migrate:
+   ```bash
+   python manage.py collectstatic --noinput
+   python manage.py migrate
+   python manage.py createsuperuser  # or python manage.py populate_test_data
+   ```
+5. Run Gunicorn (example):
+   ```bash
+   gunicorn config.wsgi:application --bind unix:/run/portfolio.sock --workers 3 --timeout 60
+   ```
+   For production use a systemd unit to keep it running and restart on boot.
+6. Configure Nginx to serve `/static` and `/media` directly and proxy `/` to the Gunicorn socket:
+   ```
+   location /static/ { alias /path/to/project/staticfiles/; access_log off; expires 30d; }
+   location /media/  { alias /path/to/project/media/; access_log off; expires 30d; }
+   location / { proxy_pass http://unix:/run/portfolio.sock:; proxy_set_header Host $host; proxy_set_header X-Forwarded-Proto https; }
+   ```
+   Enable TLS (Let’s Encrypt/Certbot or ACM behind a load balancer).
+7. Repeat with separate `.env`, databases, Redis, and domain for staging using `config.settings.staging`.
+
+## 13. Next Steps
 
 1. Review `docs/ADMIN_USAGE.md` to learn the admin workflows.
 2. Customize branding, colors, and copy through the admin.

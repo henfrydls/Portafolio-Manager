@@ -5,6 +5,7 @@ Base settings for portfolio_managment project.
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import dj_database_url
 
 # Load environment variables from .env file
 load_dotenv()
@@ -14,6 +15,58 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-me-in-production')
+
+def load_database_config(default_sqlite_name: str):
+    """
+    Build DATABASES config using DATABASE_URL when provided, otherwise fall back to SQLite.
+    """
+    database_url = os.environ.get('DATABASE_URL')
+    conn_max_age = int(os.environ.get('DB_CONN_MAX_AGE', 600))
+    ssl_required = os.environ.get('DB_SSL_REQUIRED', 'False').lower() == 'true'
+
+    if database_url:
+        return {
+            'default': dj_database_url.config(
+                default=database_url,
+                conn_max_age=conn_max_age,
+                ssl_require=ssl_required,
+            )
+        }
+
+    return {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / default_sqlite_name,
+        }
+    }
+
+
+def load_cache_config(default_cache: dict):
+    """
+    Use Redis for cache/sessions if REDIS_URL is set; otherwise return the provided default cache.
+    """
+    redis_url = os.environ.get('REDIS_URL')
+    if not redis_url:
+        return default_cache
+
+    key_prefix = os.environ.get('REDIS_KEY_PREFIX', 'portfolio')
+    timeout = int(os.environ.get('CACHE_TIMEOUT_SECONDS', 300))
+    return {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': redis_url,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                'KEY_PREFIX': key_prefix,
+            },
+            'TIMEOUT': timeout,
+        }
+    }
+
+
+def should_use_cache_sessions():
+    """Allow opting out of cache-backed sessions via USE_CACHE_SESSIONS=False."""
+    return os.environ.get('USE_CACHE_SESSIONS', 'True').lower() == 'true'
 
 # Application definition
 INSTALLED_APPS = [

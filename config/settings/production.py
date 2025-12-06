@@ -25,13 +25,8 @@ ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS_PROD', 'yourdomain.com,www.yourdom
 SESSION_COOKIE_AGE = int(os.environ.get('SESSION_COOKIE_AGE_PROD', 86400))  # Default 24 hours
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Allow session persistence
 
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db_production.sqlite3',
-    }
-}
+# Database (PostgreSQL recommended via DATABASE_URL; fallback to SQLite)
+DATABASES = load_database_config('db_production.sqlite3')
 
 # Email configuration for production
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -83,8 +78,8 @@ if csrf_origins_env:
 BASE_URL = f'https://{production_domain}'
 SITE_NAME = os.environ.get('SITE_NAME', 'Portfolio Profesional')
 
-# Cache configuration for production (using database cache)
-CACHES = {
+# Cache configuration (Redis if REDIS_URL is set; otherwise database cache)
+DEFAULT_CACHE = {
     'default': {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'cache_table',
@@ -94,6 +89,12 @@ CACHES = {
         }
     }
 }
+CACHES = load_cache_config(DEFAULT_CACHE)
+
+# Use cache-backed sessions when Redis is available
+if CACHES['default']['BACKEND'] == 'django_redis.cache.RedisCache' and should_use_cache_sessions():
+    SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+    SESSION_CACHE_ALIAS = 'default'
 
 # Template caching for better performance
 TEMPLATES[0]['OPTIONS']['loaders'] = [

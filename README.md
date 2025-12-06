@@ -24,7 +24,7 @@ A professional portfolio and blog platform for developers and technology consult
 ## Technology Stack
 
 - Django 5.2 LTS
-- SQLite for local development (swap for PostgreSQL/MySQL in production)
+- SQLite for local development (swap for PostgreSQL in production)
 - Bootstrap-based theme bundled with WhiteNoise for static delivery
 - Pillow for image processing
 - Optional Docker Compose stack for LibreTranslate integration
@@ -81,21 +81,64 @@ Visit the following URLs:
 - Portfolio: <http://127.0.0.1:8000/>
 - Admin dashboard: <http://127.0.0.1:8000/admin/>
 
+## Resumen en Español (local, Docker y despliegue)
+
+- **Requisitos**: Python 3.10+, pip, Git. Opcional: Docker Desktop si usarás Compose.
+- **Local (virtualenv)**:
+  ```bash
+  python -m venv .venv
+  source .venv/bin/activate
+  pip install -r requirements/development.txt
+  cp .env.example .env
+  python manage.py migrate && python manage.py collectstatic --noinput
+  python manage.py runserver
+  ```
+- **Docker Compose (Postgres + Redis + LibreTranslate)**:
+  ```bash
+  cp .env.example .env
+  # opcional: ajusta DATABASE_URL/REDIS_URL en .env
+  docker compose up --build
+  ```
+- **Producción / staging (EC2 + Gunicorn + Nginx, Postgres, Redis)**:
+  1) Define `.env` con `DJANGO_SETTINGS_MODULE=config.settings.production`, `DATABASE_URL` (Postgres/RDS), `REDIS_URL`, dominios y correo.  
+  2) En el servidor: instala deps del sistema, crea venv, `pip install -r requirements/base.txt`.  
+  3) Ejecuta `python manage.py collectstatic --noinput && python manage.py migrate` y crea superusuario o usa `populate_test_data`.  
+  4) Levanta Gunicorn y configura Nginx como proxy con TLS.
+
 ## Docker Compose (Optional)
 
-Run the entire stack (Django + LibreTranslate) with Docker:
+Run the full stack (Django + Postgres + Redis + LibreTranslate) with Docker:
 
 ```bash
 cp .env.example .env          # or use copy on Windows
+# Optional: override DATABASE_URL/REDIS_URL in .env for local
 docker compose up --build
 ```
 
 Services:
 
-- Django app: <http://127.0.0.1:8000/>
+- Django app (Gunicorn): <http://127.0.0.1:8000/>
+- Postgres: `db` service (exposed only to the network)
+- Redis: `redis` service (sessions/cache/rate-limit)
 - LibreTranslate API: <http://127.0.0.1:5000/>
 
-The `web` container mounts the project directory, so code edits trigger a reload. Stop the stack with `docker compose down`.
+Data volumes:
+
+- Postgres: `pgdata`
+- Redis: `redisdata`
+
+Useful commands:
+
+```bash
+# Run migrations (already executed on startup, but re-run manually if needed)
+docker compose exec web python manage.py migrate
+# Seed demo data
+docker compose exec web python manage.py populate_test_data
+# Create superuser
+docker compose exec web python manage.py createsuperuser
+```
+
+Stop the stack with `docker compose down` (add `-v` to drop data volumes).
 
 ## Initial Configuration Checklist
 
@@ -126,10 +169,22 @@ The `web` container mounts the project directory, so code edits trigger a reload
 
 - Set `DEBUG=False`, configure strong `SECRET_KEY`, and lock down `ALLOWED_HOSTS`.
 - Switch the database to a managed service (PostgreSQL recommended) and update `.env`.
-- Serve static files via a CDN or reverse proxy; configure media storage (S3, Azure Blob, etc.).
+- Use Redis for cache/sessions/rate limits when available (`REDIS_URL`, `USE_CACHE_SESSIONS`).
+- Serve static files via Nginx + Gunicorn (or keep WhiteNoise) and enable HTTPS/TLS.
+- Configure media storage (local disk for small installs, or S3/Blob + CDN).
 - Use HTTPS and apply Django security middleware settings (`SECURE_*`, `SESSION_COOKIE_SECURE`, etc.).
 - Provision a robust email backend (e.g., SendGrid, Mailgun, SES).
 - Add monitoring/logging (Sentry, ELK, or similar) as part of your deployment pipeline.
+
+### EC2 Quick Recipe (Postgres + Redis + Gunicorn + Nginx)
+
+1) Copy `.env.example` to `.env`, set `DJANGO_SETTINGS_MODULE=config.settings.production`, `DATABASE_URL` (PostgreSQL/RDS), `DB_SSL_REQUIRED=True` if needed, `REDIS_URL`, `ALLOWED_HOSTS_PROD`, `CSRF_TRUSTED_ORIGINS_PROD`, `PRODUCTION_DOMAIN`, and email creds.  
+2) Install system deps: `sudo apt-get install build-essential libpq-dev nginx` (plus `certbot` if using Let’s Encrypt).  
+3) Install Python deps: `python -m venv .venv && source .venv/bin/activate && pip install --upgrade pip && pip install -r requirements/base.txt`.  
+4) Build assets/data: `python manage.py collectstatic --noinput && python manage.py migrate` and create an admin user (`createsuperuser`) or seed demo data (`populate_test_data`).  
+5) Run Gunicorn (example): `gunicorn config.wsgi:application --bind unix:/run/portfolio.sock --workers 3 --timeout 60`.  
+6) Nginx (example): serve `/static` and `/media`, proxy `/` to `unix:/run/portfolio.sock`, set `proxy_set_header X-Forwarded-Proto https`, and enable TLS.  
+7) Repeat with separate `.env`/RDS/Redis for staging using `DJANGO_SETTINGS_MODULE=config.settings.staging` and a different domain.
 
 ## Contributing
 

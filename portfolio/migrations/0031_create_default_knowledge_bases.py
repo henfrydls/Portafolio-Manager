@@ -179,6 +179,8 @@ def _identifier_from_name(name: str) -> str:
 def create_default_knowledge_bases(apps, schema_editor):
     KnowledgeBase = apps.get_model("portfolio", "KnowledgeBase")
     KnowledgeBaseTranslation = apps.get_model("portfolio", "KnowledgeBaseTranslation")
+    connection = schema_editor.connection
+    cursor = connection.cursor()
 
     for name, icon in COMMON_KNOWLEDGE_ICONS.items():
         identifier = _identifier_from_name(name)
@@ -188,21 +190,25 @@ def create_default_knowledge_bases(apps, schema_editor):
 
         color = COLOR_MAPPING.get(name, "#000000")
 
-        kb = KnowledgeBase.objects.create(
-            identifier=identifier,
-            icon=icon,
-            color=color,
+        # Use raw SQL to insert since PostgreSQL still has legacy 'name' column
+        # but Django's parler expects it to be in the translation table only
+        cursor.execute(
+            "INSERT INTO portfolio_knowledgebase (identifier, icon, color, name) "
+            "VALUES (%s, %s, %s, %s) RETURNING id",
+            [identifier, icon, color, name]
         )
+        kb_id = cursor.fetchone()[0]
 
-        KnowledgeBaseTranslation.objects.create(
-            master=kb,
-            language_code="en",
-            name=name,
+        # Create translations
+        cursor.execute(
+            "INSERT INTO portfolio_knowledgebase_translation (master_id, language_code, name) "
+            "VALUES (%s, %s, %s)",
+            [kb_id, "en", name]
         )
-        KnowledgeBaseTranslation.objects.create(
-            master=kb,
-            language_code="es",
-            name=name,
+        cursor.execute(
+            "INSERT INTO portfolio_knowledgebase_translation (master_id, language_code, name) "
+            "VALUES (%s, %s, %s)",
+            [kb_id, "es", name]
         )
 
 

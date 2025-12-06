@@ -35,29 +35,63 @@ CATEGORIES = [
 def create_default_categories(apps, schema_editor):
     Category = apps.get_model("portfolio", "Category")
     CategoryTranslation = apps.get_model("portfolio", "CategoryTranslation")
+    connection = schema_editor.connection
+    cursor = connection.cursor()
 
     for entry in CATEGORIES:
         slug = slugify(entry["en"]["name"])
+        en_name = entry["en"]["name"]
 
-        category, _ = Category.objects.get_or_create(
-            slug=slug,
-            defaults={"is_active": True, "order": entry["order"]},
-        )
+        # Check if category already exists
+        cursor.execute("SELECT id FROM portfolio_category WHERE slug = %s", [slug])
+        row = cursor.fetchone()
 
-        CategoryTranslation.objects.update_or_create(
-            master=category, language_code="en",
-            defaults={
-                "name": entry["en"]["name"],
-                "description": entry["en"]["description"],
-            },
+        if row:
+            category_id = row[0]
+        else:
+            # Use raw SQL to insert since PostgreSQL still has legacy 'name' and 'description' columns
+            cursor.execute(
+                "INSERT INTO portfolio_category (slug, is_active, \"order\", name, description, created_at, updated_at) "
+                "VALUES (%s, %s, %s, %s, %s, NOW(), NOW()) RETURNING id",
+                [slug, True, entry["order"], en_name, entry["en"]["description"]]
+            )
+            category_id = cursor.fetchone()[0]
+
+        # Create or update English translation
+        cursor.execute(
+            "SELECT id FROM portfolio_category_translation WHERE master_id = %s AND language_code = %s",
+            [category_id, "en"]
         )
-        CategoryTranslation.objects.update_or_create(
-            master=category, language_code="es",
-            defaults={
-                "name": entry["es"]["name"],
-                "description": entry["es"]["description"],
-            },
+        if cursor.fetchone():
+            cursor.execute(
+                "UPDATE portfolio_category_translation SET name = %s, description = %s "
+                "WHERE master_id = %s AND language_code = %s",
+                [entry["en"]["name"], entry["en"]["description"], category_id, "en"]
+            )
+        else:
+            cursor.execute(
+                "INSERT INTO portfolio_category_translation (master_id, language_code, name, description) "
+                "VALUES (%s, %s, %s, %s)",
+                [category_id, "en", entry["en"]["name"], entry["en"]["description"]]
+            )
+
+        # Create or update Spanish translation
+        cursor.execute(
+            "SELECT id FROM portfolio_category_translation WHERE master_id = %s AND language_code = %s",
+            [category_id, "es"]
         )
+        if cursor.fetchone():
+            cursor.execute(
+                "UPDATE portfolio_category_translation SET name = %s, description = %s "
+                "WHERE master_id = %s AND language_code = %s",
+                [entry["es"]["name"], entry["es"]["description"], category_id, "es"]
+            )
+        else:
+            cursor.execute(
+                "INSERT INTO portfolio_category_translation (master_id, language_code, name, description) "
+                "VALUES (%s, %s, %s, %s)",
+                [category_id, "es", entry["es"]["name"], entry["es"]["description"]]
+            )
 
 
 

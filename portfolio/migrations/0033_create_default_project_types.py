@@ -132,31 +132,62 @@ PROJECT_TYPES = [
 def create_default_project_types(apps, schema_editor):
     ProjectType = apps.get_model("portfolio", "ProjectType")
     ProjectTypeTranslation = apps.get_model("portfolio", "ProjectTypeTranslation")
+    connection = schema_editor.connection
+    cursor = connection.cursor()
 
     for entry in PROJECT_TYPES:
         slug = slugify(entry["en"]["name"])
 
-        if ProjectType.objects.filter(slug=slug).exists():
-            continue
+        # Check if project type already exists
+        cursor.execute("SELECT id FROM portfolio_projecttype WHERE slug = %s", [slug])
+        row = cursor.fetchone()
 
-        project_type = ProjectType.objects.create(
-            slug=slug,
-            is_active=True,
-            order=entry["order"],
-        )
+        if row:
+            project_type_id = row[0]
+        else:
+            # Use raw SQL to insert since PostgreSQL still has legacy 'name' and 'description' columns
+            cursor.execute(
+                "INSERT INTO portfolio_projecttype (slug, is_active, \"order\", name, description, created_at, updated_at) "
+                "VALUES (%s, %s, %s, %s, %s, NOW(), NOW()) RETURNING id",
+                [slug, True, entry["order"], entry["en"]["name"], entry["en"]["description"]]
+            )
+            project_type_id = cursor.fetchone()[0]
 
-        ProjectTypeTranslation.objects.create(
-            master=project_type,
-            language_code="en",
-            name=entry["en"]["name"],
-            description=entry["en"]["description"],
+        # Create or update English translation
+        cursor.execute(
+            "SELECT id FROM portfolio_projecttype_translation WHERE master_id = %s AND language_code = %s",
+            [project_type_id, "en"]
         )
-        ProjectTypeTranslation.objects.create(
-            master=project_type,
-            language_code="es",
-            name=entry["es"]["name"],
-            description=entry["es"]["description"],
+        if cursor.fetchone():
+            cursor.execute(
+                "UPDATE portfolio_projecttype_translation SET name = %s, description = %s "
+                "WHERE master_id = %s AND language_code = %s",
+                [entry["en"]["name"], entry["en"]["description"], project_type_id, "en"]
+            )
+        else:
+            cursor.execute(
+                "INSERT INTO portfolio_projecttype_translation (master_id, language_code, name, description) "
+                "VALUES (%s, %s, %s, %s)",
+                [project_type_id, "en", entry["en"]["name"], entry["en"]["description"]]
+            )
+
+        # Create or update Spanish translation
+        cursor.execute(
+            "SELECT id FROM portfolio_projecttype_translation WHERE master_id = %s AND language_code = %s",
+            [project_type_id, "es"]
         )
+        if cursor.fetchone():
+            cursor.execute(
+                "UPDATE portfolio_projecttype_translation SET name = %s, description = %s "
+                "WHERE master_id = %s AND language_code = %s",
+                [entry["es"]["name"], entry["es"]["description"], project_type_id, "es"]
+            )
+        else:
+            cursor.execute(
+                "INSERT INTO portfolio_projecttype_translation (master_id, language_code, name, description) "
+                "VALUES (%s, %s, %s, %s)",
+                [project_type_id, "es", entry["es"]["name"], entry["es"]["description"]]
+            )
 
 
 def remove_default_project_types(apps, schema_editor):

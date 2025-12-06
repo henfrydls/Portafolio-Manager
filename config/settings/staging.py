@@ -26,13 +26,8 @@ SESSION_COOKIE_AGE = int(os.environ.get('SESSION_COOKIE_AGE_STAGING', 43200))  #
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Allow session persistence
 SESSION_COOKIE_SECURE = True  # HTTPS required in staging
 
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db_staging.sqlite3',
-    }
-}
+# Database (PostgreSQL recommended via DATABASE_URL; fallback to SQLite)
+DATABASES = load_database_config('db_staging.sqlite3')
 
 # Email configuration for staging
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -73,14 +68,20 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_REFERRER_POLICY = 'same-origin'
 
-# Cache configuration for staging
-CACHES = {
+# Cache configuration (Redis if REDIS_URL is set; otherwise LocMem)
+DEFAULT_CACHE = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'staging-cache',
         'TIMEOUT': 300,
     }
 }
+CACHES = load_cache_config(DEFAULT_CACHE)
+
+# Use cache-backed sessions when Redis is available
+if CACHES['default']['BACKEND'] == 'django_redis.cache.RedisCache' and should_use_cache_sessions():
+    SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+    SESSION_CACHE_ALIAS = 'default'
 
 # Logging configuration for staging
 LOGGING = {

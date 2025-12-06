@@ -4,6 +4,16 @@ This comprehensive guide explains how to use the Django admin panel to manage yo
 
 **Note:** This is a generic portfolio system. All personal information should be configured through the admin panel and environment variables, not hardcoded in the application.
 
+**Bilingual summary / Resumen bilingüe**
+- EN: Manage profile, projects, blog, catalogs, and translations. Public pages include a floating EN/ES language switcher.
+- ES: Administra perfil, proyectos, blog, catálogos y traducciones. Las páginas públicas incluyen un selector de idioma flotante EN/ES.
+
+**Pasos rápidos (ES)**
+- Inicia el servidor (`python manage.py runserver`) y entra a `http://127.0.0.1:8000/admin/`.
+- Crea o usa tu superusuario y completa el Perfil antes de publicar.
+- Gestiona proyectos, posts y catálogos; usa las pestañas de idioma para traducir con django-parler.
+- Verifica en la web pública el selector de idioma EN/ES.
+
 ## 🚀 Getting Started
 
 ### Accessing the Admin Panel
@@ -35,6 +45,11 @@ The admin panel is organized into the following sections:
 - **⚡ Skills** - Technical and professional skills
 - **📧 Contact Messages** - Visitor inquiries and feedback
 - **📈 Analytics** - Visit tracking and statistics
+
+## 🌐 Language Switching / Cambio de idioma
+
+- Front-end: The floating EN/ES switcher posts to `set_language` and preserves the current URL via the `next` field.  
+- Admin/Parler: Use the language tabs in each translatable model to enter translations. If automatic translation is disabled, you can still add languages manually.
 
 ## 👤 Profile Management
 

@@ -8,7 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y build-essential libmagic1 gettext && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y build-essential libmagic1 gettext libpq-dev && rm -rf /var/lib/apt/lists/*
 
 COPY requirements/ requirements/
 RUN pip install --upgrade pip \
@@ -19,4 +19,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["bash", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+CMD ["bash", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 60"]

@@ -2,6 +2,15 @@
 
 This guide explains how to configure the Django Portfolio system with your personal information. This is a **generic portfolio system** that can be customized for any user.
 
+**Bilingual summary / Resumen bilingüe**
+- EN: Configure environment variables, admin content, and optional services (Postgres, Redis, LibreTranslate). A floating language switcher lets visitors toggle EN/ES on public pages.
+- ES: Configura variables de entorno, contenido en el admin y servicios opcionales (Postgres, Redis, LibreTranslate). El selector flotante permite cambiar entre EN/ES en las páginas públicas.
+
+**Pasos rápidos (ES)**
+- Copia `.env.example` a `.env` y ajusta `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS_*`, `DATABASE_URL` (Postgres), `REDIS_URL` y correo.
+- Define `DJANGO_SETTINGS_MODULE` según entorno (`development`, `staging`, `production`).
+- Activa/desactiva traducción automática en el admin (Site Configuration) y usa el selector flotante para probar EN/ES.
+
 ## 🎯 Overview
 
 The Django Portfolio is designed to be completely generic and configurable. **No personal information is hardcoded** in the application. All customization is done through:
@@ -66,6 +75,10 @@ REDIS_URL=redis://localhost:6379/0
 ### Method 2: Admin Panel Configuration
 
 Most content and personal information should be managed through the Django admin panel.
+
+#### Language switcher / Selector de idioma
+- Front-end: el selector flotante EN/ES usa la vista estándar `set_language`; recuerda incluir `{% csrf_token %}` si personalizas el template.
+- Admin: agrega/edita traducciones desde las pestañas de idioma que provee django-parler. Si desactivas traducción automática, sigue siendo posible cargar traducciones manuales.
 
 #### Step 1: Access Admin Panel
 

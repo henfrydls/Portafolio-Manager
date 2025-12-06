@@ -1,6 +1,7 @@
 # Documentation Index
 
-Use this index to quickly locate the guide that answers your question. All files are written in Markdown and live in the repository root or in the `docs/` directory.
+Use this index to quickly locate the guide that answers your question. All files are written in Markdown and live in the repository root or in the `docs/` directory.  
+**Nota**: Cada guía incluye un breve resumen en inglés y español; consulta la sección inicial de cada archivo.
 
 ---
 

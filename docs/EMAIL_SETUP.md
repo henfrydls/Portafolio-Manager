@@ -1,6 +1,15 @@
 # Email Configuration Guide
 
+**Bilingual summary / Resumen bilingüe**  
+- EN: Configure SMTP credentials, sender, and contact confirmations. Test from admin or shell.  
+- ES: Configura credenciales SMTP, remitente y confirmaciones de contacto. Prueba desde el admin o consola.
+
 This guide explains how to configure email functionality for your portfolio website.
+
+**Pasos rápidos (ES)**
+- Ajusta en `.env`: `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USE_TLS`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `DEFAULT_FROM_EMAIL`.
+- Activa/desactiva `SEND_CONTACT_CONFIRMATIONS` según tu flujo.
+- Prueba desde el admin o con un comando de prueba (`python manage.py test_email` si está disponible).
 
 ## Overview
 
