@@ -27,8 +27,10 @@ This guide walks you through installing, configuring, and maintaining the Portfo
 - Docker Compose (Postgres + Redis + LibreTranslate):
   ```bash
   cp .env.example .env
+  # Modo desarrollo (puerto 8000 expuesto)
   docker compose up --build
-  docker compose exec web python manage.py migrate
+  # Modo staging/prod (solo nginx en 8080)
+  docker compose -f docker-compose.yml --profile staging up --build
   ```
 - Despliegue tipo producción (EC2 + Gunicorn + Nginx):
   1) Ajusta `.env` con `DJANGO_SETTINGS_MODULE=config.settings.production`, `DATABASE_URL` (Postgres), `REDIS_URL`, dominios y correo.  
@@ -128,33 +130,74 @@ Log in with the superuser you created and complete your profile, projects, and b
 
 ## 8. Optional: Docker Compose Setup (Postgres + Redis + LibreTranslate)
 
+### Development Mode (Direct Django Access)
+
+The project includes `docker-compose.override.yml` which automatically exposes port 8000 in development:
+
 ```bash
 cp .env.example .env          # ensure the file exists
-# Optional: override DATABASE_URL/REDIS_URL in .env if you want other hosts
 docker compose up --build
 ```
 
-Services exposed:
+**Access points:**
+- Django app (Gunicorn): <http://127.0.0.1:8000/> ✅ Direct access
+- Admin dashboard: <http://127.0.0.1:8000/admin/>
+- Postgres: `db` service (internal only)
+- Redis: `redis` service (internal only)
+- LibreTranslate: internal only (`http://libretranslate:5000`)
 
-- Django app (Gunicorn): <http://127.0.0.1:8000/>
-- Postgres: `db` service (internal)
-- Redis: `redis` service (internal)
-- LibreTranslate: <http://127.0.0.1:5000/>
+### Staging/Production Mode (Nginx Only)
 
-Data volumes:
+For production-like testing, **you MUST use `-f docker-compose.yml`** to ignore the override file.
+
+**WARNING:** If you omit `-f docker-compose.yml`, the override file will still be loaded and port 8000 will be exposed (not production-like).
+
+```bash
+# Staging (local testing) - MUST include -f flag
+docker compose -f docker-compose.yml --profile staging up --build
+
+# Production mode - MUST include -f flag
+docker compose -f docker-compose.yml --profile prod up --build
+```
+
+**Access points:**
+- Nginx: <http://127.0.0.1:8080/> ✅ Only access point
+- Django port 8000: Internal only (not accessible from host) ❌
+- Admin dashboard: <http://127.0.0.1:8080/admin/>
+
+**Why this setup?**
+- Development needs direct Django access for debugging
+- Staging/Production should only expose Nginx (production-like architecture)
+- Port 8000 is never exposed to the internet in real deployments
+
+### Data Volumes
 
 - Postgres: `pgdata`
 - Redis: `redisdata`
+- Static files: `staticfiles`
+- Media files: `mediafiles`
 
-Useful Docker commands:
+### Useful Docker Commands
 
 ```bash
+# Run migrations
 docker compose exec web python manage.py migrate
+
+# Create superuser
 docker compose exec web python manage.py createsuperuser
+
+# Seed demo data
 docker compose exec web python manage.py populate_test_data
+
+# Environment sanity check (runs automatically on startup)
+docker compose exec web python manage.py check_env
+
+# View logs
+docker compose logs -f web
+docker compose logs -f nginx
 ```
 
-Stop and remove containers with `docker compose down` (add `-v` to drop data).
+Stop and remove containers with `docker compose down` (add `-v` to drop data volumes).
 
 ## 9. Useful Management Commands
 

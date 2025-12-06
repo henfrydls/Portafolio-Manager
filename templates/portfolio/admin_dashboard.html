@@ -570,8 +570,10 @@
                 <i class="fas fa-blog"></i>
                 <div class="action-btn-content">
                     <div class="action-btn-title">{% trans "Manage Blog Posts" %}</div>
-                    <div class="action-meta">{{ stats.total_posts }} {% trans "posts total" %} • {{
-                        stats.published_posts }} {% trans "published" %}</div>
+                    <div class="action-meta">
+                        {{ stats.total_posts|default:"0" }} {% trans "posts total" %} •
+                        {{ stats.published_posts|default:"0" }} {% trans "published" %}
+                    </div>
                 </div>
             </div>
         </a>
@@ -749,6 +751,7 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ block.super }}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {

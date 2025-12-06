@@ -1,0 +1,33 @@
+# =============================================================================
+# Docker Compose Override - DEVELOPMENT ONLY
+# =============================================================================
+# This file is automatically merged when running `docker compose up`
+# It adds development-specific configurations like exposing port 8000
+#
+# HOW TO IGNORE THIS FILE:
+# ------------------------
+# ✅ CORRECT - Explicitly specify file to ignore override:
+#    docker compose -f docker-compose.yml --profile staging up
+#
+# ❌ WRONG - This still loads the override file:
+#    docker compose --profile staging up
+#
+# IMPORTANT: The --profile flag does NOT prevent this file from loading.
+# You MUST use -f docker-compose.yml to explicitly ignore it.
+#
+# Add this file to .gitignore if you want different local configurations
+# =============================================================================
+
+services:
+  web:
+    # Expose port 8000 for direct Django access in development
+    ports:
+      - "8000:8000"
+
+    # Optional: Override command for development with runserver instead of gunicorn
+    # Uncomment below if you prefer Django's development server with auto-reload
+    # command: >
+    #   bash -c "python manage.py migrate &&
+    #            python manage.py collectstatic --noinput &&
+    #            python manage.py check_env &&
+    #            python manage.py runserver 0.0.0.0:8000"

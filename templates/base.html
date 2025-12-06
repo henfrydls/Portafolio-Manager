@@ -281,6 +281,7 @@
 
     <!-- Main content wrapper -->
     <div class="main-wrapper">
+        {% block messages_banner %}
         {% if messages %}
         <div class="messages">
             {% for message in messages %}
@@ -290,6 +291,7 @@
             {% endfor %}
         </div>
         {% endif %}
+        {% endblock %}
 
         {% block content %}
         {% endblock %}

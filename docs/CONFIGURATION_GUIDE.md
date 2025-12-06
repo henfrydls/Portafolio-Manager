@@ -70,6 +70,14 @@ DATABASE_URL=postgresql://user:password@localhost:5432/portfolio_db
 
 # Redis (optional - for caching)
 REDIS_URL=redis://localhost:6379/0
+
+# Staging Configuration (for local staging testing)
+STAGING_DOMAIN=localhost  # Use localhost for local testing, actual domain for remote staging
+CSRF_TRUSTED_ORIGINS_STAGING=http://localhost:8080,http://localhost:8000
+
+# Translation Service
+TRANSLATION_PROVIDER=libretranslate
+TRANSLATION_API_URL=http://libretranslate:5000
 ```
 
 ### Method 2: Admin Panel Configuration
@@ -218,6 +226,88 @@ The portfolio supports English and Spanish by default.
    python manage.py makemessages -l fr
    python manage.py compilemessages
    ```
+
+## 🐳 Docker Compose Configuration
+
+The project supports different Docker Compose configurations for development, staging, and production-like environments.
+
+### Development Mode
+
+For development, the project includes `docker-compose.override.yml` that automatically exposes port 8000:
+
+```bash
+# Automatically uses docker-compose.override.yml
+docker compose up --build
+```
+
+**Configuration:**
+- Django port 8000: Exposed to host (direct access)
+- Access: `http://localhost:8000/`
+- Environment: Uses `DJANGO_SETTINGS_MODULE` from `.env` (default: `development`)
+
+### Staging Mode (Local Testing)
+
+For production-like testing locally, **you MUST use `-f docker-compose.yml`** to explicitly ignore the override file.
+
+**CRITICAL:** Using `--profile staging` alone is NOT enough. You must include `-f docker-compose.yml` or the override file will still apply and port 8000 will be exposed.
+
+```bash
+# ❌ WRONG - Override file still applies, port 8000 exposed
+docker compose --profile staging up --build
+
+# ✅ CORRECT - Override file ignored, port 8000 NOT exposed
+docker compose -f docker-compose.yml --profile staging up --build
+```
+
+**Configuration:**
+- Django port 8000: Internal only (not exposed to host)
+- Nginx port 8080: Exposed to host
+- Access: `http://localhost:8080/`
+- Environment: Set `DJANGO_SETTINGS_MODULE=config.settings.staging` in `.env`
+- **Important:** Set `STAGING_DOMAIN=localhost` in `.env` to disable SSL redirects for local testing
+
+**Staging Settings Behavior:**
+- When `STAGING_DOMAIN=localhost`: SSL redirects and secure cookies are disabled
+- When `STAGING_DOMAIN=staging.yourdomain.com`: Full SSL security is enabled
+
+### Production Mode
+
+For production deployment:
+
+```bash
+# Production mode (nginx on standard ports)
+docker compose -f docker-compose.yml --profile prod up --build
+```
+
+**Configuration:**
+- Django port 8000: Internal only
+- Nginx: Configured for ports 80/443 with SSL
+- Environment: Set `DJANGO_SETTINGS_MODULE=config.settings.production` in `.env`
+- **Important:** Configure proper domain, SSL certificates, and security settings
+
+### Docker Compose Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         DEVELOPMENT                             │
+├─────────────────────────────────────────────────────────────────┤
+│ Browser → http://localhost:8000 → Django (direct)               │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                    STAGING (Local Testing)                      │
+├─────────────────────────────────────────────────────────────────┤
+│ Browser → http://localhost:8080 → Nginx → Django (port 8000)    │
+│ (Django port 8000 NOT accessible from outside)                  │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                  PRODUCTION (Real Server)                       │
+├─────────────────────────────────────────────────────────────────┤
+│ Browser → https://yourdomain.com → Nginx:443 → Django:8000      │
+│ (Django port 8000 NOT accessible from internet)                 │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ## 🔒 Security Configuration
 

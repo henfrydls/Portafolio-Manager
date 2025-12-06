@@ -6,6 +6,42 @@
 
 {% block admin_actions %}{% endblock %}
 
+{% block extra_css %}
+{{ block.super }}
+<style>
+.field-error input,
+.field-error select,
+.field-error textarea {
+    border-color: #e74c3c !important;
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.15);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.field-error label {
+    color: #c0392b;
+}
+.form-error {
+    color: #c0392b;
+    font-weight: 600;
+}
+.alert-custom.alert-danger {
+    border-left: 4px solid #e74c3c;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    // Focus the first errored field to avoid re-navigation on submit
+    (function() {
+        const erroredField = document.querySelector('.field-error input, .field-error select, .field-error textarea');
+        if (erroredField) {
+            erroredField.focus();
+        }
+    })();
+</script>
+{% endblock %}
+
 {% block admin_content %}
 <div style="max-width: 720px; margin: 0 auto;">
     <div class="content-card">
@@ -31,7 +67,7 @@
 
             <div style="display: grid; gap: 20px;">
                 {% for field in form %}
-                <div>
+                <div class="{% if field.errors %}field-error{% endif %}">
                     <label for="{{ field.id_for_label }}" class="form-label-custom">
                         {{ field.label }}
                     </label>

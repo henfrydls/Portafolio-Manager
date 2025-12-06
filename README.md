@@ -99,15 +99,24 @@ Visit the following URLs:
   # opcional: ajusta DATABASE_URL/REDIS_URL en .env
   docker compose up --build
   ```
+- **Docker Compose con Nginx (staging/prod-like)**:
+  ```bash
+  # expone la app en http://127.0.0.1:8080
+  docker compose --profile staging up --build
+  # o docker compose --profile prod up --build
+  ```
 - **Producción / staging (EC2 + Gunicorn + Nginx, Postgres, Redis)**:
   1) Define `.env` con `DJANGO_SETTINGS_MODULE=config.settings.production`, `DATABASE_URL` (Postgres/RDS), `REDIS_URL`, dominios y correo.  
   2) En el servidor: instala deps del sistema, crea venv, `pip install -r requirements/base.txt`.  
   3) Ejecuta `python manage.py collectstatic --noinput && python manage.py migrate` y crea superusuario o usa `populate_test_data`.  
   4) Levanta Gunicorn y configura Nginx como proxy con TLS.
+  - Para staging usa `DJANGO_SETTINGS_MODULE=config.settings.staging` y variables `STAGING_DOMAIN`, `ALLOWED_HOSTS_STAGING`, `CSRF_TRUSTED_ORIGINS_STAGING`, `DATABASE_URL`/`REDIS_URL` de tu entorno de pruebas. Puedes usar el perfil `--profile staging` en Compose para simular el proxy Nginx en http://127.0.0.1:8080.
 
 ## Docker Compose (Optional)
 
-Run the full stack (Django + Postgres + Redis + LibreTranslate) with Docker:
+### Development Mode (with `docker-compose.override.yml`)
+
+Run the full stack with Django port 8000 exposed for direct access:
 
 ```bash
 cp .env.example .env          # or use copy on Windows
@@ -115,12 +124,95 @@ cp .env.example .env          # or use copy on Windows
 docker compose up --build
 ```
 
-Services:
+**Services in Development:**
 
-- Django app (Gunicorn): <http://127.0.0.1:8000/>
-- Postgres: `db` service (exposed only to the network)
-- Redis: `redis` service (sessions/cache/rate-limit)
-- LibreTranslate API: <http://127.0.0.1:5000/>
+- Django app (Gunicorn): <http://127.0.0.1:8000/> ✅ Direct access
+- Postgres: `db` service (internal only)
+- Redis: `redis` service (internal only)
+- LibreTranslate: internal only (web reaches it at `http://libretranslate:5000`)
+
+**How it works:** The `docker-compose.override.yml` file automatically exposes port 8000 in development mode. This file is automatically merged when you run `docker compose up`.
+
+### Staging/Production Mode (production-like)
+
+Run with Nginx as reverse proxy (no direct Django access):
+
+**IMPORTANT:** Must use `-f docker-compose.yml` to ignore the override file.
+
+```bash
+# Staging (MUST include -f to ignore override)
+docker compose -f docker-compose.yml --profile staging up --build
+
+# Production (MUST include -f to ignore override)
+docker compose -f docker-compose.yml --profile prod up --build
+```
+
+**Services in Staging/Prod:**
+
+- Django app (Gunicorn): Port 8000 (internal only) ❌ No direct access
+- Nginx: <http://127.0.0.1:8080/> ✅ Only access point
+- Postgres: `db` service (internal only)
+- Redis: `redis` service (internal only)
+- LibreTranslate: internal only
+
+**How it works:** Using `-f docker-compose.yml` explicitly ignores the override file, so port 8000 is NOT exposed to the host. All traffic goes through Nginx on port 8080.
+
+### 🌐 How Ports Work: From `localhost:8080` to `tudominio.com`
+
+**Question:** Why do we use `:8080` locally but production URLs like `tudominio.com` don't have a port?
+
+**Answer:** HTTP/HTTPS have **default ports** that browsers automatically use:
+
+| Protocol | Default Port | What You Type | What Browser Uses |
+|----------|--------------|---------------|-------------------|
+| HTTP     | 80           | `http://tudominio.com` | `http://tudominio.com:80` |
+| HTTPS    | 443          | `https://tudominio.com` | `https://tudominio.com:443` |
+
+**Local Development/Staging:**
+```
+http://localhost:8080/
+```
+- Port 8080 is needed because port 80 requires admin privileges
+- Nginx listens on port 8080 and forwards to Django on port 8000 (internal)
+
+**Production (Real Server):**
+```
+https://tudominio.com/  (automatically uses port 443)
+```
+- Nginx listens on **port 443** (HTTPS) with SSL certificate
+- Nginx forwards requests to Django on port 8000 (internal, not exposed)
+- Users never see `:443` because it's the default HTTPS port
+
+**The Architecture:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         DEVELOPMENT                             │
+├─────────────────────────────────────────────────────────────────┤
+│ Browser → http://localhost:8000 → Django (direct)               │
+│ Browser → http://localhost:8080 → Nginx → Django (port 8000)    │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                    STAGING (Local Testing)                      │
+├─────────────────────────────────────────────────────────────────┤
+│ Browser → http://localhost:8080 → Nginx → Django (port 8000)    │
+│ (port 8000 NOT accessible from outside)                         │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                  PRODUCTION (Real Server)                       │
+├─────────────────────────────────────────────────────────────────┤
+│ Browser → https://tudominio.com → Nginx:443 → Django (port 8000)│
+│ (port 8000 NOT accessible from internet)                        │
+│ (port 443 is default HTTPS, so users don't type it)             │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Key Takeaways:**
+- **Development:** Direct access to Django on port 8000 for debugging
+- **Staging:** Production-like with Nginx on custom port 8080 (since 80 needs admin)
+- **Production:** Nginx on port 443 (HTTPS) - invisible to users because it's the default
 
 Data volumes:
 
@@ -136,6 +228,15 @@ docker compose exec web python manage.py migrate
 docker compose exec web python manage.py populate_test_data
 # Create superuser
 docker compose exec web python manage.py createsuperuser
+# Environment sanity check (runs automatically on container start)
+# docker compose exec web python manage.py check_env
+# With Nginx profile (staging/prod-like) listening on 8080
+# docker compose --profile staging up --build
+# If you need to test LibreTranslate manually, temporarily expose its port in docker-compose.yml:
+#   libretranslate:
+#     ports:
+#       - "5000:5000"
+# and revert it when done to keep it internal.
 ```
 
 Stop the stack with `docker compose down` (add `-v` to drop data volumes).
@@ -150,7 +251,8 @@ Stop the stack with `docker compose down` (add `-v` to drop data volumes).
 
 ## Documentation Index
 
-- `SETUP.md`: detailed installation, troubleshooting, and maintenance guide.
+- `DOCKER_COMMANDS.md`: **quick reference for Docker Compose commands** (development, staging, production).
+- `docs/SETUP.md`: detailed installation, troubleshooting, and maintenance guide.
 - `docs/CONFIGURATION_GUIDE.md`: environment variables, production hints, and security settings.
 - `docs/ADMIN_USAGE.md`: workflows for managing profile, projects, blog posts, and catalogs.
 - `docs/EMAIL_SETUP.md`: SMTP configuration for Gmail, Outlook, and custom providers.

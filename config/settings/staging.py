@@ -1,5 +1,21 @@
 """
 Staging settings for portfolio_managment project.
+
+NOTE: Local Staging Testing
+----------------------------
+This configuration supports both local staging testing and remote staging deployments:
+
+- For LOCAL testing (STAGING_DOMAIN=localhost):
+  * SSL redirects are disabled (SECURE_SSL_REDIRECT=False)
+  * Secure cookies are disabled (SESSION_COOKIE_SECURE=False, CSRF_COOKIE_SECURE=False)
+  * Access via: http://localhost:8080/
+
+- For REMOTE staging (STAGING_DOMAIN=staging.yourdomain.com):
+  * SSL redirects are enabled (SECURE_SSL_REDIRECT=True)
+  * Secure cookies are enabled
+  * Access via: https://staging.yourdomain.com/
+
+This allows you to test staging configuration locally without needing SSL certificates.
 """
 
 from .base import *
@@ -51,13 +67,17 @@ WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = True
 
 # Security settings for staging (similar to production but less strict)
+# Allow HTTP when running on localhost for local staging testing
+staging_domain = os.environ.get('STAGING_DOMAIN', 'staging.yourdomain.com')
+is_local = staging_domain in ['localhost', '127.0.0.1', '0.0.0.0']
+
 SECURE_HSTS_SECONDS = 0  # Disabled for staging
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = not is_local  # Disable SSL redirect for localhost
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# Cookie security
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# Cookie security - relax for localhost
+SESSION_COOKIE_SECURE = not is_local  # Allow non-HTTPS cookies on localhost
+CSRF_COOKIE_SECURE = not is_local  # Allow non-HTTPS cookies on localhost
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'  # Less strict than production

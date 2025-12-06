@@ -10,7 +10,8 @@ Use this index to quickly locate the guide that answers your question. All files
 | File | Purpose | When to read |
 | ---- | ------- | ------------ |
 | `README.md` | High-level overview and quick start commands. | First contact with the project. |
-| `SETUP.md` | Step-by-step installation, configuration, and troubleshooting. | Setting up a local environment or a new machine. |
+| `DOCKER_COMMANDS.md` | **Quick reference for Docker Compose commands** (dev, staging, prod). | When working with Docker and need command examples. |
+| `docs/SETUP.md` | Step-by-step installation, configuration, and troubleshooting. | Setting up a local environment or a new machine. |
 
 ## Configuration
 
@@ -46,7 +47,7 @@ Use this index to quickly locate the guide that answers your question. All files
 
 ### Fresh Installation
 1. `README.md` – grasp the big picture.
-2. `SETUP.md` – follow the installation steps.
+2. `docs/SETUP.md` – follow the installation steps.
 3. `docs/CONFIGURATION_GUIDE.md` – tune environment variables.
 4. `docs/TEST_DATA.md` – load demo content.
 5. `docs/ADMIN_USAGE.md` – learn day-to-day operations.
@@ -63,6 +64,6 @@ Use this index to quickly locate the guide that answers your question. All files
 
 ---
 
-**Last updated:** 2025-10-23  
-**Maintainer:** Portfolio Manager team  
+**Last updated:** 2025-12-06
+**Maintainer:** Portfolio Manager team
 **Status:** Current
