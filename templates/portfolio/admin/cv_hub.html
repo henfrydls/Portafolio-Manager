@@ -195,28 +195,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const DELETE_CONFIRM_MSG = "{{ _('Are you sure you want to delete this language?')|escapejs }}";
     const NO_CODE_LABEL = "{{ _('Not provided')|escapejs }}";
 
-    // Top 20 Spoken Languages Mapping
+    // Top 10 Common Languages (Localized)
     const COMMON_LANGUAGES = [
-        { name: "Mandarín", code: "zh" },
-        { name: "Español", code: "es" },
-        { name: "Inglés", code: "en" },
-        { name: "Hindi", code: "hi" },
-        { name: "Árabe", code: "ar" },
-        { name: "Portugués", code: "pt" },
-        { name: "Bengalí", code: "bn" },
-        { name: "Ruso", code: "ru" },
-        { name: "Japonés", code: "ja" },
-        { name: "Punjabi", code: "pa" },
-        { name: "Alemán", code: "de" },
-        { name: "Coreano", code: "ko" },
-        { name: "Francés", code: "fr" },
-        { name: "Telugu", code: "te" },
-        { name: "Turco", code: "tr" },
-        { name: "Tamil", code: "ta" },
-        { name: "Italiano", code: "it" },
-        { name: "Marathi", code: "mr" },
-        { name: "Vietnamita", code: "vi" },
-        { name: "Urdu", code: "ur" }
+        { name: "{% trans 'Mandarin' %}", code: "zh" },
+        { name: "{% trans 'Spanish' %}", code: "es" },
+        { name: "{% trans 'English' %}", code: "en" },
+        { name: "{% trans 'Portuguese' %}", code: "pt" },
+        { name: "{% trans 'Russian' %}", code: "ru" },
+        { name: "{% trans 'Japanese' %}", code: "ja" },
+        { name: "{% trans 'German' %}", code: "de" },
+        { name: "{% trans 'Korean' %}", code: "ko" },
+        { name: "{% trans 'French' %}", code: "fr" },
+        { name: "{% trans 'Italian' %}", code: "it" }
     ];
 
     // Initialize Dropdown
