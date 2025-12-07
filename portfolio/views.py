@@ -2081,7 +2081,7 @@ class SkillListAdminView(AdminRequiredMixin, ListView):
 
     def get_queryset(self):
         current_language = translation.get_language() or settings.LANGUAGE_CODE
-        queryset = Skill.objects.language(current_language).all().order_by('category', '-proficiency', 'name')
+        queryset = Skill.objects.language(current_language).all().order_by('category', '-proficiency', 'translations__name')
 
         search = self.request.GET.get('search')
         if search:
