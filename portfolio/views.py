@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.core.files.storage import default_storage
 from django.urls import reverse_lazy, reverse
 from django.db.models import Q, Count
+from django.db.models.functions import TruncDate, ExtractHour, TruncMonth
 from django.db import transaction, DatabaseError
 from django.http import JsonResponse
 from django.utils import translation
@@ -890,13 +891,13 @@ class AnalyticsView(AdminRequiredMixin, TemplateView):
         context['visit_stats']['week_change'] = round(week_change, 1)
         
         # Visitas por día (últimos 30 días) - datos más detallados
-        daily_visits = PageVisit.objects.filter(
-            timestamp__gte=month_ago
-        ).extra(
-            select={'day': 'date(timestamp)'}
-        ).values('day').annotate(
-            visits=Count('id')
-        ).order_by('day')
+        daily_visits = (
+            PageVisit.objects.filter(timestamp__gte=month_ago)
+            .annotate(day=TruncDate('timestamp'))
+            .values('day')
+            .annotate(visits=Count('id'))
+            .order_by('day')
+        )
         
         # Preparar datos para gráfico de líneas
         visit_chart_labels = []
@@ -908,7 +909,7 @@ class AnalyticsView(AdminRequiredMixin, TemplateView):
         
         while current_date <= today:
             visit_chart_labels.append(current_date.strftime('%Y-%m-%d'))
-            visit_chart_data.append(daily_visits_dict.get(current_date.strftime('%Y-%m-%d'), 0))
+            visit_chart_data.append(daily_visits_dict.get(current_date, 0))
             current_date += timedelta(days=1)
         
         context['daily_visits_chart'] = {
@@ -917,19 +918,21 @@ class AnalyticsView(AdminRequiredMixin, TemplateView):
         }
         
         # Visitas por hora del día (últimos 7 días)
-        hourly_visits = PageVisit.objects.filter(
-            timestamp__gte=week_ago
-        ).extra(
-            select={'hour': 'strftime("%%H", timestamp)'}
-        ).values('hour').annotate(
-            visits=Count('id')
-        ).order_by('hour')
+        hourly_visits = (
+            PageVisit.objects.filter(timestamp__gte=week_ago)
+            .annotate(hour=ExtractHour('timestamp'))
+            .values('hour')
+            .annotate(visits=Count('id'))
+            .order_by('hour')
+        )
         
         # Preparar datos para gráfico de barras por hora
         hourly_labels = [f"{i:02d}:00" for i in range(24)]
         hourly_data = [0] * 24
         
         for item in hourly_visits:
+            if item['hour'] is None:
+                continue
             hour_index = int(item['hour'])
             hourly_data[hour_index] = item['visits']
         
@@ -985,16 +988,19 @@ class AnalyticsView(AdminRequiredMixin, TemplateView):
         }
         
         # Tendencias de contenido (posts por mes)
-        monthly_posts = BlogPost.objects.filter(
-            created_at__gte=three_months_ago
-        ).extra(
-            select={'month': 'strftime("%%Y-%%m", created_at)'}
-        ).values('month').annotate(
-            count=Count('id')
-        ).order_by('month')
+        monthly_posts = (
+            BlogPost.objects.filter(created_at__gte=three_months_ago)
+            .annotate(month=TruncMonth('created_at'))
+            .values('month')
+            .annotate(count=Count('id'))
+            .order_by('month')
+        )
         
         context['monthly_posts_chart'] = {
-            'labels': json.dumps([item['month'] for item in monthly_posts]),
+            'labels': json.dumps([
+                item['month'].strftime('%Y-%m') if item['month'] else ''
+                for item in monthly_posts
+            ]),
             'data': json.dumps([item['count'] for item in monthly_posts])
         }
         
