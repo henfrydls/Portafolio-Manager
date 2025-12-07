@@ -73,7 +73,8 @@ REDIS_URL=redis://localhost:6379/0
 
 # Staging Configuration (for local staging testing)
 STAGING_DOMAIN=localhost  # Use localhost for local testing, actual domain for remote staging
-CSRF_TRUSTED_ORIGINS_STAGING=http://localhost:8080,http://localhost:8000
+CSRF_TRUSTED_ORIGINS_STAGING=http://localhost:80,http://localhost:8000
+ENABLE_SSL=False  # Disable SSL for IP addresses or localhost
 
 # Translation Service
 TRANSLATION_PROVIDER=libretranslate
@@ -261,14 +262,14 @@ docker compose -f docker-compose.yml --profile staging up --build
 
 **Configuration:**
 - Django port 8000: Internal only (not exposed to host)
-- Nginx port 8080: Exposed to host
-- Access: `http://localhost:8080/`
+- Nginx port 80: Exposed to host (may require admin privileges)
+- Access: `http://localhost:80/` or `http://localhost/`
 - Environment: Set `DJANGO_SETTINGS_MODULE=config.settings.staging` in `.env`
-- **Important:** Set `STAGING_DOMAIN=localhost` in `.env` to disable SSL redirects for local testing
+- **Important:** Set `STAGING_DOMAIN=localhost` or use IP address to disable SSL redirects for local testing
 
 **Staging Settings Behavior:**
-- When `STAGING_DOMAIN=localhost`: SSL redirects and secure cookies are disabled
-- When `STAGING_DOMAIN=staging.yourdomain.com`: Full SSL security is enabled
+- When `STAGING_DOMAIN=localhost` or IP address: SSL redirects and secure cookies are disabled automatically
+- When `STAGING_DOMAIN=staging.yourdomain.com` + `ENABLE_SSL=True`: Full SSL security is enabled
 
 ### Production Mode
 
@@ -297,8 +298,9 @@ docker compose -f docker-compose.yml --profile prod up --build
 ┌─────────────────────────────────────────────────────────────────┐
 │                    STAGING (Local Testing)                      │
 ├─────────────────────────────────────────────────────────────────┤
-│ Browser → http://localhost:8080 → Nginx → Django (port 8000)    │
+│ Browser → http://localhost:80 → Nginx → Django (port 8000)      │
 │ (Django port 8000 NOT accessible from outside)                  │
+│ (Port 80 may require admin privileges)                          │
 └─────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
@@ -308,6 +310,71 @@ docker compose -f docker-compose.yml --profile prod up --build
 │ (Django port 8000 NOT accessible from internet)                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+### SSL Configuration and IP Address Detection
+
+The staging environment includes intelligent SSL detection to support both IP-based and domain-based deployments:
+
+**How it works:**
+1. `staging.py` automatically detects if `STAGING_DOMAIN` is an IP address
+2. When IP address detected: SSL redirects are disabled (`SECURE_SSL_REDIRECT=False`)
+3. When domain name detected: SSL redirects controlled by `ENABLE_SSL` variable
+4. This prevents SSL redirect errors when deploying to EC2 with public IP addresses
+
+**IP Address Detection:**
+```env
+# Automatically detected as IP address:
+STAGING_DOMAIN=54.123.45.67
+# Result: SECURE_SSL_REDIRECT=False, SESSION_COOKIE_SECURE=False
+
+# Detected as domain:
+STAGING_DOMAIN=staging.yourdomain.com
+ENABLE_SSL=True
+# Result: SECURE_SSL_REDIRECT=True, SESSION_COOKIE_SECURE=True
+```
+
+**Why this matters:**
+- AWS EC2 instances often accessed via IP during initial setup
+- SSL certificates cannot be issued for IP addresses
+- Attempting SSL redirects on IP addresses causes connection errors
+- This feature allows smooth deployment workflow: IP → configure → add domain → enable SSL
+
+**Manual override:**
+Set `ENABLE_SSL=False` explicitly to disable SSL even with a domain name (useful for testing).
+
+**Production Template Caching:**
+The production settings now use cached template loaders for better performance. This is achieved by:
+1. Disabling `APP_DIRS` in TEMPLATES configuration
+2. Using `django.template.loaders.cached.Loader` with filesystem and app_directories loaders
+3. This prevents the APP_DIRS conflict while maintaining template caching benefits
+
+### Environment-Aware check_env Command
+
+The `check_env` management command intelligently validates environment variables based on your current environment:
+
+**How it works:**
+- Detects environment from `DJANGO_SETTINGS_MODULE`
+- Shows detected environment (DEVELOPMENT, STAGING, or PRODUCTION)
+- Validates only variables relevant to that environment
+- Prevents false warnings about variables you don't need
+
+**Example output in STAGING:**
+```
+🌍 Entorno detectado: STAGING
+
+📋 Variables del archivo .env:
+  ✅ SECRET_KEY: ***********************************************
+  ✅ STAGING_DOMAIN: 54.123.45.67
+  ✅ ALLOWED_HOSTS_STAGING: 54.123.45.67
+  ✅ CSRF_TRUSTED_ORIGINS_STAGING: http://54.123.45.67
+  ⚠️ ALLOWED_HOSTS_DEV: No definido  # Not needed in staging - no warning!
+```
+
+**Benefits:**
+- Clean, focused validation per environment
+- No confusion about which variables are needed
+- Helps identify actual configuration problems
+- Validates common vars (SECRET_KEY, EMAIL_*) + environment-specific vars
 
 ## 🔒 Security Configuration
 

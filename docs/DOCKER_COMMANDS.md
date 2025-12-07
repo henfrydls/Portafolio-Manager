@@ -51,8 +51,8 @@ docker compose --profile staging up
 
 **Resultado:**
 - ❌ Puerto 8000: NO accesible (solo interno)
-- ✅ Puerto 8080: Accesible (nginx)
-- 📍 Acceso: `http://localhost:8080/`
+- ✅ Puerto 80: Accesible (nginx) - **puede requerir permisos de administrador**
+- 📍 Acceso: `http://localhost:80/` o `http://localhost/`
 
 ---
 
@@ -91,8 +91,8 @@ docker compose config --files
 
 **Esperado en Staging/Prod:**
 ```
-henfrydls-web-1: 8000/tcp              ✅ Solo interno
-henfrydls-nginx-1: 0.0.0.0:8080->80/tcp  ✅ Expuesto
+henfrydls-web-1: 8000/tcp            ✅ Solo interno
+henfrydls-nginx-1: 0.0.0.0:80->80/tcp  ✅ Expuesto
 ```
 
 **NO esperado en Staging/Prod:**
@@ -129,8 +129,8 @@ docker compose -f docker-compose.yml --profile staging build --no-cache
 | **Comando** | `docker compose up` | `docker compose -f docker-compose.yml --profile staging up` | `docker compose -f docker-compose.yml --profile prod up` |
 | **Override file** | ✅ Cargado | ❌ Ignorado | ❌ Ignorado |
 | **Puerto 8000** | ✅ Expuesto | ❌ Solo interno | ❌ Solo interno |
-| **Puerto 8080** | ❌ No disponible | ✅ Expuesto | ❌ No usado |
-| **Puerto 80/443** | ❌ No usado | ❌ No usado | ✅ Expuesto |
+| **Puerto 80** | ❌ No disponible | ✅ Expuesto (puede requerir admin) | ✅ Expuesto |
+| **Puerto 443** | ❌ No usado | ❌ No usado (SSL no configurado) | ✅ Expuesto (con SSL) |
 | **Nginx activo** | ❌ No | ✅ Sí | ✅ Sí |
 | **Acceso directo Django** | ✅ Sí | ❌ No | ❌ No |
 
@@ -183,6 +183,28 @@ docker compose -f docker-compose.yml --profile staging down
 docker compose -f docker-compose.yml --profile staging up --build
 ```
 
+### Problema: Error "Permission denied" al iniciar nginx en puerto 80
+
+**Causa:** El puerto 80 requiere privilegios de administrador/root en algunos sistemas operativos.
+
+**Solución (Linux/Mac):**
+```bash
+# Opción 1: Ejecutar con sudo
+sudo docker compose -f docker-compose.yml --profile staging up
+
+# Opción 2: Cambiar temporalmente el puerto en docker-compose.yml
+# Editar nginx ports de "80:80" a "8080:80"
+# Luego acceder vía http://localhost:8080/
+```
+
+**Solución (Windows):**
+```bash
+# Ejecutar PowerShell o CMD como Administrador, luego:
+docker compose -f docker-compose.yml --profile staging up
+```
+
+**Nota:** En producción (servidor AWS EC2, DigitalOcean, etc.) normalmente no tendrás este problema porque Docker tiene los permisos necesarios.
+
 ---
 
-**Última actualización:** 2025-12-06
+**Última actualización:** 2025-12-07

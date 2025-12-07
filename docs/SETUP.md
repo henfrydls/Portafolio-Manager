@@ -29,7 +29,7 @@ This guide walks you through installing, configuring, and maintaining the Portfo
   cp .env.example .env
   # Modo desarrollo (puerto 8000 expuesto)
   docker compose up --build
-  # Modo staging/prod (solo nginx en 8080)
+  # Modo staging/prod (solo nginx en puerto 80, puede requerir permisos admin)
   docker compose -f docker-compose.yml --profile staging up --build
   ```
 - Despliegue tipo producción (EC2 + Gunicorn + Nginx):
@@ -161,9 +161,9 @@ docker compose -f docker-compose.yml --profile prod up --build
 ```
 
 **Access points:**
-- Nginx: <http://127.0.0.1:8080/> ✅ Only access point
+- Nginx: <http://127.0.0.1:80/> or <http://127.0.0.1/> ✅ Only access point (may require admin privileges)
 - Django port 8000: Internal only (not accessible from host) ❌
-- Admin dashboard: <http://127.0.0.1:8080/admin/>
+- Admin dashboard: <http://127.0.0.1:80/admin/> or <http://127.0.0.1/admin/>
 
 **Why this setup?**
 - Development needs direct Django access for debugging
@@ -261,12 +261,41 @@ python manage.py collectstatic --noinput
 python manage.py runserver
 ```
 
-## 12. Deploying to EC2 (PostgreSQL, Redis, Gunicorn, Nginx)
+## 12. SSL Configuration for Production/Staging
 
-1. Copy `.env.example` to `.env` and set:  
-   - `DJANGO_SETTINGS_MODULE=config.settings.production` (or `config.settings.staging` for staging)  
-   - `DATABASE_URL=postgres://user:password@host:5432/dbname` (set `DB_SSL_REQUIRED=True` if RDS enforces SSL)  
-   - `REDIS_URL=redis://default:password@host:6379/0` (optional but recommended for cache/sessions)  
+### Environment Variables for SSL
+
+**For IP-based deployments (e.g., EC2 without domain):**
+```env
+DJANGO_SETTINGS_MODULE=config.settings.staging
+STAGING_DOMAIN=54.123.45.67
+ENABLE_SSL=False  # Disable SSL redirects for IP addresses
+ALLOWED_HOSTS_STAGING=54.123.45.67
+CSRF_TRUSTED_ORIGINS_STAGING=http://54.123.45.67
+```
+
+**For domain-based deployments (with SSL certificate):**
+```env
+DJANGO_SETTINGS_MODULE=config.settings.production
+PRODUCTION_DOMAIN=yourdomain.com
+ENABLE_SSL=True  # Enable SSL redirects
+ALLOWED_HOSTS_PROD=yourdomain.com,www.yourdomain.com
+CSRF_TRUSTED_ORIGINS_PROD=https://yourdomain.com,https://www.yourdomain.com
+```
+
+**How IP detection works:**
+- `staging.py` automatically detects if `STAGING_DOMAIN` is an IP address
+- When IP detected: SSL redirects disabled automatically (even without ENABLE_SSL=False)
+- When domain detected: SSL behavior controlled by `ENABLE_SSL` variable
+- This prevents SSL redirect errors when deploying to EC2 with public IP
+
+## 13. Deploying to EC2 (PostgreSQL, Redis, Gunicorn, Nginx)
+
+1. Copy `.env.example` to `.env` and set:
+   - `DJANGO_SETTINGS_MODULE=config.settings.production` (or `config.settings.staging` for staging)
+   - `DATABASE_URL=postgres://user:password@host:5432/dbname` (set `DB_SSL_REQUIRED=True` if RDS enforces SSL)
+   - `REDIS_URL=redis://default:password@host:6379/0` (optional but recommended for cache/sessions)
+   - `ENABLE_SSL=True` (for domains with SSL) or `False` (for IP addresses)
    - `ALLOWED_HOSTS_*`, `CSRF_TRUSTED_ORIGINS_*`, `PRODUCTION_DOMAIN`, email creds.
 2. Install system packages on the EC2 instance:
    ```bash
