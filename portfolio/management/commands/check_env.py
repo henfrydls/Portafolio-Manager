@@ -87,6 +87,7 @@ class Command(BaseCommand):
         self.stdout.write(f'  • ALLOWED_HOSTS: {settings.ALLOWED_HOSTS}')
         self.stdout.write(f'  • EMAIL_HOST: {getattr(settings, "EMAIL_HOST", "No configurado")}')
         self.stdout.write(f'  • DEFAULT_FROM_EMAIL: {getattr(settings, "DEFAULT_FROM_EMAIL", "No configurado")}')
+        self._check_nginx_domains(environment)
 
         self.stdout.write('')
 
@@ -180,6 +181,37 @@ class Command(BaseCommand):
                 return '(⚠️ DEBUG=True no debe usarse en producción)'
 
         return None
+
+    def _check_nginx_domains(self, environment: str):
+        """
+        Intenta validar que los dominios de staging/producción estén configurados en el template de Nginx.
+        No es bloqueante: solo muestra avisos.
+        """
+        if environment not in ('staging', 'production'):
+            return
+
+        nginx_path = os.path.join(settings.BASE_DIR, 'deploy', 'nginx.conf')
+        domain_var = 'STAGING_DOMAIN' if environment == 'staging' else 'PRODUCTION_DOMAIN'
+        domain_value = os.environ.get(domain_var, '').strip()
+
+        if not domain_value or domain_value.endswith('yourdomain.com') or domain_value == 'example.com':
+            self.stdout.write(self.style.WARNING(f'  • {domain_var}: usar un dominio real (actual: {domain_value or "no definido"})'))
+
+        if not os.path.exists(nginx_path):
+            self.stdout.write(f'  • Nginx: {nginx_path} no encontrado (plantilla opcional)')
+            return
+
+        try:
+            with open(nginx_path, 'r', encoding='utf-8') as f:
+                nginx_conf = f.read()
+            if domain_value and domain_value not in nginx_conf and domain_value != 'example.com':
+                self.stdout.write(self.style.WARNING(
+                    f'  • Nginx: {domain_value} no aparece en deploy/nginx.conf (actualiza server_name)'
+                ))
+            else:
+                self.stdout.write(self.style.SUCCESS('  • Nginx: plantilla encontrada (revisa server_name para tu dominio)'))
+        except Exception as exc:
+            self.stdout.write(self.style.WARNING(f'  • Nginx: no se pudo leer deploy/nginx.conf ({exc})'))
 
     def _is_placeholder_value(self, var_name, current_value, example_value):
         """Determina si un valor es un placeholder que debe ser actualizado"""

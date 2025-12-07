@@ -131,6 +131,7 @@ docker compose up --build
 - Postgres: `db` service (internal only)
 - Redis: `redis` service (internal only)
 - LibreTranslate: internal only (web reaches it at `http://libretranslate:5000`)
+- Nginx config template: see `deploy/nginx.conf` (replace `example.com` and uncomment TLS block for production)
 
 **How it works:** The `docker-compose.override.yml` file automatically exposes port 8000 in development mode. This file is automatically merged when you run `docker compose up`.
 
