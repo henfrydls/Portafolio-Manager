@@ -67,17 +67,30 @@ WHITENOISE_USE_FINDERS = True
 WHITENOISE_AUTOREFRESH = True
 
 # Security settings for staging (similar to production but less strict)
-# Allow HTTP when running on localhost for local staging testing
+# Allow HTTP when running without SSL certificate (localhost or IP addresses)
 staging_domain = os.environ.get('STAGING_DOMAIN', 'staging.yourdomain.com')
-is_local = staging_domain in ['localhost', '127.0.0.1', '0.0.0.0']
+
+# Check if SSL should be enabled (only for real domains with SSL certificates)
+# Disable SSL for: localhost, IPs, or when ENABLE_SSL is explicitly False
+def is_ip_address(domain):
+    """Check if domain is an IP address"""
+    import re
+    ip_pattern = r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$'
+    return bool(re.match(ip_pattern, domain))
+
+enable_ssl = os.environ.get('ENABLE_SSL', 'False').lower() == 'true'
+is_local = staging_domain in ['localhost', '127.0.0.1', '0.0.0.0'] or is_ip_address(staging_domain)
+
+# Only enable SSL if explicitly requested AND not using IP/localhost
+use_ssl = enable_ssl and not is_local
 
 SECURE_HSTS_SECONDS = 0  # Disabled for staging
-SECURE_SSL_REDIRECT = not is_local  # Disable SSL redirect for localhost
+SECURE_SSL_REDIRECT = use_ssl  # Only redirect to HTTPS if SSL is configured
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# Cookie security - relax for localhost
-SESSION_COOKIE_SECURE = not is_local  # Allow non-HTTPS cookies on localhost
-CSRF_COOKIE_SECURE = not is_local  # Allow non-HTTPS cookies on localhost
+# Cookie security - relax when not using SSL
+SESSION_COOKIE_SECURE = use_ssl  # Allow non-HTTPS cookies when SSL is disabled
+CSRF_COOKIE_SECURE = use_ssl  # Allow non-HTTPS cookies when SSL is disabled
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'  # Less strict than production
