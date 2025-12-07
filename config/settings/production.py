@@ -97,6 +97,8 @@ if CACHES['default']['BACKEND'] == 'django_redis.cache.RedisCache' and should_us
     SESSION_CACHE_ALIAS = 'default'
 
 # Template caching for better performance
+# Disable APP_DIRS when using custom loaders
+TEMPLATES[0]['APP_DIRS'] = False
 TEMPLATES[0]['OPTIONS']['loaders'] = [
     ('django.template.loaders.cached.Loader', [
         'django.template.loaders.filesystem.Loader',
