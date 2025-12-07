@@ -108,6 +108,7 @@
         </div>
 
         <form id="language-form">
+            {% csrf_token %}
             <input type="hidden" id="language-id" name="language_id">
 
             <div style="margin-bottom: 16px;">
