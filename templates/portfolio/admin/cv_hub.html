@@ -111,14 +111,28 @@
             {% csrf_token %}
             <input type="hidden" id="language-id" name="language_id">
 
+            <!-- Language Selection Strategy -->
             <div style="margin-bottom: 16px;">
-                <label class="form-label-custom" for="language-name">{% trans "Language" %}</label>
-                <input type="text" id="language-name" name="name" class="form-control-custom" placeholder="{% trans 'E.g: English, Spanish, French' %}">
+                <label class="form-label-custom" for="language-select">{% trans "Select Language" %}</label>
+                <select id="language-select" class="form-control-custom">
+                    <option value="">{% trans "Choose a language..." %}</option>
+                    <!-- Populated by JS -->
+                    <option value="other">{% trans "Other / Custom" %}</option>
+                </select>
             </div>
 
-            <div style="margin-bottom: 16px;">
-                <label class="form-label-custom" for="language-code">{% trans "Code" %}</label>
-                <input type="text" id="language-code" name="code" class="form-control-custom" placeholder="{% trans 'E.g: en, es, fr' %}">
+            <!-- Manual Fields container -->
+            <div id="manual-language-fields" style="display: none; border-left: 2px solid #F2F2F2; padding-left: 12px; margin-left: 4px;">
+                <div style="margin-bottom: 16px;">
+                    <label class="form-label-custom" for="language-name">{% trans "Name" %}</label>
+                    <input type="text" id="language-name" name="name" class="form-control-custom" placeholder="{% trans 'E.g: English, Spanish' %}">
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label class="form-label-custom" for="language-code">{% trans "ISO Code" %}</label>
+                    <input type="text" id="language-code" name="code" class="form-control-custom" placeholder="{% trans 'E.g: en, es, fr' %}">
+                    <p class="form-text-custom">{% trans "Two-letter ISO 639-1 code" %}</p>
+                </div>
             </div>
 
             <div style="margin-bottom: 16px;">
@@ -180,6 +194,71 @@ document.addEventListener('DOMContentLoaded', function() {
     const ORDER_LABEL = "{{ _('Order')|escapejs }}";
     const DELETE_CONFIRM_MSG = "{{ _('Are you sure you want to delete this language?')|escapejs }}";
     const NO_CODE_LABEL = "{{ _('Not provided')|escapejs }}";
+
+    // Top 20 Spoken Languages Mapping
+    const COMMON_LANGUAGES = [
+        { name: "Mandarín", code: "zh" },
+        { name: "Español", code: "es" },
+        { name: "Inglés", code: "en" },
+        { name: "Hindi", code: "hi" },
+        { name: "Árabe", code: "ar" },
+        { name: "Portugués", code: "pt" },
+        { name: "Bengalí", code: "bn" },
+        { name: "Ruso", code: "ru" },
+        { name: "Japonés", code: "ja" },
+        { name: "Punjabi", code: "pa" },
+        { name: "Alemán", code: "de" },
+        { name: "Coreano", code: "ko" },
+        { name: "Francés", code: "fr" },
+        { name: "Telugu", code: "te" },
+        { name: "Turco", code: "tr" },
+        { name: "Tamil", code: "ta" },
+        { name: "Italiano", code: "it" },
+        { name: "Marathi", code: "mr" },
+        { name: "Vietnamita", code: "vi" },
+        { name: "Urdu", code: "ur" }
+    ];
+
+    // Initialize Dropdown
+    const languageSelect = document.getElementById('language-select');
+    const manualFields = document.getElementById('manual-language-fields');
+    const nameInput = document.getElementById('language-name');
+    const codeInput = document.getElementById('language-code');
+    
+    function initLanguageDropdown() {
+        COMMON_LANGUAGES.forEach(lang => {
+            const option = document.createElement('option');
+            option.value = lang.code;
+            option.textContent = lang.name;
+            option.dataset.name = lang.name;
+            languageSelect.insertBefore(option, languageSelect.lastElementChild); // Insert before 'Other'
+        });
+
+        languageSelect.addEventListener('change', function() {
+            const value = this.value;
+            if (value === 'other') {
+                manualFields.style.display = 'block';
+                nameInput.value = '';
+                codeInput.value = '';
+                nameInput.focus();
+            } else if (value) {
+                // Pre-fill and hide manual fields (or show read-only if preferred, here we hide for cleanliness)
+                // We'll hide them to keep UX simple as requested
+                manualFields.style.display = 'none';
+                const selectedOption = this.options[this.selectedIndex];
+                nameInput.value = selectedOption.dataset.name;
+                codeInput.value = value;
+            } else {
+                manualFields.style.display = 'none';
+                nameInput.value = '';
+                codeInput.value = '';
+            }
+        });
+        
+        // Ensure manual change updates select if needed (optional reverse logic)
+    }
+
+    initLanguageDropdown();
 
     function renderLanguages(languages) {
         languagesList.innerHTML = '';
@@ -249,6 +328,11 @@ document.addEventListener('DOMContentLoaded', function() {
         languageForm.reset();
         document.getElementById('language-id').value = '';
         document.getElementById('language-order').value = 0;
+        
+        // Reset Dropdown
+        languageSelect.value = '';
+        manualFields.style.display = 'none';
+        
         languageModal.style.display = 'flex';
     }
 
@@ -268,6 +352,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('language-code').value = data.code || '';
                 document.getElementById('language-proficiency').value = data.proficiency || '';
                 document.getElementById('language-order').value = data.order ?? 0;
+                
+                // Try to match with common languages
+                const foundLang = COMMON_LANGUAGES.find(l => l.code === data.code);
+                if (foundLang) {
+                    languageSelect.value = foundLang.code;
+                    manualFields.style.display = 'none';
+                } else {
+                    languageSelect.value = 'other';
+                    manualFields.style.display = 'block';
+                }
+                
+                // Always set values just in case
+                document.getElementById('language-name').value = data.name || '';
+                document.getElementById('language-code').value = data.code || '';
+
                 languageModal.style.display = 'flex';
             })
             .catch(error => {
