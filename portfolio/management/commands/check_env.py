@@ -10,21 +10,31 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('🔍 Verificando carga del archivo .env...'))
         self.stdout.write('')
 
+        # Detectar el entorno actual
+        settings_module = os.environ.get('DJANGO_SETTINGS_MODULE', 'config.settings.development')
+        environment = self._detect_environment(settings_module)
+
+        self.stdout.write(f'🌍 Entorno detectado: {environment.upper()}')
+        self.stdout.write('')
+
         # Leer valores de ejemplo del .env.example
         example_values = self._load_example_values()
 
-        # Variables importantes del .env
-        env_vars = {
+        # Variables comunes a todos los entornos
+        common_vars = {
             'PROJECT_NAME': 'Nombre del proyecto',
             'SECRET_KEY': 'Clave secreta de Django',
             'DEBUG': 'Modo debug',
-            'DOMAIN': 'Dominio principal',
             'EMAIL_HOST': 'Servidor de email',
             'EMAIL_HOST_USER': 'Usuario de email',
             'EMAIL_HOST_PASSWORD': 'Contraseña de email',
-            'DEFAULT_FROM_EMAIL': 'Email por defecto',
-            'ALLOWED_HOSTS_DEV': 'Hosts permitidos en desarrollo',
         }
+
+        # Variables específicas por entorno
+        env_specific_vars = self._get_environment_vars(environment)
+
+        # Combinar variables comunes y específicas del entorno
+        env_vars = {**common_vars, **env_specific_vars}
 
         self.stdout.write(self.style.WARNING('📋 Variables del archivo .env:'))
         self.stdout.write('')
@@ -110,6 +120,36 @@ class Command(BaseCommand):
 
         self.stdout.write('')
         self.stdout.write(self.style.SUCCESS('🔍 Verificación completada!'))
+
+    def _detect_environment(self, settings_module):
+        """Detecta el entorno basándose en DJANGO_SETTINGS_MODULE"""
+        if 'production' in settings_module:
+            return 'production'
+        elif 'staging' in settings_module:
+            return 'staging'
+        else:
+            return 'development'
+
+    def _get_environment_vars(self, environment):
+        """Retorna las variables específicas para cada entorno"""
+        if environment == 'production':
+            return {
+                'PRODUCTION_DOMAIN': 'Dominio de producción',
+                'ALLOWED_HOSTS_PROD': 'Hosts permitidos en producción',
+                'CSRF_TRUSTED_ORIGINS_PROD': 'Orígenes CSRF de confianza (producción)',
+            }
+        elif environment == 'staging':
+            return {
+                'STAGING_DOMAIN': 'Dominio de staging',
+                'ALLOWED_HOSTS_STAGING': 'Hosts permitidos en staging',
+                'CSRF_TRUSTED_ORIGINS_STAGING': 'Orígenes CSRF de confianza (staging)',
+            }
+        else:  # development
+            return {
+                'DOMAIN': 'Dominio de desarrollo',
+                'ALLOWED_HOSTS_DEV': 'Hosts permitidos en desarrollo',
+                'CSRF_TRUSTED_ORIGINS_DEV': 'Orígenes CSRF de confianza (desarrollo)',
+            }
 
     def _load_example_values(self):
         """Lee el archivo .env.example y retorna un diccionario con los valores de ejemplo"""
