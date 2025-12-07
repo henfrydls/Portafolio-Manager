@@ -33,7 +33,7 @@ services:
     depends_on:
       - web
     ports:
-      - "8080:80"
+      - "80:80"  # Port 80 for production (HTTP standard). For local staging, use 8080 if port 80 requires admin privileges
     volumes:
       - ./deploy/nginx.conf:/etc/nginx/nginx.conf:ro
       - staticfiles:/app/staticfiles:ro
