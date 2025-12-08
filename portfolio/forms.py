@@ -536,6 +536,13 @@ class SecureProjectForm(TranslatableModelForm):
             self.fields['primary_language'].initial = initial_value
             self.fields['primary_language'].widget.attrs.setdefault('class', 'form-select')
 
+        # Fix for duplicate project types/knowledge bases in dropdown due to Parler joins
+        # Override ordering to avoid joining with translations table which multiplies rows
+        self.fields['project_type_obj'].queryset = ProjectType.objects.order_by('order', 'id')
+        
+        from .models import KnowledgeBase
+        self.fields['knowledge_bases'].queryset = KnowledgeBase.objects.order_by('identifier')
+
     class Meta:
         model = Project
         fields = [
