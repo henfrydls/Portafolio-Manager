@@ -182,12 +182,15 @@
                         <div class="education-item">
                             <div class="education-meta">
                                 <span class="education-period">
-                                    {{ education.start_date|date:"Y" }}—
-                                    {% if education.current %}
-                                        {% trans "Present" %}
-                                    {% else %}
-                                        {{ education.end_date|date:"Y" }}
-                                    {% endif %}
+                                    {% with start=education.start_date|date:"Y" end=education.end_date|date:"Y" %}
+                                        {% if education.current %}
+                                            {{ start }} — {% trans "Present" %}
+                                        {% elif end and start != end %}
+                                            {{ start }} — {{ end }}
+                                        {% else %}
+                                            {{ start }}
+                                        {% endif %}
+                                    {% endwith %}
                                 </span>
                             </div>
                             <div class="education-details">
@@ -258,12 +261,12 @@
 
                     <!-- Learning Statistics -->
                     <div class="learning-stats">
-                        {% regroup online_courses by institution as platforms %}
+
                         <div class="stats-row">
-                            {% for platform in platforms|slice:":4" %}
+                            {% for platform in top_institutions %}
                             <div class="stat-item">
-                                <div class="stat-number">{{ platform.list|length }}</div>
-                                <div class="stat-label">{{ platform.grouper }}</div>
+                                <div class="stat-number">{{ platform.count }}</div>
+                                <div class="stat-label">{{ platform.name }}</div>
                             </div>
                             {% endfor %}
                         </div>
