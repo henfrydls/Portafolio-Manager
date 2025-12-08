@@ -106,21 +106,80 @@ class SecureFileUploadHandler(TemporaryFileUploadHandler):
         return False
 
 
+from django.core.exceptions import ValidationError
+
+from io import BytesIO
+import sys
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from PIL import Image, ImageOps
+
+def compress_image(uploaded_file, max_width=1920, quality=85):
+    """
+    Compress and optimize user uploaded images for the web.
+    Resizes large images, handles orientation, and applies compression.
+    """
+    try:
+        # Open image
+        if hasattr(uploaded_file, 'seek'):
+            uploaded_file.seek(0)
+        img = Image.open(uploaded_file)
+        
+        # Handle EXIF orientation (fixes rotation issues)
+        img = ImageOps.exif_transpose(img)
+        
+        # Verify format
+        img_format = img.format if img.format else 'JPEG'
+        
+        # Handle mode (Convert RGBA to RGB for JPEG)
+        if img_format.upper() == 'JPEG' and img.mode != 'RGB':
+            img = img.convert('RGB')
+            
+        # Resize if too large (e.g. > 1920px)
+        if img.width > max_width or img.height > max_width:
+            img.thumbnail((max_width, max_width), Image.Resampling.LANCZOS)
+            
+        # Prepare output
+        output = BytesIO()
+        save_args = {'format': img_format, 'optimize': True, 'quality': quality}
+        
+        if img_format.upper() == 'JPEG':
+            save_args['progressive'] = True
+            
+        img.save(output, **save_args)
+        output.seek(0)
+        
+        # Create new Django file object
+        new_file = InMemoryUploadedFile(
+            file=output,
+            field_name=getattr(uploaded_file, 'field_name', 'image'),
+            name=uploaded_file.name,
+            content_type=uploaded_file.content_type,
+            size=output.getbuffer().nbytes,
+            charset=None
+        )
+        return new_file
+        
+    except Exception:
+        # If compression fails, return original file
+        if hasattr(uploaded_file, 'seek'):
+            uploaded_file.seek(0)
+        return uploaded_file
+
 def clean_uploaded_file(uploaded_file):
     """
-    Clean and validate an uploaded file.
+    Clean, validate, and optimize an uploaded file.
     """
     # Validate filename
     validate_filename(uploaded_file.name)
     validate_no_executable(uploaded_file)
     
     # Check file size
-    max_size = getattr(settings, 'FILE_UPLOAD_MAX_MEMORY_SIZE', 5242880)  # 5MB
+    # Default to 10MB if not specified in settings
+    max_size = getattr(settings, 'MAX_UPLOAD_SIZE', 10485760)  # 10MB
     if uploaded_file.size > max_size:
-        raise ValueError(f"File too large. Maximum size: {max_size // (1024*1024)}MB")
+        raise ValidationError(f"File too large. Maximum size: {max_size // (1024*1024)}MB")
     
-    # Additional content validation for images
-    # Check if it's an uploaded file with content_type or if it's an existing file that looks like an image
+    # Additional content validation and compression for images
     content_type = getattr(uploaded_file, 'content_type', None)
     file_name = getattr(uploaded_file, 'name', '')
 
@@ -129,20 +188,20 @@ def clean_uploaded_file(uploaded_file):
 
     if is_image:
         try:
-            from PIL import Image
-            # Only seek if the file has the seek method (uploaded files)
+            # Validate integrity
             if hasattr(uploaded_file, 'seek'):
                 uploaded_file.seek(0)
-            with Image.open(uploaded_file) as img:
-                # Verify it's actually an image
-                img.verify()
-            # Only seek if the file has the seek method
-            if hasattr(uploaded_file, 'seek'):
-                uploaded_file.seek(0)
+            img = Image.open(uploaded_file)
+            img.verify()
+            
+            # Apply compression/optimization
+            uploaded_file = compress_image(uploaded_file)
+            
         except Exception:
-            # Don't raise error for existing files, they've already been validated
-            if hasattr(uploaded_file, 'content_type'):  # This means it's a new upload
-                raise ValueError("Invalid image file")
+            # Don't raise error for existing files that might strictly check differently, 
+            # but for uploads we want to be strict about validity.
+            if hasattr(uploaded_file, 'content_type'):  # New upload
+                raise ValidationError("Invalid image file or compression failed")
     
     return uploaded_file
 
