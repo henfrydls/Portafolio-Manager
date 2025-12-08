@@ -454,10 +454,23 @@ class ResumeView(TemplateView):
         context['experiences'] = Experience.objects.language(current_language).all().order_by('-start_date')
 
         education_qs = Education.objects.language(current_language).all()
+        from django.db.models.functions import Coalesce
+        
         context['formal_education'] = education_qs.filter(education_type='formal').order_by('-start_date')
-        context['certifications'] = education_qs.filter(education_type='certification').order_by('-end_date')
-        context['online_courses'] = education_qs.filter(education_type='online_course').order_by('-end_date')
+        context['certifications'] = education_qs.filter(education_type='certification').annotate(
+            sort_date=Coalesce('end_date', 'start_date')
+        ).order_by('-sort_date')
+        context['online_courses'] = education_qs.filter(education_type='online_course').annotate(
+            sort_date=Coalesce('end_date', 'start_date')
+        ).order_by('-sort_date')
         context['bootcamps'] = education_qs.filter(education_type__in=['bootcamp', 'workshop']).order_by('-end_date')
+
+        # Calculate Top Institutions for Continuous Learning
+        from collections import Counter
+        courses_qs = context['online_courses']
+        institutions = [c.institution for c in courses_qs if c.institution]
+        top_institutions = Counter(institutions).most_common(5)
+        context['top_institutions'] = [{'name': name, 'count': count} for name, count in top_institutions]
 
         skills = Skill.objects.language(current_language).all().order_by('category', '-proficiency')
         skills_by_category = {}
