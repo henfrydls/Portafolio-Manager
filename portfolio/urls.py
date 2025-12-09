@@ -4,7 +4,6 @@ Single page portfolio with clean layout
 """
 from django.urls import path
 from . import views
-from . import auth_views
 
 app_name = 'portfolio'
 
@@ -23,18 +22,19 @@ urlpatterns = [
 
     # Resume page
     path('resume/', views.ResumeView.as_view(), name='resume'),
+    path('resume/pdf/', views.ResumePDFView.as_view(), name='resume-pdf'),
 
     # Initial setup wizard
     path('setup/', views.InitialSetupView.as_view(), name='initial-setup'),
 
     # Authentication URLs
-    path('login/', auth_views.CustomLoginView.as_view(), name='login'),
-    path('logout/', auth_views.CustomLogoutView.as_view(), name='logout'),
-    path('password-change/', auth_views.PasswordChangeView.as_view(), name='password-change'),
+    path('login/', views.CustomLoginView.as_view(), name='login'),
+    path('logout/', views.CustomLogoutView.as_view(), name='logout'),
+    path('password-change/', views.PasswordChangeView.as_view(), name='password-change'),
     
     # AJAX Authentication URLs
-    path('api/session-status/', auth_views.SessionStatusView.as_view(), name='session-status'),
-    path('api/extend-session/', auth_views.ExtendSessionView.as_view(), name='extend-session'),
+    path('api/session-status/', views.SessionStatusView.as_view(), name='session-status'),
+    path('api/extend-session/', views.ExtendSessionView.as_view(), name='extend-session'),
 
     # Admin URLs (protected) - keep these for content management
     path('dashboard/', views.AdminDashboardView.as_view(), name='admin-dashboard'),

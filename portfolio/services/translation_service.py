@@ -35,7 +35,7 @@ class BaseTranslationClient:
 class LibreTranslateClient(BaseTranslationClient):
     """Simple HTTP client for LibreTranslate."""
 
-    def __init__(self, api_url: str, api_key: Optional[str] = None, timeout: int = 10):
+    def __init__(self, api_url: str, api_key: Optional[str] = None, timeout: int = 30):
         if not api_url:
             raise ImproperlyConfigured("LibreTranslate API URL is required")
         self.api_url = api_url.rstrip("/")
@@ -79,7 +79,7 @@ class LibreTranslateClient(BaseTranslationClient):
 class TranslationService:
     """Facade to translate content according to site configuration."""
 
-    def __init__(self, provider: str, api_url: str, api_key: str = "", timeout: int = 10):
+    def __init__(self, provider: str, api_url: str, api_key: str = "", timeout: int = 30):
         self.provider = provider
         self.api_url = api_url
         self.api_key = api_key

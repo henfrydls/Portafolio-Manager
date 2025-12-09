@@ -84,8 +84,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'portfolio.security_middleware.SecurityHeadersMiddleware',  # Custom security headers
-    #'portfolio.security_middleware.RateLimitMiddleware',  # Rate limiting
+    'portfolio.middleware.security.SecurityHeadersMiddleware',  # Custom security headers
+    #'portfolio.middleware.security.RateLimitMiddleware',  # Rate limiting
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'portfolio.middleware.InitialSetupRedirectMiddleware',  # First-run setup redirect
@@ -93,12 +93,12 @@ MIDDLEWARE = [
     'portfolio.middleware.SiteLanguageMiddleware',  # Apply global language preference
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'portfolio.security_middleware.CSRFFailureLoggingMiddleware',  # CSRF logging
+    'portfolio.middleware.security.CSRFFailureLoggingMiddleware',  # CSRF logging
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'portfolio.middleware.PageVisitMiddleware',  # Custom middleware para tracking de visitas
-    'portfolio.security_middleware.RequestLoggingMiddleware',  # Security logging (last)
+    'portfolio.middleware.security.RequestLoggingMiddleware',  # Security logging (last)
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -222,7 +222,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
 MAX_UPLOAD_SIZE = 10485760  # 10MB for validation
 FILE_UPLOAD_PERMISSIONS = 0o644
 FILE_UPLOAD_HANDLERS = [
-    'portfolio.file_handlers.SecureFileUploadHandler',
+    'portfolio.utils.files.SecureFileUploadHandler',
     'django.core.files.uploadhandler.TemporaryFileUploadHandler',
 ]
 
