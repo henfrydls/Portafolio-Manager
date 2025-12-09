@@ -8,7 +8,7 @@ from django.db import DatabaseError
 from django.db.utils import OperationalError, ProgrammingError
 
 SESSION_LANGUAGE_KEY = getattr(translation, 'LANGUAGE_SESSION_KEY', '_language')
-from .models import PageVisit, SiteConfiguration
+from portfolio.models import PageVisit, SiteConfiguration
 import logging
 
 logger = logging.getLogger(__name__)

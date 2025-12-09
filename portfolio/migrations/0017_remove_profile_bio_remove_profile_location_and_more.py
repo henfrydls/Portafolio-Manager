@@ -2,7 +2,7 @@
 import django.db.models.deletion
 import parler.fields
 import parler.models
-import portfolio.validators
+import portfolio.utils.validators
 from django.db import migrations, models
 
 
@@ -41,14 +41,14 @@ class Migration(migrations.Migration):
                     name='Profile',
                     fields=[
                         ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                        ('profile_image', models.ImageField(help_text='Sube una imagen cuadrada (misma anchura y altura). Se optimizará automáticamente a 250x250px. Formatos: JPG, PNG, WebP. Máximo 3MB.', upload_to='profile/', validators=[portfolio.validators.ProfileImageValidator(), portfolio.validators.validate_no_executable], verbose_name='Foto de perfil')),
+                        ('profile_image', models.ImageField(help_text='Sube una imagen cuadrada (misma anchura y altura). Se optimizará automáticamente a 250x250px. Formatos: JPG, PNG, WebP. Máximo 3MB.', upload_to='profile/', validators=[portfolio.utils.validators.ProfileImageValidator(), portfolio.utils.validators.validate_no_executable], verbose_name='Foto de perfil')),
                         ('email', models.EmailField(max_length=254, verbose_name='Email')),
                         ('phone', models.CharField(blank=True, max_length=20, verbose_name='Teléfono')),
                         ('linkedin_url', models.URLField(blank=True, verbose_name='URL de LinkedIn')),
                         ('github_url', models.URLField(blank=True, verbose_name='URL de GitHub')),
                         ('medium_url', models.URLField(blank=True, verbose_name='URL de Medium')),
-                        ('resume_pdf', models.FileField(blank=True, help_text='Upload your resume in English (PDF format)', upload_to='profile/', validators=[portfolio.validators.DocumentValidator(max_size=5242880), portfolio.validators.validate_no_executable], verbose_name='CV en PDF (English)')),
-                        ('resume_pdf_es', models.FileField(blank=True, help_text='Sube tu currículum en español (formato PDF)', upload_to='profile/', validators=[portfolio.validators.DocumentValidator(max_size=5242880), portfolio.validators.validate_no_executable], verbose_name='CV en PDF (Español)')),
+                        ('resume_pdf', models.FileField(blank=True, help_text='Upload your resume in English (PDF format)', upload_to='profile/', validators=[portfolio.utils.validators.DocumentValidator(max_size=5242880), portfolio.utils.validators.validate_no_executable], verbose_name='CV en PDF (English)')),
+                        ('resume_pdf_es', models.FileField(blank=True, help_text='Sube tu currículum en español (formato PDF)', upload_to='profile/', validators=[portfolio.utils.validators.DocumentValidator(max_size=5242880), portfolio.utils.validators.validate_no_executable], verbose_name='CV en PDF (Español)')),
                         ('show_web_resume', models.BooleanField(default=True, verbose_name='Mostrar CV web')),
                         ('created_at', models.DateTimeField(auto_now_add=True)),
                         ('updated_at', models.DateTimeField(auto_now=True)),

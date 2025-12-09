@@ -7,7 +7,6 @@ from django.core.mail import send_mail, EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils.html import strip_tags
-from .models import Profile
 
 logger = logging.getLogger('portfolio')
 
@@ -27,6 +26,7 @@ class EmailService:
         Returns:
             bool: True if email sent successfully, False otherwise
         """
+        from ..models import Profile
         try:
             profile = Profile.objects.first()
             if not profile or not profile.email:
@@ -78,6 +78,7 @@ class EmailService:
         Returns:
             bool: True if email sent successfully, False otherwise
         """
+        from ..models import Profile
         try:
             profile = Profile.objects.first()
             if not profile:
@@ -135,6 +136,7 @@ class EmailService:
         Returns:
             dict: Test results with success status and message
         """
+        from ..models import Profile
         try:
             profile = Profile.objects.first()
             if not profile or not profile.email:

@@ -40,7 +40,7 @@ AUTO_TRANSLATABLE_MODELS: Dict[Type, AutoFields] = {
     },
     BlogPost: {
         'title': 'text',
-        'content': 'html',
+        'content': 'text',
         'excerpt': 'text',
     },
     Experience: {

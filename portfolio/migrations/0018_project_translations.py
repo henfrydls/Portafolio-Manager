@@ -2,7 +2,7 @@
 import django.db.models.deletion
 import parler.fields
 import parler.models
-import portfolio.validators
+import portfolio.utils.validators
 from django.db import migrations, models
 
 
@@ -48,7 +48,7 @@ class Migration(migrations.Migration):
                     fields=[
                         ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                         ('slug', models.SlugField(help_text='URL amigable generada automaticamente', unique=True, verbose_name='Slug')),
-                        ('image', models.ImageField(blank=True, upload_to='projects/', validators=[portfolio.validators.project_image_validator, portfolio.validators.validate_no_executable], verbose_name='Imagen principal')),
+                        ('image', models.ImageField(blank=True, upload_to='projects/', validators=[portfolio.utils.validators.project_image_validator, portfolio.utils.validators.validate_no_executable], verbose_name='Imagen principal')),
                         ('project_type', models.CharField(blank=True, choices=[('framework', 'Framework'), ('tool', 'Tool'), ('website', 'Website'), ('template', 'Template'), ('dataset', 'Dataset'), ('mobile_app', 'Mobile App'), ('desktop_app', 'Desktop App'), ('library', 'Library'), ('api', 'API'), ('consulting', 'Consulting'), ('strategy', 'Strategy'), ('research', 'Research'), ('process', 'Process'), ('training', 'Training'), ('case_study', 'Case Study'), ('implementation', 'Implementation'), ('other', 'Other')], default='other', help_text='Categoria del proyecto (Framework, Tool, Website, etc.)', max_length=20, null=True, verbose_name='Tipo de proyecto')),
                         ('stars_count', models.PositiveIntegerField(default=0, help_text='Para proyectos de GitHub, se actualiza automaticamente. Para proyectos privados, puedes agregar un numero estimado.', verbose_name='Numero de estrellas')),
                         ('forks_count', models.PositiveIntegerField(default=0, help_text='Para proyectos de GitHub, se actualiza automaticamente', verbose_name='Numero de forks')),
