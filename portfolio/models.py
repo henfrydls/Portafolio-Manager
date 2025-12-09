@@ -798,9 +798,20 @@ class Project(TranslatableModel):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
+        
         if self.image:
             optimize_uploaded_image(self.image, image_type='project', quality='medium')
-        super().save(*args, **kwargs)
+            
+        try:
+            super().save(*args, **kwargs)
+        except Exception as e:
+            # Handle duplicate slug error
+            if "duplicate key value violates unique constraint" in str(e) and "portfolio_project_slug_key" in str(e):
+                import uuid
+                self.slug = f"{slugify(self.title)}-{uuid.uuid4().hex[:6]}"
+                super().save(*args, **kwargs)
+            else:
+                raise e
 
 
 class Experience(TranslatableModel):
