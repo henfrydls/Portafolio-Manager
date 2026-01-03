@@ -176,7 +176,7 @@ msgstr "Configuración completa. Bienvenido a tu tablero."
 #: portfolio/views.py:205
 #, python-format
 msgid "%(language)s content ready (base)"
-msgstr "%(language) el contenido listo (base)"
+msgstr "%(language)s el contenido listo (base)"
 
 #: portfolio/views.py:208
 #, python-format
@@ -186,22 +186,22 @@ msgstr "%(language)s content missing (base)"
 #: portfolio/views.py:213
 #, python-format
 msgid "%(language)s translation ready"
-msgstr "%(language) traducción lista"
+msgstr "%(language)s traducción lista"
 
 #: portfolio/views.py:220
 #, python-format
 msgid "%(language)s auto-translation failed: %(error)s"
-msgstr "%(language) la autotranslación falló: %(error)s"
+msgstr "%(language)s la autotranslación falló: %(error)s"
 
 #: portfolio/views.py:225
 #, python-format
 msgid "%(language)s auto-translation failed"
-msgstr "%(language) la autotranslación falló"
+msgstr "%(language)s la autotranslación falló"
 
 #: portfolio/views.py:228
 #, python-format
 msgid "%(language)s auto-translation pending"
-msgstr "%(language) de autotranslación pendiente"
+msgstr "%(language)s de autotranslación pendiente"
 
 #: portfolio/views.py:231 portfolio/views.py:234
 #, python-format

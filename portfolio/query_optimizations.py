@@ -142,6 +142,26 @@ class QueryOptimizer:
             queryset = queryset.filter(is_active=True)
         
         return queryset.order_by('order', 'translations__name')
+
+    @classmethod
+    def get_featured_projects(cls, limit=None):
+        """Convenience method to get featured projects."""
+        return cls.get_optimized_projects(visibility='public', featured_only=True, limit=limit)
+
+    @classmethod
+    def get_recent_projects(cls, limit=6):
+        """Convenience method to get recent projects."""
+        return cls.get_optimized_projects(visibility='public', featured_only=False, limit=limit)
+
+    @classmethod
+    def get_featured_posts(cls, limit=None):
+        """Convenience method to get featured blog posts."""
+        return cls.get_optimized_blog_posts(status='published', featured_only=True, limit=limit)
+
+    @classmethod
+    def get_latest_posts(cls, limit=3):
+        """Convenience method to get latest blog posts."""
+        return cls.get_optimized_blog_posts(status='published', featured_only=False, limit=limit)
     
     @classmethod
     def get_featured_items_optimized(cls, limit=4):

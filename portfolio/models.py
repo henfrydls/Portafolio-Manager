@@ -6,7 +6,7 @@ from parler.models import TranslatableModel, TranslatedFields
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from .validators import (
+from .utils.validators import (
     profile_image_validator, 
     project_image_validator, 
     blog_image_validator, 
@@ -14,7 +14,7 @@ from .validators import (
     validate_no_executable,
     validate_filename
 )
-from .image_utils import optimize_uploaded_image
+from .utils.images import optimize_uploaded_image
 from django.utils import timezone
 from django.db import transaction
 

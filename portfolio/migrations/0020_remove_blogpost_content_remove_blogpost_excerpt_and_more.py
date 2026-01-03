@@ -2,7 +2,7 @@
 import django.db.models.deletion
 import parler.fields
 import parler.models
-import portfolio.validators
+import portfolio.utils.validators
 from django.db import migrations, models
 
 
@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
                     fields=[
                         ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                         ('slug', models.SlugField(unique=True, verbose_name='Slug')),
-                        ('featured_image', models.ImageField(blank=True, upload_to='blog/', validators=[portfolio.validators.blog_image_validator, portfolio.validators.validate_no_executable], verbose_name='Imagen destacada')),
+                        ('featured_image', models.ImageField(blank=True, upload_to='blog/', validators=[portfolio.utils.validators.blog_image_validator, portfolio.utils.validators.validate_no_executable], verbose_name='Imagen destacada')),
                         ('tags', models.CharField(blank=True, help_text='Tags separados por comas', max_length=200, verbose_name='Tags')),
                         ('status', models.CharField(choices=[('draft', 'Borrador'), ('published', 'Publicado'), ('archived', 'Archivado')], default='draft', max_length=10, verbose_name='Estado')),
                         ('publish_date', models.DateTimeField(verbose_name='Fecha de publicacion')),
