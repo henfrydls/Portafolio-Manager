@@ -3,6 +3,7 @@ import uuid
 import os
 from django.conf import settings
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -25,29 +26,39 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
+
         # Get optimized profile with all related data
         context['profile'] = QueryOptimizer.get_optimized_profile()
-        
+
         # Get optimized projects for home page sections
         context['featured_projects'] = QueryOptimizer.get_featured_projects()
         context['recent_projects'] = QueryOptimizer.get_recent_projects(limit=6)
-        
+
         # Get optimized blog posts
         context['featured_posts'] = QueryOptimizer.get_featured_posts()
         context['latest_posts'] = QueryOptimizer.get_latest_posts(limit=3)
-        
+
+        # Paginate all public projects for "Work & Projects" section
+        all_projects = QueryOptimizer.get_optimized_projects(visibility='public', featured_only=False)
+        projects_page = self.request.GET.get('projects_page', 1)
+        projects_paginator = Paginator(all_projects, 10)  # 10 projects per page
+        projects_page_obj = projects_paginator.get_page(projects_page)
+
+        context['projects'] = projects_page_obj
+        context['projects_paginator'] = projects_paginator
+        context['projects_page_obj'] = projects_page_obj
+
         # Add SEO context
         context['seo'] = SEOGenerator.generate_home_seo(context['profile'], self.request)
         context['structured_data'] = [
             SEOGenerator.generate_structured_data_person(context['profile'], self.request),
             SEOGenerator.generate_structured_data_website(self.request)
         ]
-        
+
         # Initialize contact form
         if 'contact_form' not in context:
             context['contact_form'] = SecureContactFormWithHoneypot()
-            
+
         return context
 
     def get_client_ip(self, request):
