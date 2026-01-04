@@ -38,6 +38,9 @@ class HomeView(TemplateView):
         context['featured_posts'] = QueryOptimizer.get_featured_posts()
         context['latest_posts'] = QueryOptimizer.get_latest_posts(limit=3)
 
+        # Get mixed featured items (projects + posts) for Featured Work section
+        context['featured_items'] = QueryOptimizer.get_featured_items_optimized(limit=4)
+
         # Paginate all public projects for "Work & Projects" section
         all_projects = QueryOptimizer.get_optimized_projects(visibility='public', featured_only=False)
         projects_page = self.request.GET.get('projects_page', 1)
