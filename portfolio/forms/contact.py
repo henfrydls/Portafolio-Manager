@@ -115,8 +115,15 @@ class SecureContactForm(forms.ModelForm):
         return message
 
 
-class SecureContactFormWithHoneypot(HoneypotMixin, SecureContactForm):
+class SecureContactFormWithHoneypot(SecureContactForm):
     """
     Contact form with honeypot protection against bots.
     """
-    pass
+    honeypot = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'style': 'display:none !important;',
+            'tabindex': '-1',
+            'autocomplete': 'off'
+        })
+    )
