@@ -86,72 +86,53 @@ jobs:
             bandit-report.json
             safety-report.json
 
-  # Job 3: Testing with Coverage
+  # Job 3: Testing with Coverage (using Docker Compose)
   test:
     name: Tests & Coverage
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: test_portfolio
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis:7
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
-    env:
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_portfolio
-      REDIS_URL: redis://localhost:6379/0
-      DJANGO_SETTINGS_MODULE: config.settings.test
-      SECRET_KEY: test-secret-key-for-ci
-      DEBUG: "False"
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-
-      - name: Install system dependencies
+      - name: Create .env file for CI
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libpq-dev gettext
+          cat > .env << EOF
+          DJANGO_SETTINGS_MODULE=config.settings.test
+          SECRET_KEY=test-secret-key-for-ci-only-not-for-production
+          DEBUG=False
+          POSTGRES_DB=test_portfolio
+          POSTGRES_USER=postgres
+          POSTGRES_PASSWORD=postgres
+          POSTGRES_HOST=db
+          POSTGRES_PORT=5432
+          REDIS_URL=redis://redis:6379/0
+          EOF
 
-      - name: Install Python dependencies
+      - name: Build and start Docker services
         run: |
-          pip install --upgrade pip
-          pip install coverage pytest pytest-django pytest-cov
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          docker compose up -d --build
+          docker compose ps
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for PostgreSQL..."
+          timeout 60 bash -c 'until docker compose exec -T db pg_isready -U postgres; do sleep 2; done'
+          echo "Waiting for Redis..."
+          timeout 60 bash -c 'until docker compose exec -T redis redis-cli ping; do sleep 2; done'
+          echo "All services ready!"
 
       - name: Run migrations
-        run: python manage.py migrate --noinput
+        run: docker compose exec -T web python manage.py migrate --noinput
 
       - name: Run tests with coverage
         run: |
-          coverage run --source='portfolio' manage.py test portfolio.tests
-          coverage xml
-          coverage report
+          docker compose exec -T web coverage run --source='portfolio' manage.py test portfolio.tests
+          docker compose exec -T web coverage xml
+          docker compose exec -T web coverage report
+
+      - name: Copy coverage report from container
+        run: docker compose cp web:/app/coverage.xml ./coverage.xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -175,6 +156,14 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ github.token }}
         continue-on-error: true
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Cleanup
+        if: always()
+        run: docker compose down -v
 
   # Job 4: Docker Build Validation
   docker-build:

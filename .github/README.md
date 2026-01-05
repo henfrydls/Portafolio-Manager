@@ -47,50 +47,24 @@ This directory contains the complete CI/CD pipeline configuration for the Henfry
 
 ---
 
-### 3. **PR Checks** (`pr-checks.yml`)
+### 3. **PR Checks** (`pr-checks.yml`) - Simplified
 **Triggers:** Pull Request events
 
 **Jobs:**
 - ✍️ **PR Validation**
-  - Semantic PR title checking
-  - PR size labeling
+  - Semantic PR title checking (feat, fix, docs, etc.)
+  - PR size labeling (XS to XL)
 
-- 🤖 **AI Code Review** (ChatGPT-powered)
-- 📊 **Complexity Analysis** (Radon)
-- 📈 **Coverage Diff**
-- 📚 **Documentation Check**
-- ⚡ **Performance Benchmarking**
+- 📊 **Complexity Analysis**
+  - Cyclomatic complexity check with Radon
+  - Maintainability index
+  - Warnings for high complexity functions
 
-**Features:**
-- Automated code review comments
-- Coverage comparison with base branch
-- Complexity warnings
+**Note:** AI Code Review, Coverage Diff, and Performance checks removed to simplify workflow
 
 ---
 
-### 4. **Deploy** (`deploy.yml`)
-**Triggers:** Push to main, Version tags, Manual dispatch
-
-**Jobs:**
-- 🏗️ **Build & Push Docker Image**
-  - Multi-platform (AMD64, ARM64)
-  - Pushed to GitHub Container Registry
-  - SBOM generation
-
-- 🚢 **Deploy to Staging** (Automatic)
-  - Triggered on main branch push
-  - Smoke tests included
-
-- 🎯 **Deploy to Production** (Manual approval required)
-  - Triggered by version tags (v*)
-  - GitHub Release creation
-  - Smoke tests included
-
-**Notifications:** Slack integration for deployment status
-
----
-
-### 5. **Release** (`release.yml`)
+### 4. **Release** (`release.yml`) - Manual Use
 **Triggers:** Version tags (v*.*.*), Manual dispatch
 
 **Jobs:**
@@ -100,7 +74,7 @@ This directory contains the complete CI/CD pipeline configuration for the Henfry
   - Metrics inclusion
 
 - 🏗️ **Build Release Artifacts**
-  - Multi-platform Docker images
+  - Multi-platform Docker images (AMD64, ARM64)
   - Tagged with version
 
 - 📋 **Generate SBOM**
@@ -108,8 +82,23 @@ This directory contains the complete CI/CD pipeline configuration for the Henfry
   - Attached to release
 
 - 📦 **Publish to PyPI** (Optional, disabled by default)
-- 📚 **Update Documentation**
-- 📢 **Notifications** (Slack, GitHub Discussions)
+- 📢 **Notifications**
+
+**How to Use:**
+1. Create a version tag: `git tag -a v1.0.0 -m "Release 1.0.0"`
+2. Push tag: `git push origin v1.0.0`
+3. Workflow runs automatically
+4. See `docs/RELEASE_WORKFLOW.md` for complete guide
+
+---
+
+### 5. **Validate** (`validate.yml`)
+**Triggers:** Workflow changes, Pull Requests
+
+**Jobs:**
+- ✅ **Workflow Syntax Validation**
+- ✅ **Configuration File Validation**
+- 🐳 **Docker Build Test**
 
 ---
 

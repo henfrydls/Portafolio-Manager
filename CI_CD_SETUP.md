@@ -7,6 +7,7 @@ Your repository now has a **complete enterprise-grade CI/CD pipeline** with the 
 ### 📋 Workflows Created
 
 1. **`.github/workflows/ci.yml`** - Main CI Pipeline
+   - **Runs in Docker Compose** - Same environment as development/production
    - Automated testing (96 tests)
    - Code quality checks (Black, Flake8, isort, Pylint)
    - Security scanning (Bandit, Safety)
@@ -21,29 +22,24 @@ Your repository now has a **complete enterprise-grade CI/CD pipeline** with the 
    - OWASP dependency checking
    - Scheduled weekly scans
 
-3. **`.github/workflows/pr-checks.yml`** - Pull Request Automation
+3. **`.github/workflows/pr-checks.yml`** - Pull Request Automation (Simplified)
    - Semantic PR title validation
-   - AI-powered code review (ChatGPT)
-   - Code complexity analysis
-   - Coverage diff reporting
-   - Documentation checks
+   - Code complexity analysis (Radon)
    - PR size labeling
 
-4. **`.github/workflows/deploy.yml`** - Deployment Pipeline
-   - Multi-platform Docker builds (AMD64, ARM64)
-   - Automatic staging deployments
-   - Manual production deployments with approval
-   - SBOM generation
-   - Smoke testing
-   - Slack notifications
-
-5. **`.github/workflows/release.yml`** - Release Management
+4. **`.github/workflows/release.yml`** - Release Management (Manual)
    - Automated changelog generation
    - GitHub Releases creation
    - Multi-platform Docker image publishing
    - SBOM attachments
    - Optional PyPI publishing
-   - Release notifications
+   - **Triggered by creating version tags** (v1.0.0, v1.2.3, etc.)
+   - See `docs/RELEASE_WORKFLOW.md` for usage guide
+
+5. **`.github/workflows/validate.yml`** - CI/CD Configuration Validation
+   - Validates workflow syntax
+   - Validates configuration files
+   - Tests Docker builds
 
 6. **`.github/dependabot.yml`** - Dependency Management
    - Automated Python dependency updates (Mondays)

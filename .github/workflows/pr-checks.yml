@@ -19,7 +19,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: PR title check
+      - name: PR title check (Semantic Commit)
         uses: amannn/action-semantic-pull-request@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -52,27 +52,6 @@ jobs:
           xl_label: 'size/xl'
           fail_if_xl: 'false'
 
-  # Code Review Assistant
-  code-review:
-    name: AI Code Review
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: OpenAI Code Review
-        uses: anc95/ChatGPT-CodeReview@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        with:
-          model: gpt-4
-          review_comment_lgtm: false
-        continue-on-error: true
-
   # Complexity Analysis
   complexity:
     name: Code Complexity Check
@@ -94,130 +73,24 @@ jobs:
         run: |
           echo "## Code Complexity Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Average Complexity" >> $GITHUB_STEP_SUMMARY
           radon cc portfolio/ -a -s >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Maintainability Index" >> $GITHUB_STEP_SUMMARY
           radon mi portfolio/ -s >> $GITHUB_STEP_SUMMARY
 
-      - name: Fail on high complexity
+      - name: Warn on high complexity
         run: |
-          radon cc portfolio/ -a -nc || exit 0
-          if radon cc portfolio/ -a -n C; then
-            echo "::warning::High complexity detected"
+          if radon cc portfolio/ -a -n C 2>/dev/null; then
+            echo "::warning::High complexity detected in some functions"
           fi
-
-  # Test Coverage Diff
-  coverage-diff:
-    name: Coverage Diff
-    runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: test_portfolio
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-    env:
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_portfolio
-      DJANGO_SETTINGS_MODULE: config.settings.test
-      SECRET_KEY: test-secret-key
-
-    steps:
-      - name: Checkout PR
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install coverage
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
-      - name: Run migrations
-        run: python manage.py migrate --noinput
-
-      - name: Run tests with coverage
-        run: |
-          coverage run --source='portfolio' manage.py test portfolio.tests
-          coverage report > coverage-pr.txt
-          coverage json -o coverage-pr.json
-
-      - name: Comment coverage on PR
-        uses: py-cov-action/python-coverage-comment-action@v3
-        with:
-          GITHUB_TOKEN: ${{ github.token }}
-          MINIMUM_GREEN: 70
-          MINIMUM_ORANGE: 50
-
-  # Dependency Updates Check
-  dependency-updates:
-    name: Check for Dependency Updates
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Check for outdated packages
-        run: |
-          pip list --outdated > outdated-packages.txt || true
-          if [ -s outdated-packages.txt ]; then
-            echo "## Outdated Dependencies" >> $GITHUB_STEP_SUMMARY
-            cat outdated-packages.txt >> $GITHUB_STEP_SUMMARY
-          fi
-        continue-on-error: true
-
-  # Performance Check
-  performance:
-    name: Performance Benchmark
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run performance tests
-        run: |
-          echo "## Performance Metrics" >> $GITHUB_STEP_SUMMARY
-          echo "Running performance benchmarks..." >> $GITHUB_STEP_SUMMARY
-          # Add your performance test commands here
-        continue-on-error: true
-
-  # Documentation Check
-  docs-check:
-    name: Documentation Check
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Check for missing docstrings
-        run: |
-          pip install pydocstyle
-          pydocstyle portfolio/ --count > docstring-report.txt || true
-          echo "## Documentation Status" >> $GITHUB_STEP_SUMMARY
-          cat docstring-report.txt >> $GITHUB_STEP_SUMMARY
         continue-on-error: true
 
   # PR Summary
   pr-summary:
     name: PR Summary
     runs-on: ubuntu-latest
-    needs: [pr-validation, complexity, coverage-diff]
+    needs: [pr-validation, complexity]
     if: always()
 
     steps:
@@ -227,6 +100,11 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- PR Validation: ${{ needs.pr-validation.result }}" >> $GITHUB_STEP_SUMMARY
           echo "- Complexity Check: ${{ needs.complexity.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Coverage Diff: ${{ needs.coverage-diff.result }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ All PR checks completed" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.pr-validation.result }}" == "success" ] && \
+             [ "${{ needs.complexity.result }}" == "success" ]; then
+            echo "✅ All PR checks passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Some PR checks need attention" >> $GITHUB_STEP_SUMMARY
+          fi
