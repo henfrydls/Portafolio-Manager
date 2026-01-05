@@ -111,28 +111,30 @@ jobs:
 
       - name: Build and start Docker services
         run: |
-          docker compose up -d --build
-          docker compose ps
+          docker compose --profile direct up -d --build
+          docker compose --profile direct ps
 
       - name: Wait for services to be ready
         run: |
           echo "Waiting for PostgreSQL..."
-          timeout 60 bash -c 'until docker compose exec -T db pg_isready -U postgres; do sleep 2; done'
+          timeout 60 bash -c 'until docker compose --profile direct exec -T db pg_isready -U postgres; do sleep 2; done'
           echo "Waiting for Redis..."
-          timeout 60 bash -c 'until docker compose exec -T redis redis-cli ping; do sleep 2; done'
+          timeout 60 bash -c 'until docker compose --profile direct exec -T redis redis-cli ping; do sleep 2; done'
+          echo "Waiting for web service to be healthy..."
+          sleep 10
           echo "All services ready!"
 
       - name: Run migrations
-        run: docker compose exec -T web python manage.py migrate --noinput
+        run: docker compose --profile direct exec -T web python manage.py migrate --noinput
 
       - name: Run tests with coverage
         run: |
-          docker compose exec -T web coverage run --source='portfolio' manage.py test portfolio.tests
-          docker compose exec -T web coverage xml
-          docker compose exec -T web coverage report
+          docker compose --profile direct exec -T web coverage run --source='portfolio' manage.py test portfolio.tests
+          docker compose --profile direct exec -T web coverage xml
+          docker compose --profile direct exec -T web coverage report
 
       - name: Copy coverage report from container
-        run: docker compose cp web:/app/coverage.xml ./coverage.xml
+        run: docker compose --profile direct cp web:/app/coverage.xml ./coverage.xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -159,11 +161,11 @@ jobs:
 
       - name: Show logs on failure
         if: failure()
-        run: docker compose logs
+        run: docker compose --profile direct logs
 
       - name: Cleanup
         if: always()
-        run: docker compose down -v
+        run: docker compose --profile direct down -v
 
   # Job 4: Docker Build Validation
   docker-build:
