@@ -8,7 +8,7 @@ python-magic-bin==0.4.14; platform_system == "Windows"
 markdown==3.6
 django-parler==2.3
 libretranslatepy==2.1.4
-requests==2.32.3
+requests==2.32.4
 dj-database-url==2.2.0
 psycopg2-binary==2.9.9
 django-redis==5.4.0
