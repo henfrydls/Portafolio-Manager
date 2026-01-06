@@ -132,11 +132,10 @@ jobs:
       - name: Run tests with coverage
         run: |
           # Run all coverage commands in single container to preserve .coverage file
-          docker compose run --rm --no-deps -v $PWD:/output web sh -c "
+          docker compose run --rm --no-deps -v $PWD:/workspace web sh -c "
             coverage run --source='portfolio' manage.py test portfolio.tests &&
             coverage report &&
-            coverage xml &&
-            cp coverage.xml /output/coverage.xml
+            coverage xml -o /workspace/coverage.xml
           "
 
       - name: Upload coverage to Codecov
