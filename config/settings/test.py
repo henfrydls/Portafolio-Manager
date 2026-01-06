@@ -2,7 +2,7 @@
 Django settings for testing in CI/CD environments.
 """
 import os
-from .dev import *  # noqa
+from .development import *  # noqa
 
 # Override settings for testing
 DEBUG = False
