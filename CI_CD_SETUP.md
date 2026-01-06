@@ -52,7 +52,7 @@ Your repository now has a **complete enterprise-grade CI/CD pipeline** with the 
 - `pyproject.toml` - Black, isort, pytest, coverage settings
 - `config/settings/test.py` - Test environment settings
 - `BADGES.md` - Status badges for README
-- `.github/README.md` - CI/CD documentation
+- `.github/WORKFLOWS.md` - CI/CD workflows documentation
 
 ---
 
@@ -374,7 +374,7 @@ Your repository now has:
 ---
 
 **Questions or Issues?**
-- Check `.github/README.md` for detailed documentation
+- Check `.github/WORKFLOWS.md` for detailed workflows documentation
 - Review workflow logs in the Actions tab
 - Open an issue with the `ci/cd` label
 
