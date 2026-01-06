@@ -132,14 +132,9 @@ jobs:
       - name: Run tests with coverage
         run: |
           docker compose run --rm --no-deps web coverage run --source='portfolio' manage.py test portfolio.tests
-          docker compose run --rm --no-deps web coverage xml
           docker compose run --rm --no-deps web coverage report
-
-      - name: Copy coverage report from container
-        run: |
-          # Get the container ID from the last run
-          CONTAINER_ID=$(docker ps -a -q --filter "ancestor=portafolio-manager-web" --latest)
-          docker cp $CONTAINER_ID:/app/coverage.xml ./coverage.xml
+          # Generate coverage.xml and copy it out before container is removed
+          docker compose run --rm --no-deps -v $PWD:/output web sh -c "coverage xml && cp coverage.xml /output/coverage.xml"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
