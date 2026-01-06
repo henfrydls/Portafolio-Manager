@@ -109,32 +109,37 @@ jobs:
           REDIS_URL=redis://redis:6379/0
           EOF
 
-      - name: Build and start Docker services
+      - name: Build Docker image
+        run: docker compose build web
+
+      - name: Start database services
         run: |
-          docker compose --profile direct up -d --build
-          docker compose --profile direct ps
+          docker compose up -d db redis
+          docker compose ps
 
       - name: Wait for services to be ready
         run: |
           echo "Waiting for PostgreSQL..."
-          timeout 60 bash -c 'until docker compose --profile direct exec -T db pg_isready -U postgres; do sleep 2; done'
+          timeout 60 bash -c 'until docker compose exec -T db pg_isready -U postgres; do sleep 2; done'
           echo "Waiting for Redis..."
-          timeout 60 bash -c 'until docker compose --profile direct exec -T redis redis-cli ping; do sleep 2; done'
-          echo "Waiting for web service to be healthy..."
-          sleep 10
+          timeout 60 bash -c 'until docker compose exec -T redis redis-cli ping; do sleep 2; done'
           echo "All services ready!"
 
       - name: Run migrations
-        run: docker compose --profile direct exec -T web python manage.py migrate --noinput
+        run: |
+          docker compose run --rm --no-deps web python manage.py migrate --noinput
 
       - name: Run tests with coverage
         run: |
-          docker compose --profile direct exec -T web coverage run --source='portfolio' manage.py test portfolio.tests
-          docker compose --profile direct exec -T web coverage xml
-          docker compose --profile direct exec -T web coverage report
+          docker compose run --rm --no-deps web coverage run --source='portfolio' manage.py test portfolio.tests
+          docker compose run --rm --no-deps web coverage xml
+          docker compose run --rm --no-deps web coverage report
 
       - name: Copy coverage report from container
-        run: docker compose --profile direct cp web:/app/coverage.xml ./coverage.xml
+        run: |
+          # Get the container ID from the last run
+          CONTAINER_ID=$(docker ps -a -q --filter "ancestor=portafolio-manager-web" --latest)
+          docker cp $CONTAINER_ID:/app/coverage.xml ./coverage.xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -161,11 +166,11 @@ jobs:
 
       - name: Show logs on failure
         if: failure()
-        run: docker compose --profile direct logs
+        run: docker compose logs
 
       - name: Cleanup
         if: always()
-        run: docker compose --profile direct down -v
+        run: docker compose down -v
 
   # Job 4: Docker Build Validation
   docker-build:
