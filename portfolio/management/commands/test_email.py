@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 from django.core.mail import send_mail
 from django.conf import settings
 from portfolio.models import Profile
-from portfolio.email_service import EmailService
+from portfolio.utils.email import EmailService
 
 
 class Command(BaseCommand):
