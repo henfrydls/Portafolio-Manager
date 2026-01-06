@@ -74,10 +74,10 @@ class HomeView(TemplateView):
 
     def post(self, request, *args, **kwargs):
         form = SecureContactFormWithHoneypot(request.POST)
-        
+
         if form.is_valid():
             # Check honeypot
-            if form.cleaned_data.get('website'):
+            if form.cleaned_data.get('honeypot'):
                 logger.warning(f"Honeypot triggered by IP {self.get_client_ip(request)}")
                 return redirect('portfolio:home')
                 

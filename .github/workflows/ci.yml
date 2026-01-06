@@ -1,0 +1,218 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  PYTHON_VERSION: "3.11"
+  POETRY_VERSION: "1.7.1"
+
+jobs:
+  # Job 1: Linting and Code Quality
+  lint:
+    name: Code Quality & Linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install flake8 black isort pylint
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run Black (Code Formatting)
+        run: black --check --diff .
+        continue-on-error: true
+
+      - name: Run isort (Import Sorting)
+        run: isort --check-only --diff .
+        continue-on-error: true
+
+      - name: Run Flake8 (Linting)
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Run Pylint (Deep Analysis)
+        run: pylint portfolio/ --exit-zero --reports=y
+        continue-on-error: true
+
+  # Job 2: Security Scanning
+  security:
+    name: Security Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install security tools
+        run: |
+          pip install --upgrade pip
+          pip install bandit safety
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run Bandit (Security Linter)
+        run: bandit -r portfolio/ -f json -o bandit-report.json
+        continue-on-error: true
+
+      - name: Run Safety (Dependency Checker)
+        run: safety check --json --output safety-report.json
+        continue-on-error: true
+
+      - name: Upload Security Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+
+  # Job 3: Testing with Coverage (using Docker Compose)
+  test:
+    name: Tests & Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create .env file for CI
+        run: |
+          cat > .env << EOF
+          DJANGO_SETTINGS_MODULE=config.settings.test
+          SECRET_KEY=test-secret-key-for-ci-only-not-for-production
+          DEBUG=False
+          POSTGRES_DB=test_portfolio
+          POSTGRES_USER=postgres
+          POSTGRES_PASSWORD=postgres
+          POSTGRES_HOST=db
+          POSTGRES_PORT=5432
+          REDIS_URL=redis://redis:6379/0
+          EOF
+
+      - name: Build Docker image
+        run: docker compose build web
+
+      - name: Start database services
+        run: |
+          docker compose up -d db redis
+          docker compose ps
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for PostgreSQL..."
+          timeout 60 bash -c 'until docker compose exec -T db pg_isready -U postgres; do sleep 2; done'
+          echo "Waiting for Redis..."
+          timeout 60 bash -c 'until docker compose exec -T redis redis-cli ping; do sleep 2; done'
+          echo "All services ready!"
+
+      - name: Run migrations
+        run: |
+          docker compose run --rm --no-deps web python manage.py migrate --noinput
+
+      - name: Run tests with coverage
+        run: |
+          # Run all coverage commands in single container to preserve .coverage file
+          docker compose run --rm --no-deps -v $PWD:/workspace web sh -c "
+            coverage run --source='portfolio' manage.py test portfolio.tests &&
+            coverage report &&
+            coverage xml -o /workspace/coverage.xml
+          "
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+      - name: Coverage comment
+        if: github.event_name == 'pull_request'
+        uses: py-cov-action/python-coverage-comment-action@v3
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+        continue-on-error: true
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Cleanup
+        if: always()
+        run: docker compose down -v
+
+  # Job 4: Docker Build Validation
+  docker-build:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: henfrydls/portfolio:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test Docker Compose
+        run: |
+          docker compose -f docker-compose.yml config
+          echo "Docker Compose configuration is valid"
+
+  # Job 5: Build Status Summary
+  build-summary:
+    name: Build Summary
+    runs-on: ubuntu-latest
+    needs: [lint, security, test, docker-build]
+    if: always()
+
+    steps:
+      - name: Check build status
+        run: |
+          echo "## CI Pipeline Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Linting: ${{ needs.lint.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Security: ${{ needs.security.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Tests: ${{ needs.test.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Docker: ${{ needs.docker-build.result }}" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "::error::Tests failed"
+            exit 1
+          fi
