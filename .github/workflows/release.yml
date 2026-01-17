@@ -54,6 +54,13 @@ jobs:
           head-ref: ${{ steps.get_version.outputs.version }}
           base-ref: ${{ github.event.before }}
 
+      - name: Prepare repository names
+        id: repo
+        run: |
+          # Convert repository name to lowercase for Docker compatibility
+          echo "docker=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+          echo "github=${{ github.repository }}" >> $GITHUB_OUTPUT
+
       - name: Create Release Notes
         id: release_notes
         run: |
@@ -71,19 +78,19 @@ jobs:
 
           ### Docker
           ```bash
-          docker pull ghcr.io/${{ github.repository }}:${{ steps.get_version.outputs.version }}
+          docker pull ghcr.io/${{ steps.repo.outputs.docker }}:${{ steps.get_version.outputs.version }}
           ```
 
           ### From Source
           ```bash
-          git clone https://github.com/${{ github.repository }}.git
+          git clone https://github.com/${{ steps.repo.outputs.github }}.git
           cd henfrydls
           git checkout ${{ steps.get_version.outputs.version }}
           pip install -r requirements.txt
           ```
 
           ## 📝 Full Changelog
-          [View full changelog](https://github.com/${{ github.repository }}/compare/${{ github.event.before }}...${{ steps.get_version.outputs.version }})
+          [View full changelog](https://github.com/${{ steps.repo.outputs.github }}/compare/${{ github.event.before }}...${{ steps.get_version.outputs.version }})
           EOF
 
       - name: Create GitHub Release
@@ -128,6 +135,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Prepare image name
+        id: image
+        run: |
+          # Convert repository name to lowercase for Docker compatibility
+          echo "name=$(echo 'ghcr.io/${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -135,8 +148,8 @@ jobs:
           platforms: ${{ matrix.platform }}
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:${{ needs.create-release.outputs.version }}
-            ghcr.io/${{ github.repository }}:latest
+            ${{ steps.image.outputs.name }}:${{ needs.create-release.outputs.version }}
+            ${{ steps.image.outputs.name }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -234,10 +247,11 @@ jobs:
                 text: `Release ${{ needs.create-release.outputs.version }} has been published!\n\nView release: https://github.com/${{ github.repository }}/releases/tag/${{ needs.create-release.outputs.version }}`
               }]
             }
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-        if: success()
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: success() && secrets.SLACK_WEBHOOK_URL != ''
+        continue-on-error: true
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Create discussion
         uses: abirismyname/create-discussion@v2.1.0
