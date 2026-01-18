@@ -1,0 +1,163 @@
+name: Deploy to Production
+
+on:
+  # Manual trigger desde GitHub UI
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy (e.g., v1.2.0 or latest)'
+        required: true
+        default: 'latest'
+        type: string
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+  # Auto-deploy después de release exitoso (comentado por seguridad)
+  # workflow_run:
+  #   workflows: ["Release"]
+  #   types:
+  #     - completed
+  #   branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment || 'production' }}
+    runs-on: ubuntu-latest
+
+    # Solo ejecutar si el release fue exitoso (cuando es auto-deploy)
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+
+    environment:
+      name: ${{ inputs.environment || 'production' }}
+      url: https://henfrydls.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version to deploy
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            # Si es auto-deploy, obtener la última versión del release
+            echo "version=latest" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PRODUCTION_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.PRODUCTION_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Create backup on server
+        run: |
+          ssh ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} << 'EOF'
+            cd ~/Portafolio-Manager
+
+            # Backup de base de datos
+            mkdir -p ~/backups
+            docker compose exec -T db pg_dump -U portfolio -d portfolio -F c > \
+              ~/backups/backup_pre_deploy_$(date +%Y%m%d_%H%M%S).dump
+
+            echo "✅ Backup completado"
+          EOF
+
+      - name: Deploy new version
+        run: |
+          ssh ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} << EOF
+            cd ~/Portafolio-Manager
+
+            # Actualizar docker-compose.yml para usar la nueva imagen
+            sed -i 's|image: ghcr.io/henfrydls/portafolio-manager:.*|image: ghcr.io/henfrydls/portafolio-manager:${{ steps.version.outputs.version }}|' docker-compose.yml
+
+            # Pull nueva imagen
+            docker compose pull web
+
+            # Actualizar contenedor
+            docker compose up -d web
+
+            # Esperar 10 segundos para que arranque
+            sleep 10
+
+            echo "✅ Deployment completado"
+          EOF
+
+      - name: Verify deployment
+        run: |
+          ssh ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} << 'EOF'
+            cd ~/Portafolio-Manager
+
+            # Verificar que el contenedor está corriendo
+            if docker compose ps | grep -q "Up"; then
+              echo "✅ Contenedor web está corriendo"
+            else
+              echo "❌ ERROR: Contenedor no está corriendo"
+              exit 1
+            fi
+
+            # Verificar logs recientes (sin errores críticos)
+            if docker compose logs --tail=20 web | grep -qi "error\|exception\|failed"; then
+              echo "⚠️  Advertencia: Hay errores en los logs recientes"
+              docker compose logs --tail=50 web
+            else
+              echo "✅ No hay errores críticos en los logs"
+            fi
+
+            # Verificar que el sitio responde
+            if curl -f -s -o /dev/null https://henfrydls.com/; then
+              echo "✅ Sitio responde correctamente"
+            else
+              echo "❌ ERROR: Sitio no responde"
+              exit 1
+            fi
+          EOF
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          ssh ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} << 'EOF'
+            cd ~/Portafolio-Manager
+
+            echo "⚠️  Deployment falló, iniciando rollback..."
+
+            # Restaurar docker-compose.yml del backup (si existe)
+            if [ -f docker-compose.yml.backup_$(date +%Y%m%d) ]; then
+              cp docker-compose.yml.backup_$(date +%Y%m%d) docker-compose.yml
+            fi
+
+            # Recrear contenedor con la versión anterior
+            docker compose up -d web
+
+            echo "✅ Rollback completado"
+          EOF
+
+      - name: Cleanup old images
+        if: success()
+        run: |
+          ssh ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} << 'EOF'
+            # Limpiar imágenes viejas (liberar espacio)
+            docker image prune -a -f --filter "until=72h"
+
+            echo "✅ Limpieza completada"
+          EOF
+
+      - name: Send notification
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "🎉 Deployment exitoso de ${{ steps.version.outputs.version }} a producción"
+          else
+            echo "❌ Deployment falló - rollback ejecutado"
+          fi

@@ -1,0 +1,71 @@
+# Watchtower - Automatic Docker Container Updates
+#
+# Este servicio monitorea ghcr.io cada hora y actualiza automáticamente
+# los contenedores cuando detecta una nueva imagen.
+#
+# Uso:
+#   docker compose -f deploy/watchtower-docker-compose.yml up -d
+#
+# ADVERTENCIA: Solo usar con tag 'latest' o en staging.
+# En producción, es más seguro usar versiones específicas (v1.2.0)
+
+version: '3.8'
+
+services:
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+
+    volumes:
+      # Necesita acceso al socket de Docker para controlar contenedores
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    environment:
+      # Intervalo de chequeo (en segundos)
+      # 3600 = 1 hora, 1800 = 30 minutos
+      WATCHTOWER_POLL_INTERVAL: 3600
+
+      # Solo monitorear contenedores específicos
+      # Separar por espacio si hay múltiples
+      WATCHTOWER_MONITOR_ONLY: "true"
+
+      # Limpiar imágenes viejas después de actualizar
+      WATCHTOWER_CLEANUP: "true"
+
+      # No actualizar watchtower a sí mismo
+      WATCHTOWER_INCLUDE_RESTARTING: "true"
+
+      # Incluir contenedores detenidos
+      WATCHTOWER_INCLUDE_STOPPED: "false"
+
+      # Etiqueta para filtrar contenedores
+      WATCHTOWER_LABEL_ENABLE: "true"
+
+      # Logs en timezone local
+      TZ: America/Santo_Domingo
+
+      # Notificaciones (opcional - descomentar si tienes Slack)
+      # WATCHTOWER_NOTIFICATIONS: slack
+      # WATCHTOWER_NOTIFICATION_SLACK_HOOK_URL: https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+      # WATCHTOWER_NOTIFICATION_SLACK_IDENTIFIER: watchtower-henfrydls
+
+    command:
+      # Solo monitorear el contenedor 'web'
+      # Añade más nombres de contenedor separados por espacio si necesitas
+      - portafolio-manager-web-1
+
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"  # No actualizarse a sí mismo
+
+# Cómo configurar el contenedor web para que Watchtower lo actualice:
+#
+# En tu docker-compose.yml principal, agrega esta etiqueta al servicio 'web':
+#
+# services:
+#   web:
+#     image: ghcr.io/henfrydls/portafolio-manager:latest
+#     labels:
+#       - "com.centurylinklabs.watchtower.enable=true"
+#
+# IMPORTANTE: Watchtower solo funciona con 'image:', NO con 'build:'
