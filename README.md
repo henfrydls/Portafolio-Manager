@@ -1,4 +1,12 @@
-# Portfolio Manager (Django)
+<div align="center">
+  <img src="static/images/logo/logo.svg" alt="Portfolio Manager Logo" width="120" height="120">
+
+  # Portfolio Manager (Django)
+
+  [![Django](https://img.shields.io/badge/Django-5.2-green.svg)](https://www.djangoproject.com/)
+  [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
+  [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+</div>
 
 A professional portfolio and blog platform for developers and technology consultants. The application is built on Django 5.2, ships with a modern front-end, and includes tooling to manage projects, blog posts, skills, languages, and resumes from a friendly admin dashboard. English and Spanish translations are handled through django-parler with optional LibreTranslate automation.
 
