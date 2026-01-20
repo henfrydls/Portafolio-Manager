@@ -9,7 +9,7 @@ Guia para desplegar en produccion usando imagenes Docker de GHCR.
 docker pull ghcr.io/henfrydls/portafolio-manager:latest
 
 # O version especifica (recomendado para produccion)
-docker pull ghcr.io/henfrydls/portafolio-manager:v1.2.0
+docker pull ghcr.io/henfrydls/portafolio-manager:v1.2.2
 ```
 
 ---
@@ -21,7 +21,7 @@ docker pull ghcr.io/henfrydls/portafolio-manager:v1.2.0
 | Tag | Uso |
 |-----|-----|
 | `latest` | Desarrollo/Testing |
-| `v1.2.0` | Produccion (recomendado) |
+| `v1.2.2` | Produccion (recomendado) |
 
 **Arquitecturas:** AMD64 (Intel/AMD), ARM64 (Mac M1/M2, AWS Graviton)
 
