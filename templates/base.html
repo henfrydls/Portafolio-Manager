@@ -15,6 +15,24 @@
     <link rel="manifest" href="{% static 'images/favicon/site.webmanifest' %}">
     <meta name="theme-color" content="#2563eb">
 
+    <!-- SEO Meta Description -->
+    <meta name="description" content="{{ meta_description|default:og_description|default:'' }}">
+
+    <!-- Open Graph / Facebook / WhatsApp / Telegram / LinkedIn -->
+    <meta property="og:type" content="{{ og_type|default:'website' }}">
+    <meta property="og:url" content="{{ og_url|default:request.build_absolute_uri }}">
+    <meta property="og:title" content="{{ og_title|default:'' }}">
+    <meta property="og:description" content="{{ og_description|default:'' }}">
+    {% if og_image %}<meta property="og:image" content="{{ og_image }}">{% endif %}
+    <meta property="og:locale" content="{{ LANGUAGE_CODE|default:'en' }}">
+    <meta property="og:site_name" content="{{ profile.name|default:'Portfolio' }}">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ og_title|default:'' }}">
+    <meta name="twitter:description" content="{{ og_description|default:'' }}">
+    {% if og_image %}<meta name="twitter:image" content="{{ og_image }}">{% endif %}
+
     <!-- Google Fonts - Montserrat for clean typography -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 
