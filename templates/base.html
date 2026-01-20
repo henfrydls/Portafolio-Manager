@@ -15,6 +15,25 @@
     <link rel="manifest" href="{% static 'images/favicon/site.webmanifest' %}">
     <meta name="theme-color" content="#2563eb">
 
+    <!-- SEO Meta Description -->
+    {% if meta_description %}<meta name="description" content="{{ meta_description }}">
+    {% elif og_description %}<meta name="description" content="{{ og_description }}">{% endif %}
+
+    <!-- Open Graph / Facebook / WhatsApp / Telegram / LinkedIn -->
+    <meta property="og:type" content="{{ og_type|default:'website' }}">
+    {% if request %}<meta property="og:url" content="{{ request.build_absolute_uri }}">{% endif %}
+    {% if og_title %}<meta property="og:title" content="{{ og_title }}">{% endif %}
+    {% if og_description %}<meta property="og:description" content="{{ og_description }}">{% endif %}
+    {% if og_image %}<meta property="og:image" content="{{ og_image }}">{% endif %}
+    <meta property="og:locale" content="{{ LANGUAGE_CODE|default:'en' }}">
+    {% if profile %}<meta property="og:site_name" content="{{ profile.name }}">{% endif %}
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    {% if og_title %}<meta name="twitter:title" content="{{ og_title }}">{% endif %}
+    {% if og_description %}<meta name="twitter:description" content="{{ og_description }}">{% endif %}
+    {% if og_image %}<meta name="twitter:image" content="{{ og_image }}">{% endif %}
+
     <!-- Google Fonts - Montserrat for clean typography -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 
