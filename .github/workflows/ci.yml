@@ -190,6 +190,9 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Create .env file for validation
+        run: cp .env.example .env
+
       - name: Test Docker Compose
         run: |
           docker compose -f docker-compose.yml config

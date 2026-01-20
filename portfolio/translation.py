@@ -10,6 +10,30 @@ from django.db import transaction
 from django.utils import translation as django_translation
 from django.core.exceptions import ImproperlyConfigured
 
+from markdownify import MarkdownConverter
+
+class CustomMarkdownConverter(MarkdownConverter):
+    """
+    Custom converter to extract language class from <pre><code class="language-xyz">
+    and restore it as ```xyz
+    """
+    def convert_pre(self, el, text, convert_as_inline=False, **kwargs):
+        language = ''
+        code_el = el.find('code')
+        if code_el:
+            classes = code_el.get('class')
+            if classes:
+                # 'classes' might be a list or string depending on BS4 version/parser
+                if isinstance(classes, list):
+                     for cls in classes:
+                        if cls.startswith('language-'):
+                            language = cls.replace('language-', '')
+                            break
+                elif isinstance(classes, str) and classes.startswith('language-'):
+                    language = classes.replace('language-', '')
+
+        return f"\n```{language}\n{text.strip()}\n```\n"
+
 from .models import (
     SiteConfiguration,
     AutoTranslationRecord,
@@ -202,11 +226,44 @@ def _translate_language(
 
     logger.info(f"  - Translating {len(source_data)} fields: {list(source_data.keys())}")
 
+    # Import helper libraries for markdown preservation
+    # We do this here to avoid failure if dependencies are missing during initial load
+    try:
+        import markdown
+        from markdownify import markdownify
+        MARKDOWN_SUPPORT = True
+    except ImportError:
+        MARKDOWN_SUPPORT = False
+        logger.warning("markdown or markdownify not installed. Markdown preservation disabled.")
+
     for field, (value, fmt) in source_data.items():
         try:
             logger.debug(f"  - Translating field '{field}' ({len(value)} chars, format={fmt})")
-            result = service.translate(value, source_language, target_language, format='html' if fmt == 'html' else 'text')
-            logger.debug(f"  - Field '{field}' translated successfully in {result.duration_ms}ms")
+            
+            # Special handling for Markdown content (TEXT fields usually allow markdown)
+            # LibreTranslate corrupts Markdown in 'text' mode (e.g., '**' becomes '* *')
+            # Solution: Markdown -> HTML -> Translate -> Markdown
+            if fmt == 'text' and MARKDOWN_SUPPORT and len(value) > 0:
+                # Use 'extra' extension to support tables, fenced code blocks, etc.
+                html_content = markdown.markdown(value, extensions=['extra'])
+                translated_result = service.translate(html_content, source_language, target_language, format='html')
+                # Access the text from the result object
+                translated_html_text = translated_result.translated_text
+                
+                # Convert back to Markdown (ATX style favors '#' over underline headers)
+                result_text = CustomMarkdownConverter(heading_style="ATX").convert(translated_html_text)
+                # Clean up potential extra newlines introduced by conversion
+                result_text = result_text.strip()
+                # Create a mock result object to match expected interface if service returns object
+                # But service.translate returns a TranslationResult object
+                # Use result_text as the final string value for the field.
+                final_value = result_text
+            else:
+                # Fallback to standard translation
+                final_value = service.translate(value, source_language, target_language, format='html' if fmt == 'html' else 'text')
+
+            translated_fields[field] = final_value
+            logger.debug(f"  - Field '{field}' translated successfully")
         except TranslationError as exc:
             _mark_translation_failure(record, content_type, instance.pk, target_language, source_language, str(exc))
             logger.exception("Translation error on %s field %s -> %s: %s", instance.__class__.__name__, field, target_language, exc)
@@ -215,9 +272,7 @@ def _translate_language(
             _mark_translation_failure(record, content_type, instance.pk, target_language, source_language, str(exc))
             logger.exception("Unexpected translation failure: %s", exc)
             return
-        else:
-            translated_fields[field] = result.translated_text
-            total_duration += result.duration_ms
+
 
     if not translated_fields:
         logger.warning(f"No fields were translated for {instance.__class__.__name__} pk={instance.pk}, lang={target_language}")
