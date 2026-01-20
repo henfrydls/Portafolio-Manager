@@ -27,6 +27,56 @@ docker pull ghcr.io/henfrydls/portafolio-manager:v1.2.2
 
 ---
 
+## Instalacion con Imagenes GHCR (Recomendado para Produccion)
+
+Si no necesitas modificar el codigo, usa las imagenes pre-construidas. Es mas rapido que hacer build local.
+
+### 1. Clonar repositorio
+
+```bash
+git clone https://github.com/henfrydls/Portafolio-Manager.git
+cd Portafolio-Manager
+cp .env.example .env  # Editar con tus valores
+```
+
+### 2. Modificar docker-compose.yml
+
+Cambiar `build: .` por `image:` en el servicio `web`:
+
+```yaml
+# Antes (build local):
+services:
+  web:
+    build: .
+
+# Despues (imagen GHCR):
+services:
+  web:
+    image: ghcr.io/henfrydls/portafolio-manager:v1.2.2
+```
+
+> **Tip:** Usa `sed` para hacer el cambio automaticamente:
+> ```bash
+> sed -i 's/build: \./image: ghcr.io\/henfrydls\/portafolio-manager:v1.2.2/g' docker-compose.yml
+> ```
+
+### 3. Iniciar servicios
+
+```bash
+docker compose up -d
+```
+
+### Ventajas de usar GHCR
+
+| Aspecto | Build Local | GHCR |
+|---------|-------------|------|
+| Tiempo de inicio | ~5-10 min | ~1 min |
+| Requiere codigo fuente | Si | Solo configs |
+| Multi-arquitectura | Manual | Automatico (AMD64/ARM64) |
+| Ideal para | Desarrollo | Produccion/Staging |
+
+---
+
 ## Opciones de Deployment
 
 ### Opcion 1: Watchtower (Auto-update)
