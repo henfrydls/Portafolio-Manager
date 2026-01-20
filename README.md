@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="static/images/logo/logo.svg" alt="Portfolio Manager Logo" width="120" height="120">
+  <img src="static/images/logo/logo.svg" alt="Portfolio Manager Logo" width="300" height="300">
 
   # Portfolio Manager
 
@@ -82,3 +82,4 @@ Creates `admin/admin123` user and demo content.
 ## License
 
 MIT License. See [LICENSE](LICENSE).
+
