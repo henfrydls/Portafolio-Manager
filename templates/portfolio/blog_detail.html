@@ -428,10 +428,48 @@
         });
     });
 
+
     window.addEventListener('scroll', handleScroll);
 </script>
+{% endblock %}
 
+{% block extra_js %}
+<!-- Mermaid.js for diagrams -->
+<script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    
+    mermaid.initialize({ 
+        startOnLoad: false,
+        theme: 'default',
+        securityLevel: 'loose',
+    });
 
+    document.addEventListener('DOMContentLoaded', async function () {
+        // Find all code blocks with language-mermaid
+        const mermaidBlocks = document.querySelectorAll('pre code.language-mermaid');
+        
+        if (mermaidBlocks.length > 0) {
+            mermaidBlocks.forEach(block => {
+                const pre = block.parentElement;
+                const code = block.textContent;
+                
+                // Create new div with mermaid class
+                const div = document.createElement('div');
+                div.className = 'mermaid';
+                div.textContent = code;
+                div.style.textAlign = 'center';
+                
+                // Replace pre with div
+                pre.parentNode.replaceChild(div, pre);
+            });
+            
+            // Run mermaid
+            await mermaid.run({
+                querySelector: '.mermaid'
+            });
+        }
+    });
+</script>
 {% endblock %}
 
 {% block extra_css %}
@@ -1083,6 +1121,33 @@
 
     .article-text a:hover {
         text-decoration-color: rgba(41, 41, 41, 1);
+    }
+
+    /* Tables */
+    .article-text table {
+        width: 100%;
+        margin: 32px 0;
+        border-collapse: collapse;
+        font-size: 16px;
+    }
+
+    .article-text th {
+        text-align: left;
+        padding: 12px 8px;
+        border-bottom: 2px solid #F2F2F2;
+        font-weight: 600;
+        color: #242424;
+    }
+
+    .article-text td {
+        padding: 12px 8px;
+        border-bottom: 1px solid #F2F2F2;
+        color: rgba(41, 41, 41, 1);
+        vertical-align: top;
+    }
+
+    .article-text tr:last-child td {
+        border-bottom: none;
     }
 
     /* Images in Article Content */
