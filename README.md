@@ -25,7 +25,7 @@ docker compose up --build
 docker compose exec web python manage.py createsuperuser
 ```
 
-Open http://localhost:8000 (portfolio) and http://localhost:8000/admin (dashboard).
+Open http://localhost:8000 (portfolio), http://localhost:8000/dashboard (admin dashboard), and http://localhost:8000/admin (Django admin).
 
 **Production/Staging** (nginx on port 80):
 ```bash
