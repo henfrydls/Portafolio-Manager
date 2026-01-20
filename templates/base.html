@@ -16,21 +16,22 @@
     <meta name="theme-color" content="#2563eb">
 
     <!-- SEO Meta Description -->
-    <meta name="description" content="{{ meta_description|default:og_description|default:'' }}">
+    {% if meta_description %}<meta name="description" content="{{ meta_description }}">
+    {% elif og_description %}<meta name="description" content="{{ og_description }}">{% endif %}
 
     <!-- Open Graph / Facebook / WhatsApp / Telegram / LinkedIn -->
     <meta property="og:type" content="{{ og_type|default:'website' }}">
-    <meta property="og:url" content="{{ og_url|default:request.build_absolute_uri }}">
-    <meta property="og:title" content="{{ og_title|default:'' }}">
-    <meta property="og:description" content="{{ og_description|default:'' }}">
+    {% if request %}<meta property="og:url" content="{{ request.build_absolute_uri }}">{% endif %}
+    {% if og_title %}<meta property="og:title" content="{{ og_title }}">{% endif %}
+    {% if og_description %}<meta property="og:description" content="{{ og_description }}">{% endif %}
     {% if og_image %}<meta property="og:image" content="{{ og_image }}">{% endif %}
     <meta property="og:locale" content="{{ LANGUAGE_CODE|default:'en' }}">
-    <meta property="og:site_name" content="{{ profile.name|default:'Portfolio' }}">
+    {% if profile %}<meta property="og:site_name" content="{{ profile.name }}">{% endif %}
 
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ og_title|default:'' }}">
-    <meta name="twitter:description" content="{{ og_description|default:'' }}">
+    {% if og_title %}<meta name="twitter:title" content="{{ og_title }}">{% endif %}
+    {% if og_description %}<meta name="twitter:description" content="{{ og_description }}">{% endif %}
     {% if og_image %}<meta name="twitter:image" content="{{ og_image }}">{% endif %}
 
     <!-- Google Fonts - Montserrat for clean typography -->
