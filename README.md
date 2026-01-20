@@ -10,44 +10,54 @@
 
 Portfolio and blog platform for developers. Built with Django 5.2, includes project catalog, blog, resume module, contact form, and automatic EN/ES translations.
 
-## Quick Start
+## Quick Start (Docker)
 
 ```bash
-# Clone and setup
+# Clone and configure
 git clone https://github.com/henfrydls/Portafolio-Manager.git
 cd Portafolio-Manager
+cp .env.example .env  # Edit SECRET_KEY if needed
+
+# Run with Docker Compose (includes PostgreSQL, Redis, LibreTranslate)
+docker compose up --build
+
+# Create admin user (in another terminal)
+docker compose exec web python manage.py createsuperuser
+```
+
+Open http://localhost:8000 (portfolio) and http://localhost:8000/admin (dashboard).
+
+**Production/Staging** (nginx on port 80):
+```bash
+docker compose --profile staging up --build
+```
+
+See [docs/DOCKER_COMMANDS.md](docs/DOCKER_COMMANDS.md) for details.
+
+## Alternative: Local Python (Limited)
+
+> **Note:** This uses SQLite and has no automatic translations. For full features, use Docker.
+
+```bash
 python -m venv .venv && .venv\Scripts\activate  # Windows
 # source .venv/bin/activate  # Linux/Mac
-
-# Install and configure
 pip install -r requirements/development.txt
-copy .env.example .env  # Edit SECRET_KEY, DEBUG=True
-
-# Run
+cp .env.example .env  # Edit SECRET_KEY, DEBUG=True
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Open http://localhost:8000 (portfolio) and http://localhost:8000/admin (dashboard).
-
-## Docker
-
-```bash
-# Development (port 8000)
-docker compose up --build
-
-# Staging/Production (nginx on port 80)
-docker compose -f docker-compose.yml --profile staging up --build
-```
-
-See [docs/DOCKER_COMMANDS.md](docs/DOCKER_COMMANDS.md) for details.
-
 ## Test Data
 
 ```bash
-python manage.py populate_test_data  # Creates admin/admin123 + demo content
+# Docker
+docker compose exec web python manage.py populate_test_data
+
+# Local Python
+python manage.py populate_test_data
 ```
+Creates `admin/admin123` user and demo content.
 
 ## Documentation
 
