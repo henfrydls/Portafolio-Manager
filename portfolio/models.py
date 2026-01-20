@@ -55,7 +55,7 @@ class SiteConfiguration(models.Model):
         verbose_name="Translation service API key"
     )
     translation_timeout = models.PositiveIntegerField(
-        default=10,
+        default=60,
         verbose_name="Tiempo de espera (segundos)"
     )
     updated_at = models.DateTimeField(auto_now=True)
@@ -1035,7 +1035,7 @@ class BlogPost(TranslatableModel):
         content=models.TextField(verbose_name="Contenido"),
         excerpt=models.TextField(max_length=300, verbose_name="Extracto"),
     )
-    slug = models.SlugField(unique=True, verbose_name="Slug")
+    slug = models.SlugField(unique=True, max_length=200, verbose_name="Slug")
     featured_image = models.ImageField(
         upload_to='blog/',
         blank=True,
@@ -1078,7 +1078,57 @@ class BlogPost(TranslatableModel):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
+            # Opción A: Generate concise English slug
+            try:
+                # 1. Get English title (translate if necessary)
+                title_to_slug = self.safe_translation_getter('title', language_code='en')
+                if not title_to_slug:
+                     # If no English title, try to translate from valid language
+                     current_lang = self.get_current_language()
+                     original_title = self.safe_translation_getter('title', language_code=current_lang)
+                     
+                     if original_title:
+                        try:
+                            config = SiteConfiguration.get_solo()
+                            service = config.get_translation_service()
+                            if service:
+                                result = service.translate(original_title, source=current_lang, target='en')
+                                title_to_slug = result.translated_text
+                        except Exception as e:
+                            print(f"Slug generation translation failed: {e}")
+                            title_to_slug = original_title
+            
+                if not title_to_slug:
+                     title_to_slug = self.title # Fallback
+
+                # 2. Clean and optimize slug (remove stop words)
+                stop_words = {
+                    'to', 'a', 'the', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'for', 'of', 'with', 'by',
+                    'from', 'as', 'is', 'are', 'was', 'were', 'be', 'that', 'this', 'it', 'how'
+                }
+                words = title_to_slug.split()
+                filtered_words = [w for w in words if w.lower() not in stop_words]
+                
+                # If filtering removes everything, keep original
+                if not filtered_words:
+                    filtered_words = words
+                    
+                optimized_title = ' '.join(filtered_words)
+                base_slug = slugify(optimized_title)
+                
+                # Check for duplicates and append counter if needed
+                unique_slug = base_slug
+                counter = 1
+                while BlogPost.objects.filter(slug=unique_slug).exclude(pk=self.pk).exists():
+                    unique_slug = f"{base_slug}-{counter}"
+                    counter += 1
+                
+                self.slug = unique_slug
+                
+            except Exception as e:
+                print(f"Error generating optimized slug: {e}")
+                self.slug = slugify(self.title)
+
         if self.featured_image:
             optimize_uploaded_image(self.featured_image, image_type='blog', quality='medium')
         super().save(*args, **kwargs)
