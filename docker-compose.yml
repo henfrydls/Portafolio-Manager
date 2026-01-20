@@ -5,40 +5,7 @@ services:
       bash -c "python manage.py migrate &&
                python manage.py collectstatic --noinput &&
                python manage.py check_env &&
-               gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 60"
-    # Port mapping strategy:
-    # - "direct" profile: Expose 8000 for native nginx on host (Certbot setup)
-    # - "staging"/"prod" profiles: No port exposure, nginx container handles routing
-    ports:
-      - "8000:8000"
-    profiles: ["direct"]  # Only for direct access with native nginx + Certbot
-    env_file:
-      - .env
-    environment:
-      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-config.settings.development}
-      DATABASE_URL: ${DATABASE_URL:-postgres://portfolio:portfolio@db:5432/portfolio}
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
-      TRANSLATION_API_URL: ${TRANSLATION_API_URL:-http://libretranslate:5000}
-      TRANSLATION_PROVIDER: ${TRANSLATION_PROVIDER:-libretranslate}
-    volumes:
-      - .:/app
-      - ./staticfiles:/app/staticfiles
-      - ./media:/app/media
-    depends_on:
-      - db
-      - redis
-      - libretranslate
-
-  # Same service without port exposure for staging/prod with nginx container
-  web-internal:
-    build: .
-    command: >
-      bash -c "python manage.py migrate &&
-               python manage.py collectstatic --noinput &&
-               python manage.py check_env &&
-               gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 60"
-    profiles: ["staging", "prod"]
-    container_name: web  # Keep container name as "web" for nginx DNS resolution
+               gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 310"
     env_file:
       - .env
     environment:
@@ -60,7 +27,7 @@ services:
     image: nginx:1.27
     profiles: ["staging", "prod"]
     depends_on:
-      - web-internal
+      - web
     ports:
       - "80:80"  # Port 80 for production (HTTP standard). For local staging, use 8080 if port 80 requires admin privileges
     volumes:
