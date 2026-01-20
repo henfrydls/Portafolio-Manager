@@ -199,15 +199,30 @@ docker compose logs -f nginx
 
 Stop and remove containers with `docker compose down` (add `-v` to drop data volumes).
 
-## 9. Useful Management Commands
+## 9. Test Data
+
+Seed demo content for development/QA:
 
 ```bash
-python manage.py populate_test_data    # Seed demo content (local shell)
-docker compose exec web python manage.py populate_test_data    # Seed demo content (Docker)
-python manage.py populate_test_data --reset    # Reset seeded data (or delete db_development.sqlite3)
-python manage.py list_translations     # Example custom command if added later
-python verify_translations.py          # Check translation coverage
+# Local
+python manage.py populate_test_data
+
+# Docker
+docker compose exec web python manage.py populate_test_data
+
+# Reset and reseed
+python manage.py populate_test_data --reset
+
+# Custom admin password
+python manage.py populate_test_data --admin-password mypass
 ```
+
+**Creates:** Admin user (admin/admin123), profile, 3 projects, 2 blog posts, 16 skills, 4 languages, sample contacts.
+
+**Access after seeding:**
+- Portfolio: http://localhost:8000/
+- Admin: http://localhost:8000/admin/
+- Dashboard: http://localhost:8000/admin-dashboard/
 
 ## 10. Troubleshooting
 

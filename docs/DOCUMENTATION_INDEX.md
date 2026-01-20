@@ -1,69 +1,51 @@
 # Documentation Index
 
-Use this index to quickly locate the guide that answers your question. All files are written in Markdown and live in the repository root or in the `docs/` directory.  
-**Nota**: Cada guía incluye un breve resumen en inglés y español; consulta la sección inicial de cada archivo.
+Indice de documentacion del proyecto Portfolio Manager.
 
 ---
 
 ## Getting Started
 
-| File | Purpose | When to read |
-| ---- | ------- | ------------ |
-| `README.md` | High-level overview and quick start commands. | First contact with the project. |
-| `DOCKER_COMMANDS.md` | **Quick reference for Docker Compose commands** (dev, staging, prod). | When working with Docker and need command examples. |
-| `docs/SETUP.md` | Step-by-step installation, configuration, and troubleshooting. | Setting up a local environment or a new machine. |
+| File | Purpose |
+|------|---------|
+| `README.md` | Overview y quick start |
+| `docs/SETUP.md` | Instalacion, configuracion, datos de prueba |
+| `docs/DOCKER_COMMANDS.md` | Comandos Docker Compose (dev/staging/prod) |
 
 ## Configuration
 
-| File | Purpose | When to read |
-| ---- | ------- | ------------ |
-| `docs/CONFIGURATION_GUIDE.md` | Environment variables, Django settings per environment, security hardening. | Preparing staging or production deployments. |
-| `docs/EMAIL_SETUP.md` | SMTP configuration examples and diagnostics. | Enabling the contact form or transactional email. |
+| File | Purpose |
+|------|---------|
+| `docs/CONFIGURATION_GUIDE.md` | Variables de entorno, settings por ambiente |
+| `docs/EMAIL_SETUP.md` | Configuracion SMTP para contact form |
 
-## Daily Operations
+## Operations
 
-| File | Purpose | When to read |
-| ---- | ------- | ------------ |
-| `docs/ADMIN_USAGE.md` | Walkthrough of the custom admin dashboard, content workflows, and translation controls. | Managing portfolio content, projects, and blog entries. |
-| `docs/TEST_DATA.md` | Instructions for the `populate_test_data` command and other sample data helpers. | Demonstrations, QA, or rapid prototyping. |
+| File | Purpose |
+|------|---------|
+| `docs/ADMIN_USAGE.md` | Uso del panel admin, workflows de contenido |
+| `docs/DEPLOYMENT.md` | Despliegue con Docker/GHCR, AWS EC2 |
 
-## Historical Reports
+## Development
 
-| File | Purpose | When to read |
-| ---- | ------- | ------------ |
-| `docs/COMMANDS_CLEANUP_SUMMARY.md` | Reference of available management commands after cleanup. | Auditing or extending CLI utilities. |
-| `docs/FINAL_CLEANUP_REPORT.md` | Summary of the first cleanup phase (removed files, gains). | Understanding legacy refactors. |
-| `docs/PHASE_2_CLEANUP_REPORT.md` | Highlights from the second cleanup phase. | Reviewing prior template and code consolidation. |
-
-## Project Planning
-
-| File | Purpose | When to read |
-| ---- | ------- | ------------ |
-| `TODO.md` | Open tasks, completed work, and priorities. | Sprint planning or backlog reviews. |
+| File | Purpose |
+|------|---------|
+| `docs/CONTEXT_VARIABLES.md` | Variables de contexto por vista/template |
+| `CI_CD_SETUP.md` | GitHub Actions, CI/CD pipelines |
 
 ---
 
-## Common Journeys
+## Quick Journeys
 
-### Fresh Installation
-1. `README.md` – grasp the big picture.
-2. `docs/SETUP.md` – follow the installation steps.
-3. `docs/CONFIGURATION_GUIDE.md` – tune environment variables.
-4. `docs/TEST_DATA.md` – load demo content.
-5. `docs/ADMIN_USAGE.md` – learn day-to-day operations.
+**Instalacion local:**
+1. README.md → SETUP.md → DOCKER_COMMANDS.md
 
-### Preparing Production
-1. `docs/CONFIGURATION_GUIDE.md`
-2. `docs/EMAIL_SETUP.md`
-3. `docs/ADMIN_USAGE.md`
+**Preparar produccion:**
+1. CONFIGURATION_GUIDE.md → DEPLOYMENT.md → EMAIL_SETUP.md
 
-### Development & QA
-1. `docs/TEST_DATA.md`
-2. `docs/COMMANDS_CLEANUP_SUMMARY.md`
-3. `TODO.md`
+**Desarrollo:**
+1. SETUP.md (test data) → CONTEXT_VARIABLES.md → CI_CD_SETUP.md
 
 ---
 
-**Last updated:** 2025-12-06
-**Maintainer:** Portfolio Manager team
-**Status:** Current
+**Last updated:** 2026-01-19
