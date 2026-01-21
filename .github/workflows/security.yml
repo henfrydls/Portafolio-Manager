@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
@@ -51,7 +51,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
@@ -68,7 +68,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Run Semgrep
         run: semgrep ci --config=auto --sarif --output=semgrep.sarif
@@ -89,7 +89,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -106,7 +106,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Run Trivy vulnerability scanner on Python dependencies
         uses: aquasecurity/trivy-action@master
@@ -133,7 +133,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Run OWASP Dependency Check
         uses: dependency-check/Dependency-Check_Action@main
