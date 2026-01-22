@@ -76,6 +76,10 @@ class SiteLanguageMiddleware(MiddlewareMixin):
 
     - Fuerza el idioma por defecto en las vistas administrativas.
     - Define el idioma inicial para visitantes si no han seleccionado uno.
+
+    IMPORTANT: When using i18n_patterns with prefix_default_language=False,
+    the default_language MUST match settings.LANGUAGE_CODE to avoid URL
+    resolution issues. This middleware enforces that constraint.
     """
 
     ADMIN_PATH_PREFIXES = (
@@ -92,9 +96,24 @@ class SiteLanguageMiddleware(MiddlewareMixin):
         except Exception:
             return None
 
+        # CRITICAL: default_language must match settings.LANGUAGE_CODE for
+        # i18n_patterns with prefix_default_language=False to work correctly.
+        # If they don't match, URLs without language prefix will return 404.
         default_language = config.default_language or settings.LANGUAGE_CODE
-        if not default_language:
-            return None
+
+        # Validate that default_language is a valid choice
+        valid_languages = [lang[0] for lang in settings.LANGUAGES]
+        if default_language not in valid_languages:
+            default_language = settings.LANGUAGE_CODE
+
+        # If SiteConfiguration.default_language differs from LANGUAGE_CODE,
+        # log a warning and use LANGUAGE_CODE to prevent URL resolution issues
+        if config.default_language and config.default_language != settings.LANGUAGE_CODE:
+            # Use settings.LANGUAGE_CODE for URL resolution consistency
+            # The SiteConfiguration value is only used for admin areas
+            url_default_language = settings.LANGUAGE_CODE
+        else:
+            url_default_language = default_language
 
         session_language = request.session.get(SESSION_LANGUAGE_KEY)
         cookie_language = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME)
@@ -103,16 +122,18 @@ class SiteLanguageMiddleware(MiddlewareMixin):
         in_admin_area = any(path.startswith(prefix) for prefix in self.ADMIN_PATH_PREFIXES)
 
         if in_admin_area:
+            # Admin area uses SiteConfiguration.default_language
             if session_language != default_language:
                 translation.activate(default_language)
                 request.session[SESSION_LANGUAGE_KEY] = default_language
                 request.LANGUAGE_CODE = default_language
             return None
 
+        # For public pages, use settings.LANGUAGE_CODE to match i18n_patterns
         if not session_language and not cookie_language:
-            translation.activate(default_language)
-            request.session[SESSION_LANGUAGE_KEY] = default_language
-            request.LANGUAGE_CODE = default_language
+            translation.activate(url_default_language)
+            request.session[SESSION_LANGUAGE_KEY] = url_default_language
+            request.LANGUAGE_CODE = url_default_language
 
         return None
 

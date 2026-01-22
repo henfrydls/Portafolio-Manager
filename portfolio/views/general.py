@@ -52,7 +52,8 @@ class HomeView(TemplateView):
         context['projects_page_obj'] = projects_page_obj
 
         # Add SEO context
-        context['seo'] = SEOGenerator.generate_home_seo(context['profile'], self.request)
+        seo_context = SEOGenerator.generate_home_seo(context['profile'], self.request)
+        context.update(seo_context)
         context['structured_data'] = [
             SEOGenerator.generate_structured_data_person(context['profile'], self.request),
             SEOGenerator.generate_structured_data_website(self.request)
