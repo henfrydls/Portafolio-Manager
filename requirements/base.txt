@@ -5,7 +5,7 @@ python-decouple==3.8
 python-dotenv==1.2.1
 python-magic==0.4.27; platform_system != "Windows"
 python-magic-bin==0.4.14; platform_system == "Windows"
-markdown==3.10
+markdown==3.10.1
 django-parler==2.3
 libretranslatepy==2.1.4
 requests==2.32.5
