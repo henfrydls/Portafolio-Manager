@@ -5,6 +5,47 @@
 {% block title %}{{ profile.name|default:"Your Name" }}{% if profile %} - {{ profile.title }}{% endif %}{% endblock %}
 
 {% block content %}
+<!-- Mobile Hamburger Button - BL-003 -->
+<button class="mobile-menu-toggle" id="mobileMenuToggle"
+        aria-label="Toggle navigation" aria-expanded="false">
+    <i class="fas fa-bars"></i>
+</button>
+
+<!-- Mobile Nav Overlay -->
+<div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+
+<!-- Mobile Nav Drawer -->
+<nav class="mobile-nav-drawer" id="mobileNavDrawer" aria-hidden="true">
+    <div class="mobile-nav-header">
+        <div class="mobile-nav-profile">
+            <div class="mobile-nav-avatar">
+                {% if profile and profile.profile_image %}
+                <img src="{{ profile.profile_image.url }}" alt="{{ profile.name }}">
+                {% else %}
+                <div class="mobile-nav-avatar-placeholder">
+                    <i class="fas fa-user"></i>
+                </div>
+                {% endif %}
+            </div>
+            <div class="mobile-nav-info">
+                <span class="mobile-nav-name">{{ profile.name|default:"Your Name" }}</span>
+                <span class="mobile-nav-title">{{ profile.title|default:"Your Title" }}</span>
+            </div>
+        </div>
+        <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close navigation">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div class="mobile-nav-links">
+        <a href="#about" class="mobile-nav-link">{% trans "About" %}</a>
+        <a href="#recent" class="mobile-nav-link">{% trans "Recent" %}</a>
+        <a href="{% url 'portfolio:post-list' %}" class="mobile-nav-link">{% trans "All Posts" %}</a>
+        <a href="#featured" class="mobile-nav-link">{% trans "Featured Work" %}</a>
+        <a href="#projects" class="mobile-nav-link">{% trans "Work & Projects" %}</a>
+        <button onclick="closeMobileNav(); openContactModal();" class="mobile-nav-link mobile-nav-contact-btn">{% trans "Contact" %}</button>
+    </div>
+</nav>
+
 <div class="portfolio-layout">
     <!-- Fixed Left Sidebar - Profile -->
     <div class="profile-sidebar">
@@ -359,6 +400,98 @@
 <!-- AOS JavaScript -->
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
+    // Mobile Navigation Functions - BL-003
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+    const mobileNavDrawer = document.getElementById('mobileNavDrawer');
+    const mobileNavClose = document.getElementById('mobileNavClose');
+    const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
+    function openMobileNav() {
+        mobileNavDrawer.classList.add('active');
+        mobileNavOverlay.classList.add('active');
+        mobileMenuToggle.setAttribute('aria-expanded', 'true');
+        mobileNavDrawer.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+
+        // Focus trap - focus first link
+        setTimeout(() => {
+            const firstLink = mobileNavDrawer.querySelector('.mobile-nav-link');
+            if (firstLink) firstLink.focus();
+        }, 300);
+    }
+
+    function closeMobileNav() {
+        mobileNavDrawer.classList.remove('active');
+        mobileNavOverlay.classList.remove('active');
+        mobileMenuToggle.setAttribute('aria-expanded', 'false');
+        mobileNavDrawer.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    function toggleMobileNav() {
+        if (mobileNavDrawer.classList.contains('active')) {
+            closeMobileNav();
+        } else {
+            openMobileNav();
+        }
+    }
+
+    // Event Listeners for Mobile Nav
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', toggleMobileNav);
+    }
+
+    if (mobileNavOverlay) {
+        mobileNavOverlay.addEventListener('click', closeMobileNav);
+    }
+
+    if (mobileNavClose) {
+        mobileNavClose.addEventListener('click', closeMobileNav);
+    }
+
+    // Close on nav link click (for anchor links) + smooth scroll
+    mobileNavLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+
+            // Only handle anchor links
+            if (href && href.startsWith('#')) {
+                e.preventDefault();
+                closeMobileNav();
+
+                // Smooth scroll after drawer closes
+                setTimeout(() => {
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }, 300);
+            } else if (!this.classList.contains('mobile-nav-contact-btn')) {
+                // For regular links, just close the nav
+                closeMobileNav();
+            }
+        });
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && mobileNavDrawer.classList.contains('active')) {
+            closeMobileNav();
+            mobileMenuToggle.focus();
+        }
+    });
+
+    // Close mobile nav if window is resized to desktop
+    window.addEventListener('resize', function() {
+        if (window.innerWidth >= 992 && mobileNavDrawer.classList.contains('active')) {
+            closeMobileNav();
+        }
+    });
+
     // AJAX Projects Pagination
     function loadProjectsPage(pageNumber) {
         const projectsGrid = document.querySelector('.github-projects-grid');
@@ -2499,6 +2632,360 @@
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+    }
+
+    /* ============================================
+       Mobile Hamburger Menu & Nav Drawer - BL-003/BL-004
+       ============================================ */
+
+    /* Mobile Menu Toggle Button */
+    .mobile-menu-toggle {
+        display: none;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1000;
+        width: 48px;
+        height: 48px;
+        border: none;
+        border-radius: 12px;
+        background: #ffffff;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        color: #333;
+        font-size: 20px;
+    }
+
+    .mobile-menu-toggle:hover {
+        background: #f8f9fa;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .mobile-menu-toggle:active {
+        transform: scale(0.95);
+    }
+
+    /* Mobile Nav Overlay */
+    .mobile-nav-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 1001;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .mobile-nav-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Mobile Nav Drawer */
+    .mobile-nav-drawer {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 280px;
+        max-width: 85vw;
+        height: 100%;
+        background: #ffffff;
+        z-index: 1002;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+        overflow-y: auto;
+    }
+
+    .mobile-nav-drawer.active {
+        transform: translateX(0);
+    }
+
+    /* Mobile Nav Header */
+    .mobile-nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px;
+        border-bottom: 1px solid #f0f0f0;
+        background: #fafafa;
+    }
+
+    .mobile-nav-profile {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .mobile-nav-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .mobile-nav-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .mobile-nav-avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-size: 20px;
+    }
+
+    .mobile-nav-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+
+    .mobile-nav-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .mobile-nav-title {
+        font-size: 12px;
+        color: #666;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .mobile-nav-close {
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 8px;
+        background: #ffffff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        font-size: 18px;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .mobile-nav-close:hover {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+    /* Mobile Nav Links */
+    .mobile-nav-links {
+        padding: 16px 0;
+    }
+
+    .mobile-nav-link {
+        display: block;
+        padding: 14px 24px;
+        color: #333;
+        text-decoration: none;
+        font-size: 15px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .mobile-nav-link:hover {
+        background: #f8f9fa;
+        color: #0085ff;
+        text-decoration: none;
+    }
+
+    .mobile-nav-contact-btn {
+        color: #0085ff;
+        font-weight: 600;
+        margin-top: 8px;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 22px;
+    }
+
+    /* ============================================
+       Mobile Responsive Breakpoints - BL-004
+       ============================================ */
+
+    /* Mobile (< 768px) */
+    @media (max-width: 767px) {
+        .mobile-menu-toggle {
+            display: flex;
+        }
+
+        .mobile-nav-overlay,
+        .mobile-nav-drawer {
+            display: block;
+        }
+
+        /* Sidebar adjustments for mobile */
+        .profile-sidebar {
+            position: relative;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: auto;
+            padding: 80px 20px 20px 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .profile-image {
+            margin-bottom: 20px;
+        }
+
+        .profile-image img,
+        .placeholder-image {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+        }
+
+        .profile-name {
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .profile-title {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        /* Hide contact info and nav on mobile - use drawer instead */
+        .contact-info,
+        .profile-nav {
+            display: none;
+        }
+
+        /* Main content adjustments */
+        .main-content {
+            margin-left: 0;
+            margin-top: 0;
+            padding: 20px 15px;
+        }
+
+        .content-wrapper {
+            max-width: 100%;
+            padding: 0;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+        }
+    }
+
+    /* Tablet (768px - 991px) */
+    @media (min-width: 768px) and (max-width: 991px) {
+        .mobile-menu-toggle {
+            display: flex;
+        }
+
+        .mobile-nav-overlay,
+        .mobile-nav-drawer {
+            display: block;
+        }
+
+        /* Sidebar adjustments for tablet */
+        .profile-sidebar {
+            position: relative;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: auto;
+            padding: 80px 30px 25px 30px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .profile-image {
+            margin-bottom: 0;
+            flex-shrink: 0;
+        }
+
+        .profile-image img,
+        .placeholder-image {
+            width: 150px;
+            height: 150px;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-size: 1.75rem;
+        }
+
+        /* Hide nav on tablet - use drawer instead */
+        .profile-nav {
+            display: none;
+        }
+
+        /* Show contact info on tablet */
+        .contact-info {
+            display: block;
+        }
+
+        /* Main content adjustments */
+        .main-content {
+            margin-left: 0;
+            margin-top: 0;
+            padding: 30px;
+        }
+
+        .content-wrapper {
+            max-width: 100%;
+            padding: 0 20px;
+        }
+    }
+
+    /* Desktop (992px+) - Hide mobile elements */
+    @media (min-width: 992px) {
+        .mobile-menu-toggle,
+        .mobile-nav-overlay,
+        .mobile-nav-drawer {
+            display: none !important;
+        }
+
+        /* Ensure desktop sidebar is fixed */
+        .profile-sidebar {
+            position: fixed;
+            display: block;
+        }
     }
 </style>
 
