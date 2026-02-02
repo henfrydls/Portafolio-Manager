@@ -4,13 +4,15 @@
 
 {% block title %}{{ profile.name|default:"Your Name" }}{% if profile %} - {{ profile.title }}{% endif %}{% endblock %}
 
-{% block content %}
-<!-- Mobile Hamburger Button - BL-003 -->
+{% block mobile_hamburger %}
+<!-- Mobile Hamburger Button - Moved to base.html mobile-header - FIX-005 -->
 <button class="mobile-menu-toggle" id="mobileMenuToggle"
         aria-label="Toggle navigation" aria-expanded="false">
     <i class="fas fa-bars"></i>
 </button>
+{% endblock %}
 
+{% block content %}
 <!-- Mobile Nav Overlay -->
 <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
 
@@ -2626,35 +2628,8 @@
        Mobile Hamburger Menu & Nav Drawer - BL-003/BL-004
        ============================================ */
 
-    /* Mobile Menu Toggle Button */
-    .mobile-menu-toggle {
-        display: none;
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        z-index: 1000;
-        width: 48px;
-        height: 48px;
-        border: none;
-        border-radius: 12px;
-        background: #ffffff;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-        cursor: pointer;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        color: #333;
-        font-size: 20px;
-    }
-
-    .mobile-menu-toggle:hover {
-        background: #f8f9fa;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    }
-
-    .mobile-menu-toggle:active {
-        transform: scale(0.95);
-    }
+    /* Mobile Menu Toggle Button - FIX-005: Styled in base.html for mobile-header */
+    /* Removed standalone .mobile-menu-toggle styles - now managed in base.html within .mobile-header */
 
     /* Mobile Nav Overlay */
     .mobile-nav-overlay {
@@ -2835,9 +2810,7 @@
 
     /* Mobile (< 768px) */
     @media (max-width: 767px) {
-        .mobile-menu-toggle {
-            display: flex;
-        }
+        /* Removed .mobile-menu-toggle display rule - handled by base.html .mobile-header */
 
         .mobile-nav-overlay,
         .mobile-nav-drawer {
@@ -2851,7 +2824,7 @@
             top: 0;
             width: 100%;
             height: auto;
-            padding: 80px 20px 20px 20px;
+            padding: 30px; /* FIX-008: Changed from 20px to 30px for consistent spacing - Refs #16 */
             border-bottom: 1px solid #e0e0e0;
         }
 
@@ -2881,11 +2854,11 @@
             display: none;
         }
 
-        /* Main content adjustments */
+        /* Main content adjustments - FIX-006/FIX-008: Increased lateral padding */
         .main-content {
             margin-left: 0;
             margin-top: 0;
-            padding: 20px 15px;
+            padding: 30px; /* FIX-008: Changed from 20px to 30px for more breathing room - Refs #16 */
         }
 
         .content-wrapper {
@@ -2901,9 +2874,7 @@
 
     /* Tablet (768px - 991px) */
     @media (min-width: 768px) and (max-width: 991px) {
-        .mobile-menu-toggle {
-            display: flex;
-        }
+        /* Removed .mobile-menu-toggle display rule - handled by base.html .mobile-header */
 
         .mobile-nav-overlay,
         .mobile-nav-drawer {
@@ -2917,7 +2888,7 @@
             top: 0;
             width: 100%;
             height: auto;
-            padding: 80px 30px 25px 30px;
+            padding: 25px 30px; /* FIX-005: Reduced top padding (header compensation handled by body padding) */
             border-bottom: 1px solid #e0e0e0;
             display: flex;
             align-items: center;
@@ -2964,7 +2935,7 @@
 
     /* Desktop (992px+) - Hide mobile elements */
     @media (min-width: 992px) {
-        .mobile-menu-toggle,
+        /* Removed .mobile-menu-toggle from here - handled by base.html .mobile-header */
         .mobile-nav-overlay,
         .mobile-nav-drawer {
             display: none !important;
