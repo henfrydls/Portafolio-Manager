@@ -2265,6 +2265,11 @@
         letter-spacing: 0.5px;
     }
 
+    /* FIX-009: Scroll offset for fixed header navigation */
+    #about, #recent, #featured, #projects, .section-anchor {
+        scroll-margin-top: 80px; /* 56px header + 24px spacing */
+    }
+
     /* Modal Responsive */
     @media (max-width: 768px) {
         .modal-content {
