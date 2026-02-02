@@ -927,7 +927,7 @@
     }
 
     .profile-name {
-        font-size: 2rem;
+        font-size: 1.5rem; /* Mobile-first base */
         font-weight: 700;
         margin: 0 0 6px 0;
         color: #333;
@@ -935,7 +935,7 @@
     }
 
     .profile-title {
-        font-size: 1rem;
+        font-size: 0.875rem; /* Mobile-first base */
         color: #666;
         margin: 0 0 20px 0;
         line-height: 1.3;
@@ -987,7 +987,7 @@
         display: block;
         color: #666;
         text-decoration: none;
-        font-size: 0.9rem;
+        font-size: 0.8rem; /* Mobile-first base */
         padding: 6px 0;
         transition: color 0.2s;
     }
@@ -1075,7 +1075,7 @@
     }
 
     .section-title {
-        font-size: 1.5rem;
+        font-size: 1.25rem; /* Mobile-first base */
         font-weight: 700;
         margin-bottom: 25px;
         color: #333;
@@ -1500,7 +1500,7 @@
     }
 
     .featured-title {
-        font-size: 20px;
+        font-size: 1rem; /* Mobile-first base (was 20px) */
         font-weight: 700;
         color: #242424;
         margin: 0 0 12px 0;
@@ -2384,7 +2384,7 @@
         }
 
         .featured-title {
-            font-size: 18px;
+            font-size: 1.125rem; /* Tablet */
         }
 
         .featured-description {
@@ -2405,7 +2405,7 @@
         }
 
         .featured-title {
-            font-size: 20px;
+            font-size: 1.25rem; /* Desktop */
         }
 
         .featured-description {
@@ -2856,7 +2856,6 @@
         }
 
         .profile-name {
-            font-size: 1.5rem;
             text-align: center;
         }
 
@@ -2886,10 +2885,6 @@
         .section {
             margin-bottom: 40px;
             padding-bottom: 30px;
-        }
-
-        .section-title {
-            font-size: 1.3rem;
         }
     }
 
@@ -2933,10 +2928,6 @@
             flex: 1;
         }
 
-        .profile-name {
-            font-size: 1.75rem;
-        }
-
         /* Hide nav on tablet - use drawer instead */
         .profile-nav {
             display: none;
@@ -2972,6 +2963,42 @@
         .profile-sidebar {
             position: fixed;
             display: block;
+        }
+    }
+
+    /* ================================
+       Typography Responsive (Mobile-First)
+       ================================ */
+
+    /* Tablet (768px+) */
+    @media (min-width: 768px) {
+        .profile-name {
+            font-size: 1.75rem;
+        }
+        .profile-title {
+            font-size: 0.9375rem;
+        }
+        .profile-nav a {
+            font-size: 0.85rem;
+        }
+        .section-title {
+            font-size: 1.375rem;
+        }
+    }
+
+    /* Desktop (992px+) */
+    @media (min-width: 992px) {
+        .profile-name {
+            font-size: 2rem;
+        }
+        .profile-title {
+            font-size: 1rem;
+        }
+        .profile-nav a {
+            font-size: 0.9rem;
+        }
+        .section-title {
+            font-size: 1.5rem;
         }
     }
 </style>
