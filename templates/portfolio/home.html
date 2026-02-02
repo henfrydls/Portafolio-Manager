@@ -1407,12 +1407,12 @@
         text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
     }
 
-    /* Featured Work Section - Minimal & Modern */
+    /* Featured Work Section - Minimal & Modern (Mobile-First) */
     .featured-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 32px;
-        margin-top: 48px;
+        grid-template-columns: 1fr;
+        gap: 24px;
+        margin-top: 32px;
     }
 
     .featured-item {
@@ -1589,10 +1589,10 @@
         font-weight: 500;
     }
 
-    /* GitHub-style Projects Section */
+    /* GitHub-style Projects Section (Mobile-First) */
     .github-projects-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
         gap: 12px;
     }
 
@@ -2370,10 +2370,10 @@
         background: #dc3545;
     }
 
-    /* Featured Work Responsive */
-    @media (max-width: 768px) {
+    /* Featured Work Responsive - Mobile-First */
+    @media (min-width: 768px) {
         .featured-grid {
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 28px;
             margin-top: 40px;
         }
@@ -2392,27 +2392,32 @@
         }
     }
 
-    @media (max-width: 480px) {
+    @media (min-width: 992px) {
         .featured-grid {
-            grid-template-columns: 1fr;
-            gap: 24px;
-            margin-top: 32px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            margin-top: 48px;
         }
 
         .featured-image {
-            height: 180px;
-            margin-bottom: 16px;
+            height: 240px;
+            margin-bottom: 24px;
         }
 
         .featured-title {
-            font-size: 16px;
+            font-size: 20px;
         }
 
         .featured-description {
-            font-size: 13px;
+            font-size: 15px;
         }
+    }
 
-
+    /* GitHub Projects Grid - Mobile-First */
+    @media (min-width: 768px) {
+        .github-projects-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
 
     /* Responsive Design */
@@ -2452,10 +2457,6 @@
 
         .news-card {
             min-width: 200px;
-        }
-
-        .github-projects-grid {
-            grid-template-columns: 1fr;
         }
 
         /* Mobile modern arrows */
@@ -2520,41 +2521,27 @@
         }
     }
 
-    /* Recent Posts Grid - Clean and Simple */
+    /* Recent Posts Grid - Mobile-First */
     .recent-posts-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
+        grid-template-columns: 1fr;
+        gap: 15px;
         margin-top: 20px;
     }
 
-    /* Responsive grid adjustments */
-    @media (min-width: 1200px) {
-        .recent-posts-grid {
-            grid-template-columns: repeat(5, 1fr);
-            /* 5 columns on large screens */
-        }
-    }
-
-    @media (max-width: 1199px) and (min-width: 900px) {
-        .recent-posts-grid {
-            grid-template-columns: repeat(4, 1fr);
-            /* 4 columns on medium screens */
-        }
-    }
-
-    @media (max-width: 899px) and (min-width: 600px) {
-        .recent-posts-grid {
-            grid-template-columns: repeat(3, 1fr);
-            /* 3 columns on small screens */
-        }
-    }
-
-    @media (max-width: 599px) {
+    /* Tablet (2 columns) */
+    @media (min-width: 768px) {
         .recent-posts-grid {
             grid-template-columns: repeat(2, 1fr);
-            /* 2 columns on mobile */
-            gap: 15px;
+            gap: 18px;
+        }
+    }
+
+    /* Desktop (up to 5 columns) */
+    @media (min-width: 992px) {
+        .recent-posts-grid {
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
         }
     }
 
