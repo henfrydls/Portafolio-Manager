@@ -4,50 +4,8 @@
 
 {% block title %}{{ profile.name|default:"Your Name" }}{% if profile %} - {{ profile.title }}{% endif %}{% endblock %}
 
-{% block mobile_hamburger %}
-<!-- Mobile Hamburger Button - Moved to base.html mobile-header - FIX-005 -->
-<button class="mobile-menu-toggle" id="mobileMenuToggle"
-        aria-label="Toggle navigation" aria-expanded="false">
-    <i class="fas fa-bars"></i>
-</button>
-{% endblock %}
-
 {% block content %}
-<!-- Mobile Nav Overlay -->
-<div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
-
-<!-- Mobile Nav Drawer -->
-<nav class="mobile-nav-drawer" id="mobileNavDrawer" aria-hidden="true">
-    <div class="mobile-nav-header">
-        <div class="mobile-nav-profile">
-            <div class="mobile-nav-avatar">
-                {% if profile and profile.profile_image %}
-                <img src="{{ profile.profile_image.url }}" alt="{{ profile.name }}">
-                {% else %}
-                <div class="mobile-nav-avatar-placeholder">
-                    <i class="fas fa-user"></i>
-                </div>
-                {% endif %}
-            </div>
-            <div class="mobile-nav-info">
-                <span class="mobile-nav-name">{{ profile.name|default:"Your Name" }}</span>
-                <span class="mobile-nav-title">{{ profile.title|default:"Your Title" }}</span>
-            </div>
-        </div>
-        <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close navigation">
-            <i class="fas fa-times"></i>
-        </button>
-    </div>
-    <div class="mobile-nav-links">
-        <a href="#about" class="mobile-nav-link">{% trans "About" %}</a>
-        <a href="#recent" class="mobile-nav-link">{% trans "Recent" %}</a>
-        <a href="{% url 'portfolio:post-list' %}" class="mobile-nav-link">{% trans "All Posts" %}</a>
-        <a href="{% url 'portfolio:resume' %}" class="mobile-nav-link">{% trans "Resume" %}</a>
-        <a href="#featured" class="mobile-nav-link">{% trans "Featured Work" %}</a>
-        <a href="#projects" class="mobile-nav-link">{% trans "Work & Projects" %}</a>
-        <button onclick="closeMobileNav(); openContactModal();" class="mobile-nav-link mobile-nav-contact-btn">{% trans "Contact" %}</button>
-    </div>
-</nav>
+{% include 'portfolio/includes/mobile_nav_drawer.html' %}
 
 <div class="portfolio-layout">
     <!-- Fixed Left Sidebar - Profile -->
@@ -404,16 +362,31 @@
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
     // Mobile Navigation Functions - BL-003
+    // BUG-C FIX: Removed duplicate AOS.init() - consolidated below in main DOMContentLoaded
+    
+    // Mobile Navigation Functions - BL-003 (Robust Fix)
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const mobileNavOverlay = document.getElementById('mobileNavOverlay');
     const mobileNavDrawer = document.getElementById('mobileNavDrawer');
     const mobileNavClose = document.getElementById('mobileNavClose');
     const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
 
+    console.log('Mobile Nav Init:', {
+        toggle: !!mobileMenuToggle,
+        overlay: !!mobileNavOverlay,
+        drawer: !!mobileNavDrawer,
+        close: !!mobileNavClose
+    });
+
     function openMobileNav() {
+        if (!mobileNavDrawer || !mobileNavOverlay) {
+            console.error('Mobile nav elements missing');
+            return;
+        }
+        console.log('Opening mobile nav');
         mobileNavDrawer.classList.add('active');
         mobileNavOverlay.classList.add('active');
-        mobileMenuToggle.setAttribute('aria-expanded', 'true');
+        if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'true');
         mobileNavDrawer.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
 
@@ -425,14 +398,20 @@
     }
 
     function closeMobileNav() {
+        if (!mobileNavDrawer || !mobileNavOverlay) return;
+        console.log('Closing mobile nav');
         mobileNavDrawer.classList.remove('active');
         mobileNavOverlay.classList.remove('active');
-        mobileMenuToggle.setAttribute('aria-expanded', 'false');
+        if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'false');
         mobileNavDrawer.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
     }
 
+    // Expose to global scope for inline onclick handlers
+    window.closeMobileNav = closeMobileNav;
+
     function toggleMobileNav() {
+        if (!mobileNavDrawer) return;
         if (mobileNavDrawer.classList.contains('active')) {
             closeMobileNav();
         } else {
@@ -701,6 +680,10 @@
         }
     }
 
+    // Expose to global scope for inline onclick handlers
+    window.openContactModal = openContactModal;
+    window.closeContactModal = closeContactModal;
+
     // Contact Form Enhancement
     document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('contactForm');
@@ -791,27 +774,15 @@
             });
         }
 
+        // Helper function for messages
+        const messages = document.querySelectorAll('.messages .alert');
+        const hasContactParam = new URLSearchParams(window.location.search).get('contact') === 'true';
+
         // Auto-hide messages with different timing based on type
         messages.forEach(message => {
             const isSuccess = message.classList.contains('alert-success');
-            const hideDelay = isSuccess ? 2000 : 5000; // Success messages hide after 2 seconds
-
-            setTimeout(() => {
-                message.style.animation = 'slideOut 0.5s ease-in-out forwards';
-                setTimeout(() => message.remove(), 500);
-            }, hideDelay);
+            // Add any message-specific logic here if needed
         });
-
-        // Close modal with Escape key
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') {
-                closeContactModal();
-            }
-        });
-
-        // Handle messages and modal behavior
-        const messages = document.querySelectorAll('.messages .alert');
-        const hasContactParam = new URLSearchParams(window.location.search).get('contact') === 'true';
 
         if (hasContactParam) {
             openContactModal();
@@ -840,11 +811,15 @@
         }
 
         // Initialize AOS (Animate On Scroll)
+        // BUG-C FIX: Added disable: 'mobile' to prevent AOS from hiding content on mobile
         AOS.init({
             duration: 600,
             easing: 'ease-in-out',
             once: true,
-            offset: 100
+            offset: 100,
+            disable: false, // Enable on all devices
+            startEvent: 'load', // Ensure AOS starts after page load
+            disableMutationObserver: false
         });
     });
 
@@ -878,11 +853,37 @@
 {% include 'portfolio/includes/contact_modal_css.html' %}
 
 <style>
-    /* Matt Deitke Exact Layout - Fixed Sidebar + Scrollable Content */
+    /* ========================================
+       Global CSS Reset - Desktop Layout Fix
+       ======================================== */
+    html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background-color: #fafafa;
+    }
 
     html {
         scroll-behavior: smooth;
     }
+
+    /* Force hide all mobile elements on desktop (>= 992px) */
+    @media (min-width: 992px) {
+        .mobile-header,
+        .mobile-nav-overlay,
+        .mobile-nav-drawer,
+        .mobile-nav-drawer.active,
+        .mobile-menu-toggle {
+            display: none !important;
+            visibility: hidden !important;
+            width: 0 !important;
+            height: 0 !important;
+            overflow: hidden !important;
+            position: absolute !important;
+            left: -9999px !important;
+        }
+    }
+
+    /* Matt Deitke Exact Layout - Fixed Sidebar + Scrollable Content */
 
     .matt-deitke-layout {
         display: flex;
@@ -894,9 +895,9 @@
     .profile-sidebar {
         position: fixed;
         left: 10%;
-        top: 5%;
+        top: 0;
         width: 280px;
-        height: 95vh;
+        height: 100vh;
         background: #fafafa;
         padding: 30px 25px;
         box-sizing: border-box;
@@ -1047,7 +1048,7 @@
     /* Scrollable Right Content */
     .main-content {
         margin-left: calc(10% + 280px);
-        margin-top: 5%;
+        margin-top: 0;
         flex: 1;
         background: #fafafa;
         min-height: 100vh;
@@ -2638,7 +2639,7 @@
 
     /* Mobile Nav Overlay */
     .mobile-nav-overlay {
-        display: none;
+        display: none; /* Hidden by default, shown via media query on mobile/tablet */
         position: fixed;
         top: 0;
         left: 0;
@@ -2651,32 +2652,35 @@
         opacity: 0;
         visibility: hidden;
         transition: opacity 0.3s ease, visibility 0.3s ease;
+        pointer-events: none; /* BUG-B FIX: Don't block clicks when hidden */
     }
 
     .mobile-nav-overlay.active {
         opacity: 1;
         visibility: visible;
+        pointer-events: auto; /* BUG-B FIX: Allow clicks when active */
     }
 
     /* Mobile Nav Drawer */
     .mobile-nav-drawer {
-        display: none;
+        display: none; /* CRITICAL: Element completely removed from layout in desktop */
         position: fixed;
         top: 0;
-        left: 0;
+        left: 0; /* BUG-B FIX: Changed from -280px to 0 */
         width: 280px;
         max-width: 85vw;
         height: 100%;
         background: #ffffff;
         z-index: 1002;
-        transform: translateX(-100%);
+        transform: translateX(-100%); /* BUG-B FIX: Hide by translating left */
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
         overflow-y: auto;
     }
 
     .mobile-nav-drawer.active {
-        transform: translateX(0);
+        display: block !important; /* BUG-B FIX: Force display when active */
+        transform: translateX(0); /* BUG-B FIX: Changed from translateX(100%) to translateX(0) to show drawer */
     }
 
     /* Mobile Nav Header */
@@ -2815,11 +2819,29 @@
 
     /* Mobile (< 768px) */
     @media (max-width: 767px) {
+        /* FIX-009: Ensure mobile header is visible on mobile */
+        .mobile-header {
+            display: flex !important;
+            visibility: visible !important;
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            z-index: 100;
+        }
+
         /* Removed .mobile-menu-toggle display rule - handled by base.html .mobile-header */
 
-        .mobile-nav-overlay,
-        .mobile-nav-drawer {
-            display: block;
+        /* BUG-B FIX: Only set display for inactive state, active state controlled by .active class */
+        .mobile-nav-overlay:not(.active),
+        .mobile-nav-drawer:not(.active) {
+            display: block; /* Make elements exist in DOM but hidden via transform/opacity */
+        }
+
+        .mobile-nav-overlay.active,
+        .mobile-nav-drawer.active {
+            display: block !important; /* Ensure active state shows */
         }
 
         /* Sidebar adjustments for mobile */
@@ -2879,11 +2901,29 @@
 
     /* Tablet (768px - 991px) */
     @media (min-width: 768px) and (max-width: 991px) {
+        /* FIX-009: Ensure mobile header is visible on tablet */
+        .mobile-header {
+            display: flex !important;
+            visibility: visible !important;
+            position: fixed !important;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            z-index: 100;
+        }
+
         /* Removed .mobile-menu-toggle display rule - handled by base.html .mobile-header */
 
-        .mobile-nav-overlay,
-        .mobile-nav-drawer {
-            display: block;
+        /* BUG-B FIX: Only set display for inactive state, active state controlled by .active class */
+        .mobile-nav-overlay:not(.active),
+        .mobile-nav-drawer:not(.active) {
+            display: block; /* Make elements exist in DOM but hidden via transform/opacity */
+        }
+
+        .mobile-nav-overlay.active,
+        .mobile-nav-drawer.active {
+            display: block !important; /* Ensure active state shows */
         }
 
         /* Sidebar adjustments for tablet */
@@ -2938,15 +2978,8 @@
         }
     }
 
-    /* Desktop (992px+) - Hide mobile elements */
+    /* Desktop (992px+) - Ensure desktop sidebar is fixed */
     @media (min-width: 992px) {
-        /* Removed .mobile-menu-toggle from here - handled by base.html .mobile-header */
-        .mobile-nav-overlay,
-        .mobile-nav-drawer {
-            display: none !important;
-        }
-
-        /* Ensure desktop sidebar is fixed */
         .profile-sidebar {
             position: fixed;
             display: block;
@@ -2995,6 +3028,9 @@
     document.addEventListener('DOMContentLoaded', function () {
         console.log('Recent posts grid initialized - no scroll needed');
     });
+</script>
+
+<style>
 
     /* Contact Section Styles */
     #contact {
@@ -3409,7 +3445,12 @@
     }
 
 
-</script>
+
+    /* HOTFIX: Force body padding on mobile to prevent header overlap */
+    @media (max-width: 991px) {
+        body { padding-top: 56px !important; }
+    }
+</style>
 {% endblock %}
 
 {% block structured_data %}

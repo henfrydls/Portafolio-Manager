@@ -5,8 +5,10 @@
 {% block title %}{% trans "Blog" %} - {{ profile.name }}{% endblock %}
 
 {% block content %}
+{% include 'portfolio/includes/mobile_nav_drawer.html' %}
+
 <div class="medium-page">
-    <!-- Top Navigation -->
+    <!-- Top Navigation - Desktop Only -->
     <nav class="medium-top-nav">
         <div class="nav-container">
             <div class="nav-left">
@@ -17,6 +19,7 @@
                 <a href="{% url 'portfolio:home' %}#recent" class="nav-link">{% trans "Recent" %}</a>
                 <a href="{% url 'portfolio:home' %}#featured" class="nav-link">{% trans "Featured Work" %}</a>
                 <a href="{% url 'portfolio:home' %}#projects" class="nav-link">{% trans "Projects" %}</a>
+                <a href="{% url 'portfolio:resume' %}" class="nav-link">{% trans "Resume" %}</a>
                 <button onclick="openContactModal()" class="nav-link contact-nav-btn">{% trans "Contact" %}</button>
             </div>
         </div>
@@ -43,7 +46,28 @@
             <!-- Filters and Search -->
             <div class="blog-filters">
                 <div class="filter-row">
+                    <!-- Mobile: Search + Filter Icon Row -->
+                    <div class="mobile-search-filter-row">
+                        <form method="get" class="search-form search-form-mobile">
+                            {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}">{% endif %}
+                            {% if current_tag %}<input type="hidden" name="tag" value="{{ current_tag }}">{% endif %}
+                            <input type="search" name="search" class="search-input"
+                                   placeholder="{% trans "Search posts..." %}" value="{{ current_search }}">
+                            <button type="submit" class="search-btn">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                        <button class="filter-icon-btn" id="filterIconBtn" aria-label="Open filters">
+                            <i class="fas fa-sliders-h"></i>
+                            {% if current_category or current_tag %}
+                            <span class="filter-badge"></span>
+                            {% endif %}
+                        </button>
+                    </div>
+
+                    <!-- Desktop: Category Buttons + Search -->
                     <div class="filter-section">
+                        <!-- Desktop: Button pills -->
                         <div class="filter-buttons">
                             <a href="{% url 'portfolio:post-list' %}"
                                class="filter-btn {% if not current_category %}active{% endif %}">
@@ -59,7 +83,7 @@
                     </div>
 
                     <div class="search-section">
-                        <form method="get" class="search-form">
+                        <form method="get" class="search-form search-form-desktop">
                             {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}">{% endif %}
                             {% if current_tag %}<input type="hidden" name="tag" value="{{ current_tag }}">{% endif %}
                             <input type="search" name="search" class="search-input"
@@ -72,6 +96,7 @@
                 </div>
 
                 {% if available_tags %}
+                <!-- Desktop: Tags row -->
                 <div class="tags-row">
                     {% for tag in available_tags|slice:":8" %}
                     <a href="?tag={{ tag }}" class="tag-link {% if current_tag == tag %}active{% endif %}">
@@ -80,6 +105,68 @@
                     {% endfor %}
                 </div>
                 {% endif %}
+            </div>
+
+            <!-- Mobile Filter Drawer Overlay -->
+            <div class="filter-drawer-overlay" id="filterDrawerOverlay"></div>
+
+            <!-- Mobile Filter Drawer -->
+            <div class="filter-drawer" id="filterDrawer" aria-hidden="true">
+                <div class="filter-drawer-header">
+                    <h3 class="filter-drawer-title">{% trans "Filters" %}</h3>
+                    <button class="filter-drawer-close" id="filterDrawerClose" aria-label="Close filters">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="filter-drawer-content">
+                    <!-- Categories Chips -->
+                    <div class="filter-drawer-section">
+                        <label class="filter-drawer-label">{% trans "Category" %}</label>
+                        <div class="filter-chips-container">
+                            <button class="filter-chip {% if not current_category %}active{% endif %}"
+                                    data-category-slug="">
+                                {% trans "All" %}
+                            </button>
+                            {% for category in categories %}
+                            <button class="filter-chip {% if current_category == category.slug %}active{% endif %}"
+                                    data-category-slug="{{ category.slug }}">
+                                {{ category.name }}
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Tags Chips -->
+                    {% if available_tags %}
+                    <div class="filter-drawer-section">
+                        <label class="filter-drawer-label">{% trans "Tags" %}</label>
+                        <div class="filter-chips-container">
+                            <button class="filter-chip {% if not current_tag %}active{% endif %}"
+                                    data-tag="">
+                                {% trans "All" %}
+                            </button>
+                            {% for tag in available_tags %}
+                            <button class="filter-chip {% if current_tag == tag %}active{% endif %}"
+                                    data-tag="{{ tag }}">
+                                {{ tag }}
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Fixed Footer with Action Buttons -->
+                <div class="filter-drawer-footer">
+                    <button class="filter-apply-btn" id="filterApplyBtn">
+                        {% trans "Apply Filters" %}
+                    </button>
+                    {% if current_category or current_tag %}
+                    <a href="{% url 'portfolio:post-list' %}" class="filter-clear-btn">
+                        {% trans "Clear Filters" %}
+                    </a>
+                    {% endif %}
+                </div>
             </div>
 
             <!-- Blog Posts - Two Column Grid -->
@@ -173,6 +260,11 @@
 
 {% block extra_css %}
 <style>
+/* ========================================
+   BL-010: Blog List Responsive - Refs #16
+   Mobile-first approach with consistent breakpoints
+   ======================================== */
+
 /* Base Styles - Consistent with current design */
 .medium-page {
     font-family: sohne, "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -182,8 +274,194 @@
     letter-spacing: -0.004em;
 }
 
-/* Navigation - Consistent with post detail */
+/* ========================================
+   Mobile Navigation - BL-010
+   Overlay + Drawer (consistent with home.html)
+   ======================================== */
+
+/* Mobile Nav Overlay */
+.mobile-nav-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1001;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none;
+}
+
+.mobile-nav-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* Mobile Nav Drawer */
+.mobile-nav-drawer {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    max-width: 85vw;
+    height: 100%;
+    background: #ffffff;
+    z-index: 1002;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+    overflow-y: auto;
+}
+
+.mobile-nav-drawer.active {
+    display: block !important;
+    transform: translateX(0);
+}
+
+/* Mobile Nav Header */
+.mobile-nav-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    background: #fafafa;
+}
+
+.mobile-nav-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mobile-nav-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.mobile-nav-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mobile-nav-avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 20px;
+}
+
+.mobile-nav-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.mobile-nav-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+}
+
+.mobile-nav-title {
+    font-size: 12px;
+    color: #666;
+}
+
+.mobile-nav-close {
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: transparent;
+    color: #666;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.mobile-nav-close:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+/* Mobile Nav Links */
+.mobile-nav-links {
+    padding: 16px 0;
+}
+
+.mobile-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    color: #333;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s;
+    min-height: 44px; /* Touch target */
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.mobile-nav-link i {
+    width: 20px;
+    text-align: center;
+    color: #666;
+    font-size: 16px;
+}
+
+.mobile-nav-link:hover {
+    background-color: #f5f5f5;
+    color: #0085ff;
+    text-decoration: none;
+}
+
+.mobile-nav-link:hover i {
+    color: #0085ff;
+}
+
+.mobile-nav-link.active {
+    background-color: #f0f7ff;
+    color: #0085ff;
+}
+
+.mobile-nav-link.active i {
+    color: #0085ff;
+}
+
+.mobile-nav-contact-btn {
+    color: #0085ff;
+    font-weight: 600;
+    margin-top: 8px;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 22px;
+}
+
+/* Navigation - Desktop Only */
 .medium-top-nav {
+    display: none; /* Hidden on mobile by default */
     position: sticky;
     top: 0;
     background: rgba(255, 255, 255, 0.95);
@@ -403,6 +681,305 @@
     transform: scale(1.05);
 }
 
+/* Mobile Search + Filter Icon Row */
+.mobile-search-filter-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+}
+
+.search-form-mobile {
+    flex: 1;
+}
+
+.search-form-desktop {
+    display: none;
+}
+
+/* Filter Icon Button - Mobile Only */
+.filter-icon-btn {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    background: #242424;
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.filter-icon-btn:hover {
+    background: #1a1a1a;
+    transform: scale(1.05);
+}
+
+.filter-icon-btn:active {
+    transform: scale(0.95);
+}
+
+/* Filter Active Badge */
+.filter-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 10px;
+    height: 10px;
+    background: #FF6B35;
+    border: 2px solid white;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+    }
+}
+
+/* ========================================
+   Mobile Filter Drawer - Similar to mobile nav
+   ======================================== */
+
+/* Filter Drawer Overlay */
+.filter-drawer-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1001;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none;
+}
+
+.filter-drawer-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* Filter Drawer - Slides up from bottom */
+.filter-drawer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    /* FIX: Use fixed height - children are position:absolute so height:auto doesn't work */
+    height: 65vh; /* Fallback for older browsers */
+    height: 65dvh; /* Modern browsers - respects mobile chrome */
+    background: #ffffff;
+    z-index: 1002;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: none;
+}
+
+.filter-drawer.active {
+    display: block !important;
+    transform: translateY(0);
+}
+
+/* Filter Drawer Header - Fixed at top */
+.filter-drawer-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    background: #fafafa;
+    border-radius: 16px 16px 0 0;
+    z-index: 2;
+}
+
+.filter-drawer-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #242424;
+    margin: 0;
+}
+
+.filter-drawer-close {
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: transparent;
+    color: #666;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.filter-drawer-close:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+/* Filter Drawer Content - Scrollable area between header and footer */
+.filter-drawer-content {
+    position: absolute;
+    top: 65px; /* Height of header */
+    bottom: 120px; /* Height of footer with buttons */
+    left: 0;
+    right: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px;
+    /* Ensure content is scrollable */
+    min-height: 0;
+}
+
+.filter-drawer-section {
+    margin-bottom: 24px;
+}
+
+.filter-drawer-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #242424;
+    margin-bottom: 8px;
+}
+
+/* Filter Chips Container */
+.filter-chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+/* Filter Chip - Touch-friendly button */
+.filter-chip {
+    padding: 10px 18px;
+    min-height: 44px; /* Touch target */
+    background: #F2F2F2;
+    color: #6B6B6B;
+    border: none;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter-chip:hover {
+    background: #E8E8E8;
+    color: #242424;
+}
+
+.filter-chip.active {
+    background: #242424;
+    color: white;
+}
+
+.filter-chip:active {
+    transform: scale(0.95);
+}
+
+/* Filter Drawer Footer - BULLETPROOF: Absolute position at bottom */
+.filter-drawer-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid #f0f0f0;
+    padding: 16px 20px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 2;
+}
+
+.filter-apply-btn {
+    width: 100%;
+    padding: 14px 24px;
+    background: #242424;
+    color: white;
+    border: none;
+    border-radius: 100px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 48px;
+    font-family: inherit;
+}
+
+.filter-apply-btn:hover {
+    background: #1a1a1a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(36, 36, 36, 0.3);
+}
+
+.filter-apply-btn:active {
+    transform: translateY(0);
+}
+
+.filter-clear-btn {
+    width: 100%;
+    padding: 14px 24px;
+    background: transparent;
+    color: #6B6B6B;
+    border: 1px solid #e0e0e0;
+    border-radius: 100px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 48px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+}
+
+.filter-clear-btn:hover {
+    background: #f5f5f5;
+    color: #242424;
+    border-color: #d0d0d0;
+    text-decoration: none;
+}
+
 /* Tags row - inspired by Option 3 cloud style */
 .tags-row {
     display: flex;
@@ -602,18 +1179,142 @@
     font-weight: 400;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .nav-container {
-        padding: 0 16px;
+/* ========================================
+   Responsive Breakpoints - Mobile First
+   BL-010: Consistent with base.html system
+   ======================================== */
+
+/* Mobile base styles (< 576px) */
+.nav-container {
+    padding: 0 16px;
+}
+
+.medium-main {
+    padding: 0 30px; /* FIX-008: Consistent 30px padding */
+}
+
+.blog-container {
+    padding-top: 24px;
+    padding-bottom: 40px;
+}
+
+.blog-title {
+    font-size: 28px;
+    line-height: 36px;
+}
+
+.blog-subtitle {
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.filter-row {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+}
+
+/* Filter section - hidden on mobile */
+.filter-section {
+    display: none;
+}
+
+/* Mobile: Show search + filter icon row */
+.mobile-search-filter-row {
+    display: flex;
+}
+
+/* Hide desktop tags row on mobile */
+.tags-row {
+    display: none;
+}
+
+/* Only overlay needs display:block - drawer is controlled by .active class */
+.filter-drawer-overlay {
+    display: block;
+}
+
+/* Removed filter-select-icon - using chips instead */
+
+/* Search form - full width on mobile */
+.search-form-mobile {
+    min-width: auto;
+    width: 100%;
+}
+
+.search-input {
+    min-height: 44px; /* Touch target */
+    padding: 10px 16px;
+}
+
+.search-btn {
+    width: 36px;
+    height: 36px;
+}
+
+
+
+.tag-link {
+    padding: 8px 4px; /* Larger touch target */
+    min-height: 44px;
+    display: inline-flex !important;
+    align-items: center;
+    white-space: nowrap !important;
+    flex-shrink: 0;
+}
+
+/* Single column grid on mobile */
+.posts-grid-two {
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.post-card-grid {
+    padding: 20px;
+}
+
+.post-footer {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+/* Pagination - larger touch targets */
+.pagination-btn {
+    padding: 12px 16px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.pagination-container {
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+/* Breadcrumb responsive - hidden on mobile, shown on tablet+ */
+.breadcrumb-nav {
+    display: none; /* Hide on mobile */
+    padding: 12px 30px; /* Match mobile padding */
+}
+
+/* Show mobile nav elements on mobile/tablet */
+@media (max-width: 991px) {
+    .mobile-nav-overlay,
+    .mobile-nav-drawer {
+        display: block;
     }
 
+    /* Hide desktop nav */
+    .medium-top-nav {
+        display: none !important;
+    }
+}
+
+/* Small devices (576px+) */
+@media (min-width: 576px) {
     .medium-main {
-        padding: 0 16px;
-    }
-
-    .blog-container {
-        padding-top: 32px;
+        padding: 0 30px;
     }
 
     .blog-title {
@@ -621,34 +1322,163 @@
         line-height: 40px;
     }
 
-    .filter-row {
-        flex-direction: column;
-        gap: 16px;
-        align-items: stretch;
+    .blog-subtitle {
+        font-size: 18px;
     }
 
-    .filter-buttons {
-        justify-content: center;
-    }
-
-    .search-form {
-        min-width: auto;
-    }
-
-    /* Single column on mobile */
     .posts-grid-two {
-        grid-template-columns: 1fr;
         gap: 24px;
     }
 
     .post-card-grid {
         padding: 24px;
     }
+}
+
+/* Medium devices (768px+) */
+@media (min-width: 768px) {
+    /* Show breadcrumb on tablet+ */
+    .breadcrumb-nav {
+        display: block;
+    }
+
+    .blog-container {
+        padding-top: 32px;
+    }
+
+    .blog-title {
+        font-size: 36px;
+        line-height: 44px;
+    }
+
+    .filter-row {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    /* Hide mobile search + filter icon */
+    .mobile-search-filter-row {
+        display: none !important;
+    }
+
+    /* Hide filter drawer on tablet+ */
+    .filter-drawer-overlay,
+    .filter-drawer,
+    .filter-drawer.active,
+    .filter-icon-btn {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    /* Show desktop filter section */
+    .filter-section {
+        display: block !important;
+    }
+
+    /* Show buttons on tablet+ */
+    .filter-buttons {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px;
+        width: auto;
+    }
+
+    .filter-btn {
+        font-size: 14px;
+        padding: 8px 16px;
+        min-height: auto;
+    }
+
+    /* Show desktop search */
+    .search-section {
+        display: block;
+    }
+
+    .search-form-desktop {
+        display: flex !important;
+        min-width: 200px;
+        width: auto;
+    }
+
+    /* Show tags row on tablet+ */
+    .tags-row {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center;
+        gap: 16px;
+    }
+
+    /* Two columns on tablet */
+    .posts-grid-two {
+        grid-template-columns: 1fr 1fr;
+        gap: 28px;
+    }
 
     .post-footer {
-        flex-direction: column;
-        gap: 12px;
-        align-items: flex-start;
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+/* Large devices (992px+) - Desktop */
+@media (min-width: 992px) {
+    /* Hide mobile nav elements */
+    .mobile-nav-overlay,
+    .mobile-nav-drawer,
+    .mobile-nav-drawer.active {
+        display: none !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+        position: absolute !important;
+        left: -9999px !important;
+    }
+
+    /* Show desktop nav */
+    .medium-top-nav {
+        display: block !important;
+    }
+
+    .nav-container {
+        padding: 0 20px;
+    }
+
+    .medium-main {
+        padding: 0 20px;
+    }
+
+    .blog-container {
+        padding-top: 40px;
+        padding-bottom: 60px;
+    }
+
+    .blog-title {
+        font-size: 42px;
+        line-height: 52px;
+    }
+
+    .blog-subtitle {
+        font-size: 20px;
+        line-height: 28px;
+    }
+
+    .posts-grid-two {
+        gap: 32px;
+    }
+
+    .post-card-grid {
+        padding: 28px;
+    }
+
+    .breadcrumb-nav {
+        padding: 16px 20px;
+    }
+
+    .pagination-container {
+        margin-top: 80px;
+        margin-bottom: 80px;
     }
 }
 
@@ -660,4 +1490,198 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+// ========================================
+// BL-010: Mobile Navigation - Blog List
+// ========================================
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+    const mobileNavDrawer = document.getElementById('mobileNavDrawer');
+    const mobileNavClose = document.getElementById('mobileNavClose');
+    const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
+    function openMobileNav() {
+        if (!mobileNavDrawer || !mobileNavOverlay) return;
+        mobileNavDrawer.classList.add('active');
+        mobileNavOverlay.classList.add('active');
+        if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'true');
+        mobileNavDrawer.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+
+        // Focus trap
+        setTimeout(() => {
+            const firstLink = mobileNavDrawer.querySelector('.mobile-nav-link');
+            if (firstLink) firstLink.focus();
+        }, 300);
+    }
+
+    function closeMobileNav() {
+        if (!mobileNavDrawer || !mobileNavOverlay) return;
+        mobileNavDrawer.classList.remove('active');
+        mobileNavOverlay.classList.remove('active');
+        if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'false');
+        mobileNavDrawer.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    // Expose to global scope for inline onclick handlers
+    window.closeMobileNav = closeMobileNav;
+
+    function toggleMobileNav() {
+        if (!mobileNavDrawer) return;
+        if (mobileNavDrawer.classList.contains('active')) {
+            closeMobileNav();
+        } else {
+            openMobileNav();
+        }
+    }
+
+    // Event Listeners
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', toggleMobileNav);
+    }
+
+    if (mobileNavOverlay) {
+        mobileNavOverlay.addEventListener('click', closeMobileNav);
+    }
+
+    if (mobileNavClose) {
+        mobileNavClose.addEventListener('click', closeMobileNav);
+    }
+
+    // Close on link click (for same-page navigation)
+    mobileNavLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Don't close if it's a button (like contact)
+            if (this.tagName !== 'BUTTON') {
+                // Allow navigation, then close
+                setTimeout(closeMobileNav, 100);
+            }
+        });
+    });
+
+    // ESC key to close
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && mobileNavDrawer && mobileNavDrawer.classList.contains('active')) {
+            closeMobileNav();
+            if (mobileMenuToggle) mobileMenuToggle.focus();
+        }
+    });
+});
+
+// ========================================
+// Mobile Filter Drawer - Chip-based filters
+// ========================================
+document.addEventListener('DOMContentLoaded', function() {
+    const filterIconBtn = document.getElementById('filterIconBtn');
+    const filterDrawerOverlay = document.getElementById('filterDrawerOverlay');
+    const filterDrawer = document.getElementById('filterDrawer');
+    const filterDrawerClose = document.getElementById('filterDrawerClose');
+    const filterApplyBtn = document.getElementById('filterApplyBtn');
+
+    // State tracking
+    let selectedCategory = '';
+    let selectedTag = '';
+
+    function openFilterDrawer() {
+        if (!filterDrawer || !filterDrawerOverlay) return;
+        filterDrawer.classList.add('active');
+        filterDrawerOverlay.classList.add('active');
+        filterDrawer.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeFilterDrawer() {
+        if (!filterDrawer || !filterDrawerOverlay) return;
+        filterDrawer.classList.remove('active');
+        filterDrawerOverlay.classList.remove('active');
+        filterDrawer.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    // Expose to global scope
+    window.openFilterDrawer = openFilterDrawer;
+    window.closeFilterDrawer = closeFilterDrawer;
+
+    // Open filter drawer
+    if (filterIconBtn) {
+        filterIconBtn.addEventListener('click', openFilterDrawer);
+    }
+
+    // Close on overlay click
+    if (filterDrawerOverlay) {
+        filterDrawerOverlay.addEventListener('click', closeFilterDrawer);
+    }
+
+    // Close on X button
+    if (filterDrawerClose) {
+        filterDrawerClose.addEventListener('click', closeFilterDrawer);
+    }
+
+    // Handle category chip clicks
+    const categoryChips = document.querySelectorAll('.filter-chip[data-category-slug]');
+    categoryChips.forEach(chip => {
+        chip.addEventListener('click', function() {
+            // Remove active from all category chips
+            categoryChips.forEach(c => c.classList.remove('active'));
+
+            // Add active to clicked chip
+            this.classList.add('active');
+
+            // Update selected category
+            selectedCategory = this.getAttribute('data-category-slug');
+        });
+    });
+
+    // Handle tag chip clicks
+    const tagChips = document.querySelectorAll('.filter-chip[data-tag]');
+    tagChips.forEach(chip => {
+        chip.addEventListener('click', function() {
+            // Remove active from all tag chips
+            tagChips.forEach(c => c.classList.remove('active'));
+
+            // Add active to clicked chip
+            this.classList.add('active');
+
+            // Update selected tag
+            selectedTag = this.getAttribute('data-tag');
+        });
+    });
+
+    // Apply filters button
+    if (filterApplyBtn) {
+        filterApplyBtn.addEventListener('click', function() {
+            // Build URL with selected filters
+            let url = '{% url "portfolio:post-list" %}';
+            const params = new URLSearchParams();
+
+            // Add category if selected (and not empty)
+            if (selectedCategory) {
+                params.append('category', selectedCategory);
+            }
+
+            // Add tag if selected (and not empty)
+            if (selectedTag) {
+                params.append('tag', selectedTag);
+            }
+
+            // Navigate to filtered URL
+            if (params.toString()) {
+                window.location.href = url + '?' + params.toString();
+            } else {
+                window.location.href = url;
+            }
+        });
+    }
+
+    // ESC key to close filter drawer
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && filterDrawer && filterDrawer.classList.contains('active')) {
+            closeFilterDrawer();
+            if (filterIconBtn) filterIconBtn.focus();
+        }
+    });
+});
+</script>
 {% endblock %}
