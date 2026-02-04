@@ -1081,9 +1081,24 @@
         font-weight: 400;
     }
 
+    /* BL-007: Responsive Design for Mobile/Tablet */
+    @media (max-width: 991px) {
+        /* Make floating header relative to avoid overlap with mobile-header */
+        .floating-header {
+            position: relative;
+            z-index: auto;
+        }
+
+        /* Adjust hero section - no need for extra padding since CV header is now relative */
+        .hero-section {
+            padding-top: 40px;
+        }
+    }
+
     /* Responsive Design */
     @media (max-width: 768px) {
 
+        /* General Layout - reduce padding for mobile */
         .header-container,
         .hero-container,
         .footer-container {
@@ -1096,8 +1111,13 @@
             padding-right: 16px;
         }
 
+        /* Hero Section - Fine-tuning for smaller screens */
         .hero-title {
-            font-size: 36px;
+            font-size: 32px; /* Reduced from 36px for better fit on small screens */
+        }
+
+        .hero-subtitle {
+            font-size: 20px; /* Proportional reduction from 24px */
         }
 
         .hero-bio {
@@ -1130,31 +1150,79 @@
             font-size: 28px;
         }
 
+        /* BL-008: Timeline - Mobile optimization */
+        .timeline-container {
+            padding: 24px 16px; /* Reduced from 40px 32px for mobile */
+        }
+
         .timeline {
-            padding-left: 32px;
+            padding-left: 24px; /* Reduced from 32px to give more content space */
         }
 
         .timeline::before {
-            left: 16px;
+            left: 7px; /* Adjusted to align with smaller marker */
+        }
+
+        .timeline-item {
+            padding-left: 24px; /* Reduced to match timeline padding */
+            margin-bottom: 32px; /* Slightly less than desktop 48px */
         }
 
         .timeline-marker {
-            left: -30px;
+            left: -22px; /* Adjusted for new timeline padding */
             width: 12px;
             height: 12px;
             border: 3px solid white;
         }
 
+        .timeline-title {
+            font-size: 18px; /* Slightly smaller for mobile */
+        }
+
+        .timeline-company {
+            font-size: 14px; /* Proportional reduction */
+        }
+
+        .timeline-description {
+            font-size: 14px; /* Slightly smaller for readability */
+        }
+
+        /* BL-009: Skills - Mobile spacing optimization */
         .skills-container {
             grid-template-columns: 1fr;
+            padding: 24px 16px; /* Reduced from 32px for mobile */
+            gap: 24px; /* Reduced from 32px */
         }
 
         .skill-section-title {
             font-size: 14px;
+            margin-bottom: 16px; /* Reduced from 20px */
+        }
+
+        .skill-list {
+            gap: 6px; /* Slightly reduced from 8px for tighter mobile layout */
+        }
+
+        .skill-item {
+            padding: 6px 0; /* Reduced from 8px for better density */
+        }
+
+        .skill-name {
+            font-size: 13px; /* Slightly smaller for mobile */
+        }
+
+        .skill-meta {
+            font-size: 10px; /* Maintained for readability */
+        }
+
+        /* Education Section */
+        .education-container {
+            padding: 24px 16px; /* Reduced from 32px for mobile */
         }
 
         .education-grid {
             grid-template-columns: 1fr;
+            gap: 24px; /* Reduced from 32px */
         }
 
         .education-item {

@@ -341,6 +341,10 @@
 
         /* Large devices and up (992px+) - Desktop */
         @media (min-width: 992px) {
+            body {
+                padding-top: 0 !important;
+            }
+
             .nav-container {
                 max-width: 1000px;
                 margin: 0 auto;
@@ -352,7 +356,7 @@
                 box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             }
 
-            /* Hide mobile header on desktop */
+            /* Hide mobile header on desktop - FIX-010 */
             .mobile-header {
                 display: none !important;
             }
