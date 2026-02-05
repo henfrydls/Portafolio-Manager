@@ -1791,23 +1791,7 @@
             text-align: center;
         }
 
-        /* Mobile responsive for new features */
-        .article-meta {
-            flex-direction: row;
-            align-items: flex-start;
-            gap: 12px;
-        }
-
-        .author-info {
-            flex: 1;
-            min-width: 0; /* Allow text truncation */
-        }
-
-        .social-sharing {
-            flex-shrink: 0;
-            align-self: center;
-        }
-
+        /* Share dropdown positioning */
         .share-dropdown {
             right: 0;
         }
@@ -2855,6 +2839,23 @@
             display: none !important;
         }
 
+        /* Article meta - keep share button aligned with author info */
+        .article-meta {
+            flex-direction: row !important;
+            align-items: flex-start !important;
+            gap: 12px !important;
+        }
+
+        .article-meta .author-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .article-meta .social-sharing {
+            flex-shrink: 0;
+            align-self: center;
+        }
+
         /* Breadcrumb - no extra margin (body has padding-top: 56px) */
         .breadcrumb-nav {
             margin-top: 0;
@@ -2920,6 +2921,21 @@
         .article-title {
             font-size: 28px !important;
             line-height: 36px !important;
+        }
+
+        .article-body {
+            font-size: 17px !important;
+            line-height: 26px !important;
+        }
+
+        .article-body h2 {
+            font-size: 22px !important;
+            line-height: 30px !important;
+        }
+
+        .article-body h3 {
+            font-size: 19px !important;
+            line-height: 27px !important;
         }
 
         .breadcrumb-current {

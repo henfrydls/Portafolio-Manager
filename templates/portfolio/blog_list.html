@@ -1190,6 +1190,16 @@
     display: none;
 }
 
+/* Reduce filter section spacing on mobile (tags-row is hidden) */
+.blog-filters {
+    margin-bottom: 24px;
+    padding-bottom: 0;
+}
+
+.filter-row {
+    margin-bottom: 0;
+}
+
 /* Only overlay needs display:block - drawer is controlled by .active class */
 .filter-drawer-overlay {
     display: block;
@@ -1320,9 +1330,16 @@
         line-height: 44px;
     }
 
+    /* Restore filter section spacing for desktop (tags-row visible) */
+    .blog-filters {
+        margin-bottom: 48px;
+        padding-bottom: 32px;
+    }
+
     .filter-row {
         flex-direction: row;
         align-items: center;
+        margin-bottom: 24px;
     }
 
     /* Hide mobile search + filter icon */
