@@ -1793,12 +1793,19 @@
 
         /* Mobile responsive for new features */
         .article-meta {
-            flex-direction: column;
-            gap: 16px;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .author-info {
+            flex: 1;
+            min-width: 0; /* Allow text truncation */
         }
 
         .social-sharing {
-            align-self: flex-end;
+            flex-shrink: 0;
+            align-self: center;
         }
 
         .share-dropdown {
