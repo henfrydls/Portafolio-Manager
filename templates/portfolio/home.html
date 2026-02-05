@@ -361,118 +361,8 @@
 <!-- AOS JavaScript -->
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
-    // Mobile Navigation Functions - BL-003
-    // BUG-C FIX: Removed duplicate AOS.init() - consolidated below in main DOMContentLoaded
-    
-    // Mobile Navigation Functions - BL-003 (Robust Fix)
-    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-    const mobileNavOverlay = document.getElementById('mobileNavOverlay');
-    const mobileNavDrawer = document.getElementById('mobileNavDrawer');
-    const mobileNavClose = document.getElementById('mobileNavClose');
-    const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
-
-    console.log('Mobile Nav Init:', {
-        toggle: !!mobileMenuToggle,
-        overlay: !!mobileNavOverlay,
-        drawer: !!mobileNavDrawer,
-        close: !!mobileNavClose
-    });
-
-    function openMobileNav() {
-        if (!mobileNavDrawer || !mobileNavOverlay) {
-            console.error('Mobile nav elements missing');
-            return;
-        }
-        console.log('Opening mobile nav');
-        mobileNavDrawer.classList.add('active');
-        mobileNavOverlay.classList.add('active');
-        if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'true');
-        mobileNavDrawer.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
-
-        // Focus trap - focus first link
-        setTimeout(() => {
-            const firstLink = mobileNavDrawer.querySelector('.mobile-nav-link');
-            if (firstLink) firstLink.focus();
-        }, 300);
-    }
-
-    function closeMobileNav() {
-        if (!mobileNavDrawer || !mobileNavOverlay) return;
-        console.log('Closing mobile nav');
-        mobileNavDrawer.classList.remove('active');
-        mobileNavOverlay.classList.remove('active');
-        if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'false');
-        mobileNavDrawer.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
-    }
-
-    // Expose to global scope for inline onclick handlers
-    window.closeMobileNav = closeMobileNav;
-
-    function toggleMobileNav() {
-        if (!mobileNavDrawer) return;
-        if (mobileNavDrawer.classList.contains('active')) {
-            closeMobileNav();
-        } else {
-            openMobileNav();
-        }
-    }
-
-    // Event Listeners for Mobile Nav
-    if (mobileMenuToggle) {
-        mobileMenuToggle.addEventListener('click', toggleMobileNav);
-    }
-
-    if (mobileNavOverlay) {
-        mobileNavOverlay.addEventListener('click', closeMobileNav);
-    }
-
-    if (mobileNavClose) {
-        mobileNavClose.addEventListener('click', closeMobileNav);
-    }
-
-    // Close on nav link click (for anchor links) + smooth scroll
-    mobileNavLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            const href = this.getAttribute('href');
-
-            // Only handle anchor links
-            if (href && href.startsWith('#')) {
-                e.preventDefault();
-                closeMobileNav();
-
-                // Smooth scroll after drawer closes
-                setTimeout(() => {
-                    const target = document.querySelector(href);
-                    if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
-                }, 300);
-            } else if (!this.classList.contains('mobile-nav-contact-btn')) {
-                // For regular links, just close the nav
-                closeMobileNav();
-            }
-        });
-    });
-
-    // Close on Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && mobileNavDrawer.classList.contains('active')) {
-            closeMobileNav();
-            mobileMenuToggle.focus();
-        }
-    });
-
-    // Close mobile nav if window is resized to desktop
-    window.addEventListener('resize', function() {
-        if (window.innerWidth >= 992 && mobileNavDrawer.classList.contains('active')) {
-            closeMobileNav();
-        }
-    });
+    // Mobile Nav JS is now loaded from shared include: mobile_nav_drawer_js.html
+    // (Removed duplicate inline code that was causing double initialization)
 
     // AJAX Projects Pagination
     function loadProjectsPage(pageNumber) {
@@ -843,6 +733,7 @@
 `;
     document.head.appendChild(style);
 </script>
+{% include 'portfolio/includes/mobile_nav_drawer_js.html' %}
 {% endblock %}
 
 {% block extra_css %}
@@ -2663,24 +2554,23 @@
 
     /* Mobile Nav Drawer */
     .mobile-nav-drawer {
-        display: none; /* CRITICAL: Element completely removed from layout in desktop */
         position: fixed;
         top: 0;
-        left: 0; /* BUG-B FIX: Changed from -280px to 0 */
+        left: 0;
         width: 280px;
         max-width: 85vw;
         height: 100%;
         background: #ffffff;
         z-index: 1002;
-        transform: translateX(-100%); /* BUG-B FIX: Hide by translating left */
+        transform: translateX(-100%);
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
         overflow-y: auto;
+        display: none; /* Hidden on desktop */
     }
 
     .mobile-nav-drawer.active {
-        display: block !important; /* BUG-B FIX: Force display when active */
-        transform: translateX(0); /* BUG-B FIX: Changed from translateX(100%) to translateX(0) to show drawer */
+        transform: translateX(0);
     }
 
     /* Mobile Nav Header */
@@ -2699,57 +2589,7 @@
         gap: 12px;
     }
 
-    .mobile-nav-avatar {
-        width: 48px;
-        height: 48px;
-        border-radius: 8px;
-        overflow: hidden;
-        flex-shrink: 0;
-    }
-
-    .mobile-nav-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .mobile-nav-avatar-placeholder {
-        width: 100%;
-        height: 100%;
-        background: #e9ecef;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #999;
-        font-size: 20px;
-    }
-
-    .mobile-nav-info {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        min-width: 0;
-    }
-
-    .mobile-nav-name {
-        font-size: 14px;
-        font-weight: 600;
-        color: #333;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .mobile-nav-title {
-        font-size: 12px;
-        color: #666;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        line-height: 1.3;
-        word-wrap: break-word;
-    }
+    /* Mobile nav drawer styles removed - now in mobile_nav_drawer_css.html */
 
     .mobile-nav-close {
         width: 36px;
@@ -2833,15 +2673,24 @@
 
         /* Removed .mobile-menu-toggle display rule - handled by base.html .mobile-header */
 
-        /* BUG-B FIX: Only set display for inactive state, active state controlled by .active class */
-        .mobile-nav-overlay:not(.active),
-        .mobile-nav-drawer:not(.active) {
-            display: block; /* Make elements exist in DOM but hidden via transform/opacity */
+        /* Enable mobile nav elements */
+        .mobile-nav-overlay,
+        .mobile-nav-drawer {
+            display: block; /* Make visible on mobile */
         }
 
-        .mobile-nav-overlay.active,
+        .mobile-nav-overlay:not(.active) {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .mobile-nav-drawer:not(.active) {
+            transform: translateX(-100%); /* Keep hidden off-screen when inactive */
+        }
+
         .mobile-nav-drawer.active {
-            display: block !important; /* Ensure active state shows */
+            transform: translateX(0); /* Slide in when active */
         }
 
         /* Sidebar adjustments for mobile */
@@ -2915,15 +2764,24 @@
 
         /* Removed .mobile-menu-toggle display rule - handled by base.html .mobile-header */
 
-        /* BUG-B FIX: Only set display for inactive state, active state controlled by .active class */
-        .mobile-nav-overlay:not(.active),
-        .mobile-nav-drawer:not(.active) {
-            display: block; /* Make elements exist in DOM but hidden via transform/opacity */
+        /* Enable mobile nav elements */
+        .mobile-nav-overlay,
+        .mobile-nav-drawer {
+            display: block; /* Make visible on mobile */
         }
 
-        .mobile-nav-overlay.active,
+        .mobile-nav-overlay:not(.active) {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .mobile-nav-drawer:not(.active) {
+            transform: translateX(-100%); /* Keep hidden off-screen when inactive */
+        }
+
         .mobile-nav-drawer.active {
-            display: block !important; /* Ensure active state shows */
+            transform: translateX(0); /* Slide in when active */
         }
 
         /* Sidebar adjustments for tablet */
@@ -3451,6 +3309,9 @@
         body { padding-top: 56px !important; }
     }
 </style>
+
+<!-- Mobile Nav Drawer CSS (DRY - shared include with higher z-index) -->
+{% include 'portfolio/includes/mobile_nav_drawer_css.html' %}
 {% endblock %}
 
 {% block structured_data %}

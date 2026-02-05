@@ -5,6 +5,8 @@
 {% block title %}{{ post.title }} - {{ profile.name|default:"Your Name" }}{% endblock %}
 
 {% block content %}
+{% include 'portfolio/includes/mobile_nav_drawer.html' %}
+
 <div class="medium-page">
     <!-- Reading Progress Bar -->
     <div class="reading-progress">
@@ -349,7 +351,22 @@
     // Social Sharing Functions
     function sharePost() {
         const dropdown = document.getElementById('shareDropdown');
-        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+
+        // Use Native Share API on mobile if available
+        if (navigator.share && window.isSecureContext) {
+            navigator.share({
+                title: document.title,
+                url: window.location.href
+            }).catch(function(err) {
+                // User cancelled or error - show dropdown as fallback
+                if (err.name !== 'AbortError') {
+                    dropdown.style.display = 'block';
+                }
+            });
+        } else {
+            // Fallback: show dropdown for desktop
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
     }
 
     function shareLinkedIn() {
@@ -470,6 +487,7 @@
         }
     });
 </script>
+{% include 'portfolio/includes/mobile_nav_drawer_js.html' %}
 {% endblock %}
 
 {% block extra_css %}
@@ -2818,9 +2836,92 @@
             font-size: 20px;
         }
     }
+
+    /* ========================================
+       Mobile Responsive - Sprint 2.5
+       (Mobile Nav Drawer CSS is in shared include)
+       ======================================== */
+
+    @media (max-width: 991px) {
+        /* Hide desktop nav */
+        .medium-top-nav {
+            display: none !important;
+        }
+
+        /* Breadcrumb - no extra margin (body has padding-top: 56px) */
+        .breadcrumb-nav {
+            margin-top: 0;
+            padding: 12px 20px;
+        }
+
+        /* Progress bar below mobile header */
+        .reading-progress {
+            top: 56px;
+            z-index: 99;
+        }
+
+        /* Breadcrumb text truncation */
+        .breadcrumb-current {
+            max-width: calc(100vw - 200px);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        /* FABs - positioned within visible area with safe margins */
+        .floating-actions {
+            display: flex !important;
+            flex-direction: column;
+            gap: 10px;
+            position: fixed;
+            bottom: 16px;
+            /* Use inset-inline-end for RTL support, with safe area */
+            right: 16px;
+            z-index: 999;
+            /* Prevent overflow */
+            max-height: calc(100vh - 100px);
+            max-height: calc(100dvh - 100px);
+        }
+
+        .fab-btn {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            min-height: 44px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: rgba(36, 36, 36, 0.92) !important;
+            color: white !important;
+            border: none;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .fab-btn i {
+            font-size: 14px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .article-title {
+            font-size: 28px !important;
+            line-height: 36px !important;
+        }
+
+        .breadcrumb-current {
+            max-width: calc(100vw - 180px);
+        }
     }
 </style>
 
+{% include 'portfolio/includes/mobile_nav_drawer_css.html' %}
 {% include 'portfolio/includes/contact_modal_css.html' %}
 {% include 'portfolio/includes/contact_modal.html' %}
 {% include 'portfolio/includes/contact_modal_js.html' %}

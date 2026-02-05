@@ -305,7 +305,6 @@
 
 /* Mobile Nav Drawer */
 .mobile-nav-drawer {
-    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -318,10 +317,10 @@
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
     overflow-y: auto;
+    display: none; /* Hidden on desktop */
 }
 
 .mobile-nav-drawer.active {
-    display: block !important;
     transform: translateX(0);
 }
 
@@ -341,45 +340,7 @@
     gap: 12px;
 }
 
-.mobile-nav-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.mobile-nav-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.mobile-nav-avatar-placeholder {
-    width: 100%;
-    height: 100%;
-    background: #e0e0e0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #999;
-    font-size: 20px;
-}
-
-.mobile-nav-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.mobile-nav-name {
-    font-weight: 600;
-    font-size: 14px;
-    color: #333;
-}
-
-.mobile-nav-title {
-    font-size: 12px;
-    color: #666;
-}
+/* Mobile nav drawer styles removed - now in mobile_nav_drawer_css.html */
 
 .mobile-nav-close {
     width: 44px;
@@ -1302,7 +1263,15 @@
 @media (max-width: 991px) {
     .mobile-nav-overlay,
     .mobile-nav-drawer {
-        display: block;
+        display: block; /* Make visible on mobile */
+    }
+
+    .mobile-nav-drawer:not(.active) {
+        transform: translateX(-100%); /* Keep hidden off-screen when inactive */
+    }
+
+    .mobile-nav-drawer.active {
+        transform: translateX(0); /* Slide in when active */
     }
 
     /* Hide desktop nav */
@@ -1487,88 +1456,15 @@
 {% include 'portfolio/includes/contact_modal_css.html' %}
 {% include 'portfolio/includes/contact_modal.html' %}
 {% include 'portfolio/includes/contact_modal_js.html' %}
+
+<!-- Mobile Nav Drawer CSS (DRY - shared include with higher z-index) -->
+{% include 'portfolio/includes/mobile_nav_drawer_css.html' %}
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// ========================================
-// BL-010: Mobile Navigation - Blog List
-// ========================================
-document.addEventListener('DOMContentLoaded', function() {
-    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-    const mobileNavOverlay = document.getElementById('mobileNavOverlay');
-    const mobileNavDrawer = document.getElementById('mobileNavDrawer');
-    const mobileNavClose = document.getElementById('mobileNavClose');
-    const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
-
-    function openMobileNav() {
-        if (!mobileNavDrawer || !mobileNavOverlay) return;
-        mobileNavDrawer.classList.add('active');
-        mobileNavOverlay.classList.add('active');
-        if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'true');
-        mobileNavDrawer.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
-
-        // Focus trap
-        setTimeout(() => {
-            const firstLink = mobileNavDrawer.querySelector('.mobile-nav-link');
-            if (firstLink) firstLink.focus();
-        }, 300);
-    }
-
-    function closeMobileNav() {
-        if (!mobileNavDrawer || !mobileNavOverlay) return;
-        mobileNavDrawer.classList.remove('active');
-        mobileNavOverlay.classList.remove('active');
-        if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'false');
-        mobileNavDrawer.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
-    }
-
-    // Expose to global scope for inline onclick handlers
-    window.closeMobileNav = closeMobileNav;
-
-    function toggleMobileNav() {
-        if (!mobileNavDrawer) return;
-        if (mobileNavDrawer.classList.contains('active')) {
-            closeMobileNav();
-        } else {
-            openMobileNav();
-        }
-    }
-
-    // Event Listeners
-    if (mobileMenuToggle) {
-        mobileMenuToggle.addEventListener('click', toggleMobileNav);
-    }
-
-    if (mobileNavOverlay) {
-        mobileNavOverlay.addEventListener('click', closeMobileNav);
-    }
-
-    if (mobileNavClose) {
-        mobileNavClose.addEventListener('click', closeMobileNav);
-    }
-
-    // Close on link click (for same-page navigation)
-    mobileNavLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            // Don't close if it's a button (like contact)
-            if (this.tagName !== 'BUTTON') {
-                // Allow navigation, then close
-                setTimeout(closeMobileNav, 100);
-            }
-        });
-    });
-
-    // ESC key to close
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && mobileNavDrawer && mobileNavDrawer.classList.contains('active')) {
-            closeMobileNav();
-            if (mobileMenuToggle) mobileMenuToggle.focus();
-        }
-    });
-});
+// Mobile Nav JS is now loaded from shared include: mobile_nav_drawer_js.html
+// (Removed duplicate inline code that was causing double initialization)
 
 // ========================================
 // Mobile Filter Drawer - Chip-based filters
@@ -1684,4 +1580,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+{% include 'portfolio/includes/mobile_nav_drawer_js.html' %}
 {% endblock %}
