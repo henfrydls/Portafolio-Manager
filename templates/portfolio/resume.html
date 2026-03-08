@@ -5,6 +5,8 @@
 {% block title %}{% trans "Resume" %} - {{ profile.name }}{% endblock %}
 
 {% block content %}
+{% include 'portfolio/includes/mobile_nav_drawer.html' %}
+
 <div class="modern-resume-page">
     <!-- Floating Header -->
     <div class="floating-header">
@@ -142,7 +144,7 @@
             <div class="skills-container">
                 {% for category, skills in skills_by_category.items %}
                 <div class="skill-section">
-                    <h4 class="skill-section-title">{{ category }}</h4>
+                    <h3 class="skill-section-title">{{ category }}</h4>
                     <div class="skill-list">
                         {% for skill in skills %}
                         <div class="skill-item">
@@ -177,7 +179,7 @@
                     <!-- Formal Education -->
                     {% if formal_education %}
                     <div class="education-group">
-                        <h4 class="education-group-title">{% trans "Formal Education" %}</h4>
+                        <h3 class="education-group-title">{% trans "Formal Education" %}</h4>
                         {% for education in formal_education %}
                         <div class="education-item">
                             <div class="education-meta">
@@ -194,7 +196,7 @@
                                 </span>
                             </div>
                             <div class="education-details">
-                                <h5 class="education-degree">{{ education.degree }}</h5>
+                                <h4 class="education-degree">{{ education.degree }}</h5>
                                 <div class="education-institution">{{ education.institution }}</div>
                                 <div class="education-field">{{ education.field_of_study }}</div>
                             </div>
@@ -206,7 +208,7 @@
                     <!-- Certifications -->
                     {% if certifications %}
                     <div class="education-group">
-                        <h4 class="education-group-title">{% trans "Certifications" %}</h4>
+                        <h3 class="education-group-title">{% trans "Certifications" %}</h4>
                         {% for cert in certifications %}
                         <div class="education-item">
                             <div class="education-meta">
@@ -218,7 +220,7 @@
                                 {% endif %}
                             </div>
                             <div class="education-details">
-                                <h5 class="education-degree">{{ cert.degree }}</h5>
+                                <h4 class="education-degree">{{ cert.degree }}</h5>
                                 <div class="education-institution">{{ cert.institution }}</div>
                             </div>
                         </div>
@@ -230,7 +232,7 @@
                 <!-- Languages Section -->
                 {% if languages %}
                 <div class="learning-section">
-                    <h4 class="education-group-title">
+                    <h3 class="education-group-title">
                         Languages
                         <span class="learning-count">
                             {{ languages.count }} {% if languages.count == 1 %}language{% else %}languages{% endif %}
@@ -254,7 +256,7 @@
                 <!-- Continuous Learning Section (Style 4) -->
                 {% if online_courses %}
                 <div class="learning-section">
-                    <h4 class="education-group-title">
+                    <h3 class="education-group-title">
                         {% trans "Continuous Learning" %}
                         <span class="learning-count">{{ online_courses.count }} {% trans "courses" %}</span>
                     </h4>
@@ -605,7 +607,7 @@
 
     .section-subtitle {
         font-size: 16px;
-        color: #6B6B6B;
+        color: #595959;
         margin: 0;
         font-weight: 300;
     }
@@ -1070,7 +1072,7 @@
 
     .footer-text p {
         margin: 0 0 8px 0;
-        color: #6B6B6B;
+        color: #A0A0A0;
         font-size: 14px;
         font-weight: 300;
     }
@@ -1081,9 +1083,24 @@
         font-weight: 400;
     }
 
+    /* BL-007: Responsive Design for Mobile/Tablet */
+    @media (max-width: 991px) {
+        /* Make floating header relative to avoid overlap with mobile-header */
+        .floating-header {
+            position: relative;
+            z-index: auto;
+        }
+
+        /* Adjust hero section - no need for extra padding since CV header is now relative */
+        .hero-section {
+            padding-top: 40px;
+        }
+    }
+
     /* Responsive Design */
     @media (max-width: 768px) {
 
+        /* General Layout - reduce padding for mobile */
         .header-container,
         .hero-container,
         .footer-container {
@@ -1096,8 +1113,13 @@
             padding-right: 16px;
         }
 
+        /* Hero Section - Fine-tuning for smaller screens */
         .hero-title {
-            font-size: 36px;
+            font-size: 32px; /* Reduced from 36px for better fit on small screens */
+        }
+
+        .hero-subtitle {
+            font-size: 20px; /* Proportional reduction from 24px */
         }
 
         .hero-bio {
@@ -1130,31 +1152,79 @@
             font-size: 28px;
         }
 
+        /* BL-008: Timeline - Mobile optimization */
+        .timeline-container {
+            padding: 24px 16px; /* Reduced from 40px 32px for mobile */
+        }
+
         .timeline {
-            padding-left: 32px;
+            padding-left: 24px; /* Reduced from 32px to give more content space */
         }
 
         .timeline::before {
-            left: 16px;
+            left: 7px; /* Adjusted to align with smaller marker */
+        }
+
+        .timeline-item {
+            padding-left: 24px; /* Reduced to match timeline padding */
+            margin-bottom: 32px; /* Slightly less than desktop 48px */
         }
 
         .timeline-marker {
-            left: -30px;
+            left: -22px; /* Adjusted for new timeline padding */
             width: 12px;
             height: 12px;
             border: 3px solid white;
         }
 
+        .timeline-title {
+            font-size: 18px; /* Slightly smaller for mobile */
+        }
+
+        .timeline-company {
+            font-size: 14px; /* Proportional reduction */
+        }
+
+        .timeline-description {
+            font-size: 14px; /* Slightly smaller for readability */
+        }
+
+        /* BL-009: Skills - Mobile spacing optimization */
         .skills-container {
             grid-template-columns: 1fr;
+            padding: 24px 16px; /* Reduced from 32px for mobile */
+            gap: 24px; /* Reduced from 32px */
         }
 
         .skill-section-title {
             font-size: 14px;
+            margin-bottom: 16px; /* Reduced from 20px */
+        }
+
+        .skill-list {
+            gap: 6px; /* Slightly reduced from 8px for tighter mobile layout */
+        }
+
+        .skill-item {
+            padding: 6px 0; /* Reduced from 8px for better density */
+        }
+
+        .skill-name {
+            font-size: 13px; /* Slightly smaller for mobile */
+        }
+
+        .skill-meta {
+            font-size: 10px; /* Maintained for readability */
+        }
+
+        /* Education Section */
+        .education-container {
+            padding: 24px 16px; /* Reduced from 32px for mobile */
         }
 
         .education-grid {
             grid-template-columns: 1fr;
+            gap: 24px; /* Reduced from 32px */
         }
 
         .education-item {
@@ -1178,5 +1248,127 @@
             width: 100%;
         }
     }
+
+    /* ========================================
+       Mobile Nav Drawer Styles - BL-015
+       ======================================== */
+    .mobile-nav-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .mobile-nav-overlay.active {
+        opacity: 1;
+    }
+
+    .mobile-nav-drawer {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 85%;
+        max-width: 320px;
+        height: 100%;
+        background: white;
+        z-index: 999;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow-y: auto;
+        display: none; /* Hidden on desktop */
+    }
+
+    .mobile-nav-drawer.active {
+        transform: translateX(0);
+    }
+
+    .mobile-nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .mobile-nav-profile {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    /* Mobile nav drawer styles removed - now in mobile_nav_drawer_css.html */
+
+    .mobile-nav-close {
+        background: none;
+        border: none;
+        font-size: 20px;
+        color: #666;
+        cursor: pointer;
+        padding: 8px;
+    }
+
+    .mobile-nav-links {
+        padding: 16px 0;
+    }
+
+    .mobile-nav-link {
+        display: block;
+        padding: 14px 24px;
+        color: #1a1a1a;
+        text-decoration: none;
+        font-size: 16px;
+        transition: background 0.2s;
+    }
+
+    .mobile-nav-link:hover {
+        background: #f5f5f5;
+    }
+
+    .mobile-nav-link.active {
+        color: #1a8917;
+        font-weight: 500;
+    }
+
+    .mobile-nav-contact-btn {
+        width: 100%;
+        text-align: left;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        color: #1a8917;
+    }
+
+    /* Show mobile nav elements on mobile/tablet */
+    @media (max-width: 991px) {
+        .mobile-nav-overlay,
+        .mobile-nav-drawer {
+            display: block; /* Make visible on mobile */
+        }
+
+        .mobile-nav-drawer:not(.active) {
+            transform: translateX(-100%); /* Keep hidden off-screen when inactive */
+        }
+
+        .mobile-nav-drawer.active {
+            transform: translateX(0); /* Slide in when active */
+        }
+
+        /* Hide floating header on mobile - use mobile-header from base.html */
+        .floating-header {
+            display: none;
+        }
+    }
 </style>
+
+<!-- Mobile Nav Drawer CSS (DRY - shared include with higher z-index) -->
+{% include 'portfolio/includes/mobile_nav_drawer_css.html' %}
+
+{% include 'portfolio/includes/mobile_nav_drawer_js.html' %}
 {% endblock %}

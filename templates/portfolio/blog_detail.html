@@ -5,6 +5,8 @@
 {% block title %}{{ post.title }} - {{ profile.name|default:"Your Name" }}{% endblock %}
 
 {% block content %}
+{% include 'portfolio/includes/mobile_nav_drawer.html' %}
+
 <div class="medium-page">
     <!-- Reading Progress Bar -->
     <div class="reading-progress">
@@ -349,7 +351,22 @@
     // Social Sharing Functions
     function sharePost() {
         const dropdown = document.getElementById('shareDropdown');
-        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+
+        // Use Native Share API on mobile if available
+        if (navigator.share && window.isSecureContext) {
+            navigator.share({
+                title: document.title,
+                url: window.location.href
+            }).catch(function(err) {
+                // User cancelled or error - show dropdown as fallback
+                if (err.name !== 'AbortError') {
+                    dropdown.style.display = 'block';
+                }
+            });
+        } else {
+            // Fallback: show dropdown for desktop
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
     }
 
     function shareLinkedIn() {
@@ -470,6 +487,7 @@
         }
     });
 </script>
+{% include 'portfolio/includes/mobile_nav_drawer_js.html' %}
 {% endblock %}
 
 {% block extra_css %}
@@ -1773,16 +1791,7 @@
             text-align: center;
         }
 
-        /* Mobile responsive for new features */
-        .article-meta {
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .social-sharing {
-            align-self: flex-end;
-        }
-
+        /* Share dropdown positioning */
         .share-dropdown {
             right: 0;
         }
@@ -1815,8 +1824,8 @@
         }
 
         .fab-btn {
-            width: 44px;
-            height: 44px;
+            width: 48px;
+            height: 48px;
         }
 
         .post-contact-cta {
@@ -2818,9 +2827,117 @@
             font-size: 20px;
         }
     }
+
+    /* ========================================
+       Mobile Responsive - Sprint 2.5
+       (Mobile Nav Drawer CSS is in shared include)
+       ======================================== */
+
+    @media (max-width: 991px) {
+        /* Hide desktop nav */
+        .medium-top-nav {
+            display: none !important;
+        }
+
+        /* Article meta - keep share button aligned with author info */
+        .article-meta {
+            flex-direction: row !important;
+            align-items: flex-start !important;
+            gap: 12px !important;
+        }
+
+        .article-meta .author-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .article-meta .social-sharing {
+            flex-shrink: 0;
+            align-self: center;
+        }
+
+        /* Breadcrumb - hidden on mobile, redundant with hamburger + back FAB */
+        .breadcrumb-nav {
+            display: none;
+        }
+
+        /* Progress bar below mobile header */
+        .reading-progress {
+            top: 56px;
+            z-index: 99;
+        }
+
+        /* FABs - positioned within visible area with safe margins */
+        .floating-actions {
+            display: flex !important;
+            flex-direction: column;
+            gap: 16px;
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            z-index: 999;
+            max-height: calc(100vh - 100px);
+            max-height: calc(100dvh - 100px);
+        }
+
+        .fab-btn {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            min-height: 48px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: rgba(36, 36, 36, 0.92) !important;
+            color: white !important;
+            border: none;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Hide back button on mobile - Android nav + hamburger already provide this */
+        .back-btn {
+            display: none !important;
+        }
+
+        .fab-btn i {
+            font-size: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .article-title {
+            font-size: 28px !important;
+            line-height: 36px !important;
+        }
+
+        .article-body {
+            font-size: 17px !important;
+            line-height: 26px !important;
+        }
+
+        .article-body h2 {
+            font-size: 22px !important;
+            line-height: 30px !important;
+        }
+
+        .article-body h3 {
+            font-size: 19px !important;
+            line-height: 27px !important;
+        }
+
+        .breadcrumb-current {
+            max-width: calc(100vw - 180px);
+        }
     }
 </style>
 
+{% include 'portfolio/includes/mobile_nav_drawer_css.html' %}
 {% include 'portfolio/includes/contact_modal_css.html' %}
 {% include 'portfolio/includes/contact_modal.html' %}
 {% include 'portfolio/includes/contact_modal_js.html' %}

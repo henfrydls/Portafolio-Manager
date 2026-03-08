@@ -1,0 +1,130 @@
+<script>
+// ========================================
+// Mobile Navigation - Reusable Script
+// ========================================
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+    const mobileNavDrawer = document.getElementById('mobileNavDrawer');
+    const mobileNavClose = document.getElementById('mobileNavClose');
+    const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
+    // Debug: Log elements found
+    console.log('Mobile Nav Init:', {
+        toggle: mobileMenuToggle,
+        overlay: mobileNavOverlay,
+        drawer: mobileNavDrawer,
+        close: mobileNavClose,
+        links: mobileNavLinks.length
+    });
+
+    function openMobileNav() {
+        if (!mobileNavDrawer || !mobileNavOverlay) return;
+        // IMPORTANT: Set aria-hidden="false" BEFORE adding 'active' class and focusing
+        // This prevents the console warning: "Blocked aria-hidden on an element because its descendant retained focus"
+        mobileNavDrawer.setAttribute('aria-hidden', 'false');
+        mobileNavDrawer.classList.add('active');
+        mobileNavOverlay.classList.add('active');
+        if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+
+        // Restore tabindex so drawer focusable elements are reachable
+        mobileNavDrawer.querySelectorAll('a, button').forEach(el => el.removeAttribute('tabindex'));
+
+        // Focus trap - focus first link
+        setTimeout(() => {
+            const firstLink = mobileNavDrawer.querySelector('.mobile-nav-link');
+            if (firstLink) firstLink.focus();
+        }, 300);
+    }
+
+    function closeMobileNav() {
+        if (!mobileNavDrawer || !mobileNavOverlay) return;
+        mobileNavDrawer.classList.remove('active');
+        mobileNavOverlay.classList.remove('active');
+        if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'false');
+        mobileNavDrawer.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+
+        // Remove focusable elements from tab order while drawer is hidden
+        mobileNavDrawer.querySelectorAll('a, button').forEach(el => el.setAttribute('tabindex', '-1'));
+    }
+
+    // Expose to global scope for inline onclick handlers
+    window.closeMobileNav = closeMobileNav;
+    window.openMobileNav = openMobileNav;
+
+    function toggleMobileNav() {
+        if (!mobileNavDrawer) return;
+        if (mobileNavDrawer.classList.contains('active')) {
+            closeMobileNav();
+        } else {
+            openMobileNav();
+        }
+    }
+
+    // Event Listeners
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', toggleMobileNav);
+        console.log('Mobile menu toggle listener attached');
+    } else {
+        console.error('Mobile menu toggle button NOT FOUND');
+    }
+
+    if (mobileNavOverlay) {
+        mobileNavOverlay.addEventListener('click', closeMobileNav);
+    }
+
+    if (mobileNavClose) {
+        mobileNavClose.addEventListener('click', closeMobileNav);
+    }
+
+    // Close on nav link click + smooth scroll for anchors
+    mobileNavLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+
+            if (href && href.includes('#') && !href.startsWith('http')) {
+                const hashIndex = href.indexOf('#');
+                const hash = href.substring(hashIndex);
+
+                // If it's same page anchor
+                if (href.startsWith('#') || href.split('#')[0] === window.location.pathname) {
+                    e.preventDefault();
+                    closeMobileNav();
+
+                    setTimeout(() => {
+                        const target = document.querySelector(hash);
+                        if (target) {
+                            target.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    }, 300);
+                } else {
+                    // Different page with anchor - let it navigate
+                    closeMobileNav();
+                }
+            } else if (!this.classList.contains('mobile-nav-contact-btn')) {
+                closeMobileNav();
+            }
+        });
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && mobileNavDrawer && mobileNavDrawer.classList.contains('active')) {
+            closeMobileNav();
+            if (mobileMenuToggle) mobileMenuToggle.focus();
+        }
+    });
+
+    // Close on resize to desktop
+    window.addEventListener('resize', function() {
+        if (window.innerWidth >= 992 && mobileNavDrawer && mobileNavDrawer.classList.contains('active')) {
+            closeMobileNav();
+        }
+    });
+});
+</script>
