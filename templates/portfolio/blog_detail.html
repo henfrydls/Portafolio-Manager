@@ -1824,8 +1824,8 @@
         }
 
         .fab-btn {
-            width: 44px;
-            height: 44px;
+            width: 48px;
+            height: 48px;
         }
 
         .post-contact-cta {
@@ -2856,10 +2856,9 @@
             align-self: center;
         }
 
-        /* Breadcrumb - no extra margin (body has padding-top: 56px) */
+        /* Breadcrumb - hidden on mobile, redundant with hamburger + back FAB */
         .breadcrumb-nav {
-            margin-top: 0;
-            padding: 12px 20px;
+            display: none;
         }
 
         /* Progress bar below mobile header */
@@ -2868,26 +2867,15 @@
             z-index: 99;
         }
 
-        /* Breadcrumb text truncation */
-        .breadcrumb-current {
-            max-width: calc(100vw - 200px);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            display: inline-block;
-        }
-
         /* FABs - positioned within visible area with safe margins */
         .floating-actions {
             display: flex !important;
             flex-direction: column;
-            gap: 10px;
+            gap: 16px;
             position: fixed;
             bottom: 16px;
-            /* Use inset-inline-end for RTL support, with safe area */
             right: 16px;
             z-index: 999;
-            /* Prevent overflow */
             max-height: calc(100vh - 100px);
             max-height: calc(100dvh - 100px);
         }
@@ -2896,10 +2884,10 @@
             display: flex !important;
             align-items: center;
             justify-content: center;
-            width: 44px;
-            height: 44px;
-            min-width: 44px;
-            min-height: 44px;
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            min-height: 48px;
             flex-shrink: 0;
             border-radius: 50%;
             background: rgba(36, 36, 36, 0.92) !important;
@@ -2912,8 +2900,13 @@
             cursor: pointer;
         }
 
+        /* Hide back button on mobile - Android nav + hamburger already provide this */
+        .back-btn {
+            display: none !important;
+        }
+
         .fab-btn i {
-            font-size: 14px;
+            font-size: 16px;
         }
     }
 
