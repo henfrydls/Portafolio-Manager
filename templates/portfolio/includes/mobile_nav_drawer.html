@@ -20,18 +20,18 @@
                 <span class="mobile-nav-title">{{ profile.title|default:"Your Title" }}</span>
             </div>
         </div>
-        <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close navigation">
+        <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close navigation" tabindex="-1">
             <i class="fas fa-times"></i>
         </button>
     </div>
     <div class="mobile-nav-links">
-        <a href="{% url 'portfolio:home' %}" class="mobile-nav-link">{% trans "Home" %}</a>
-        <a href="{% url 'portfolio:home' %}#about" class="mobile-nav-link" onclick="closeMobileNav()">{% trans "About" %}</a>
-        <a href="{% url 'portfolio:home' %}#recent" class="mobile-nav-link" onclick="closeMobileNav()">{% trans "Recent" %}</a>
-        <a href="{% url 'portfolio:post-list' %}" class="mobile-nav-link">{% trans "All Posts" %}</a>
-        <a href="{% url 'portfolio:resume' %}" class="mobile-nav-link">{% trans "Resume" %}</a>
-        <a href="{% url 'portfolio:home' %}#featured" class="mobile-nav-link" onclick="closeMobileNav()">{% trans "Featured Work" %}</a>
-        <a href="{% url 'portfolio:home' %}#projects" class="mobile-nav-link" onclick="closeMobileNav()">{% trans "Projects" %}</a>
-        <button onclick="closeMobileNav(); openContactModal();" class="mobile-nav-link mobile-nav-contact-btn">{% trans "Contact" %}</button>
+        <a href="{% url 'portfolio:home' %}" class="mobile-nav-link" tabindex="-1">{% trans "Home" %}</a>
+        <a href="{% url 'portfolio:home' %}#about" class="mobile-nav-link" onclick="closeMobileNav()" tabindex="-1">{% trans "About" %}</a>
+        <a href="{% url 'portfolio:home' %}#recent" class="mobile-nav-link" onclick="closeMobileNav()" tabindex="-1">{% trans "Recent" %}</a>
+        <a href="{% url 'portfolio:post-list' %}" class="mobile-nav-link" tabindex="-1">{% trans "All Posts" %}</a>
+        <a href="{% url 'portfolio:resume' %}" class="mobile-nav-link" tabindex="-1">{% trans "Resume" %}</a>
+        <a href="{% url 'portfolio:home' %}#featured" class="mobile-nav-link" onclick="closeMobileNav()" tabindex="-1">{% trans "Featured Work" %}</a>
+        <a href="{% url 'portfolio:home' %}#projects" class="mobile-nav-link" onclick="closeMobileNav()" tabindex="-1">{% trans "Projects" %}</a>
+        <button onclick="closeMobileNav(); openContactModal();" class="mobile-nav-link mobile-nav-contact-btn" tabindex="-1">{% trans "Contact" %}</button>
     </div>
 </nav>

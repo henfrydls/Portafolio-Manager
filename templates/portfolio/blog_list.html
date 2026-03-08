@@ -53,7 +53,7 @@
                             {% if current_tag %}<input type="hidden" name="tag" value="{{ current_tag }}">{% endif %}
                             <input type="search" name="search" class="search-input"
                                    placeholder="{% trans "Search posts..." %}" value="{{ current_search }}">
-                            <button type="submit" class="search-btn">
+                            <button type="submit" class="search-btn" aria-label="Search">
                                 <i class="fas fa-search"></i>
                             </button>
                         </form>
@@ -88,7 +88,7 @@
                             {% if current_tag %}<input type="hidden" name="tag" value="{{ current_tag }}">{% endif %}
                             <input type="search" name="search" class="search-input"
                                    placeholder="{% trans "Search posts..." %}" value="{{ current_search }}">
-                            <button type="submit" class="search-btn">
+                            <button type="submit" class="search-btn" aria-label="Search">
                                 <i class="fas fa-search"></i>
                             </button>
                         </form>
@@ -1062,11 +1062,15 @@
 }
 
 .tag {
-    color: #999;
+    color: #595959;
     text-decoration: none;
     font-size: 12px;
     font-weight: 400;
     transition: color 0.2s ease;
+    min-height: 24px;
+    padding: 4px 8px;
+    display: inline-flex;
+    align-items: center;
 }
 
 .tag:hover {
@@ -1139,7 +1143,7 @@
 }
 
 .pagination-info {
-    color: #999;
+    color: #595959;
     font-size: 14px;
     font-weight: 400;
 }

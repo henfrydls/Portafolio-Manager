@@ -144,7 +144,7 @@
             <div class="skills-container">
                 {% for category, skills in skills_by_category.items %}
                 <div class="skill-section">
-                    <h4 class="skill-section-title">{{ category }}</h4>
+                    <h3 class="skill-section-title">{{ category }}</h4>
                     <div class="skill-list">
                         {% for skill in skills %}
                         <div class="skill-item">
@@ -179,7 +179,7 @@
                     <!-- Formal Education -->
                     {% if formal_education %}
                     <div class="education-group">
-                        <h4 class="education-group-title">{% trans "Formal Education" %}</h4>
+                        <h3 class="education-group-title">{% trans "Formal Education" %}</h4>
                         {% for education in formal_education %}
                         <div class="education-item">
                             <div class="education-meta">
@@ -196,7 +196,7 @@
                                 </span>
                             </div>
                             <div class="education-details">
-                                <h5 class="education-degree">{{ education.degree }}</h5>
+                                <h4 class="education-degree">{{ education.degree }}</h5>
                                 <div class="education-institution">{{ education.institution }}</div>
                                 <div class="education-field">{{ education.field_of_study }}</div>
                             </div>
@@ -208,7 +208,7 @@
                     <!-- Certifications -->
                     {% if certifications %}
                     <div class="education-group">
-                        <h4 class="education-group-title">{% trans "Certifications" %}</h4>
+                        <h3 class="education-group-title">{% trans "Certifications" %}</h4>
                         {% for cert in certifications %}
                         <div class="education-item">
                             <div class="education-meta">
@@ -220,7 +220,7 @@
                                 {% endif %}
                             </div>
                             <div class="education-details">
-                                <h5 class="education-degree">{{ cert.degree }}</h5>
+                                <h4 class="education-degree">{{ cert.degree }}</h5>
                                 <div class="education-institution">{{ cert.institution }}</div>
                             </div>
                         </div>
@@ -232,7 +232,7 @@
                 <!-- Languages Section -->
                 {% if languages %}
                 <div class="learning-section">
-                    <h4 class="education-group-title">
+                    <h3 class="education-group-title">
                         Languages
                         <span class="learning-count">
                             {{ languages.count }} {% if languages.count == 1 %}language{% else %}languages{% endif %}
@@ -256,7 +256,7 @@
                 <!-- Continuous Learning Section (Style 4) -->
                 {% if online_courses %}
                 <div class="learning-section">
-                    <h4 class="education-group-title">
+                    <h3 class="education-group-title">
                         {% trans "Continuous Learning" %}
                         <span class="learning-count">{{ online_courses.count }} {% trans "courses" %}</span>
                     </h4>
@@ -607,7 +607,7 @@
 
     .section-subtitle {
         font-size: 16px;
-        color: #6B6B6B;
+        color: #595959;
         margin: 0;
         font-weight: 300;
     }
@@ -1072,7 +1072,7 @@
 
     .footer-text p {
         margin: 0 0 8px 0;
-        color: #6B6B6B;
+        color: #A0A0A0;
         font-size: 14px;
         font-weight: 300;
     }

@@ -28,6 +28,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'true');
         document.body.style.overflow = 'hidden';
 
+        // Restore tabindex so drawer focusable elements are reachable
+        mobileNavDrawer.querySelectorAll('a, button').forEach(el => el.removeAttribute('tabindex'));
+
         // Focus trap - focus first link
         setTimeout(() => {
             const firstLink = mobileNavDrawer.querySelector('.mobile-nav-link');
@@ -42,6 +45,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (mobileMenuToggle) mobileMenuToggle.setAttribute('aria-expanded', 'false');
         mobileNavDrawer.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
+
+        // Remove focusable elements from tab order while drawer is hidden
+        mobileNavDrawer.querySelectorAll('a, button').forEach(el => el.setAttribute('tabindex', '-1'));
     }
 
     // Expose to global scope for inline onclick handlers
