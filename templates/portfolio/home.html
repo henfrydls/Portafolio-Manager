@@ -790,7 +790,7 @@
         width: 280px;
         height: 100vh;
         background: #fafafa;
-        padding: 30px 25px;
+        padding: 80px 25px; /* FIX-009: profile image top spacing */
         box-sizing: border-box;
         overflow: hidden;
         z-index: 10;
@@ -943,7 +943,7 @@
         flex: 1;
         background: #fafafa;
         min-height: 100vh;
-        padding: 40px 0;
+        padding: 130px 0 40px; /* FIX-010: About section aligned below profile image */
     }
 
     /* Content wrapper with 10% margins */
@@ -2324,10 +2324,27 @@
     @media (max-width: 1200px) {
         .profile-sidebar {
             width: 260px;
+            padding-top: 60px; /* FIX-009: consistent with base desktop spacing */
+        }
+
+        /* FIX-011: Prevent profile image clipping in 992px-1200px range */
+        .profile-image img {
+            width: 220px;
+            height: 220px;
+        }
+
+        .placeholder-image {
+            width: 220px;
+            height: 220px;
         }
 
         .main-content {
             margin-left: calc(10% + 260px);
+        }
+
+        /* FIX-010: More space above About section */
+        .section:first-child {
+            padding-top: 20px;
         }
 
         .news-grid {
