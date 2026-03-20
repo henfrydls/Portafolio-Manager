@@ -1,6 +1,9 @@
 import logging
 import uuid
 import os
+import urllib.request
+import urllib.parse
+import json
 from django.conf import settings
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -63,6 +66,9 @@ class HomeView(TemplateView):
         if 'contact_form' not in context:
             context['contact_form'] = SecureContactFormWithHoneypot()
 
+        # reCAPTCHA v3 site key for contact form
+        context['recaptcha_site_key'] = os.environ.get('RECAPTCHA_SITE_KEY', '')
+
         return context
 
     def get_client_ip(self, request):
@@ -81,7 +87,28 @@ class HomeView(TemplateView):
             if form.cleaned_data.get('honeypot'):
                 logger.warning(f"Honeypot triggered by IP {self.get_client_ip(request)}")
                 return redirect('portfolio:home')
-                
+
+            # Verify reCAPTCHA v3
+            recaptcha_secret = os.environ.get('RECAPTCHA_SECRET_KEY', '')
+            recaptcha_token = request.POST.get('g-recaptcha-response', '')
+            if recaptcha_secret and recaptcha_token:
+                try:
+                    verify_url = 'https://www.google.com/recaptcha/api/siteverify'
+                    data = urllib.parse.urlencode({
+                        'secret': recaptcha_secret,
+                        'response': recaptcha_token,
+                        'remoteip': self.get_client_ip(request)
+                    }).encode()
+                    req = urllib.request.Request(verify_url, data=data)
+                    resp = urllib.request.urlopen(req, timeout=5)
+                    result = json.loads(resp.read())
+                    if not result.get('success') or result.get('score', 0) < 0.5:
+                        logger.warning(f"reCAPTCHA failed for IP {self.get_client_ip(request)}: score={result.get('score')}")
+                        messages.error(request, _('Verification failed. Please try again.'))
+                        return redirect('portfolio:home')
+                except Exception as e:
+                    logger.error(f"reCAPTCHA verification error: {e}")
+
             name = form.cleaned_data.get('name')
             email = form.cleaned_data.get('email')
             subject = form.cleaned_data.get('subject')
