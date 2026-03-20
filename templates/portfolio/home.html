@@ -741,6 +741,9 @@
     document.head.appendChild(style);
 </script>
 {% include 'portfolio/includes/mobile_nav_drawer_js.html' %}
+{% if recaptcha_site_key %}
+<script src="https://www.google.com/recaptcha/api.js?render={{ recaptcha_site_key }}" async></script>
+{% endif %}
 {% endblock %}
 
 {% block extra_css %}
