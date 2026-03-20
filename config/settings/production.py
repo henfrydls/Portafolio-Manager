@@ -18,8 +18,9 @@ if 'runserver' in sys.argv or 'gunicorn' in sys.argv:
     print(f"RUNNING IN {ENVIRONMENT} ENVIRONMENT")
     print("="*50 + "\n")
 
-# Get allowed hosts from environment or use defaults
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS_PROD', 'yourdomain.com,www.yourdomain.com').split(',')
+# Get allowed hosts from environment or derive from PRODUCTION_DOMAIN
+production_domain = os.environ.get('PRODUCTION_DOMAIN', 'yourdomain.com')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS_PROD', f'{production_domain},www.{production_domain}').split(',')
 
 # Production session settings - configurable from environment
 SESSION_COOKIE_AGE = int(os.environ.get('SESSION_COOKIE_AGE_PROD', 86400))  # Default 24 hours
@@ -47,16 +48,19 @@ WHITENOISE_AUTOREFRESH = True
 SECURE_HSTS_SECONDS = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
-SECURE_SSL_REDIRECT = True
+# Disable SSL redirect when behind a reverse proxy (Nginx/ALB) that handles SSL
+# The proxy forwards HTTP internally; SECURE_PROXY_SSL_HEADER tells Django the
+# original request was HTTPS. Enabling SSL_REDIRECT here causes a redirect loop.
+SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False').lower() == 'true'
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Cookie security
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Strict'
-CSRF_COOKIE_SAMESITE = 'Strict'
+CSRF_COOKIE_HTTPONLY = False  # Allow JS to read CSRF token for AJAX forms
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'  # 'Strict' blocks CSRF on navigation from external links
 
 # Additional security headers
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -64,7 +68,6 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_REFERRER_POLICY = 'same-origin'
 
 # CSRF trusted origins for production
-production_domain = os.environ.get('PRODUCTION_DOMAIN', 'yourdomain.com')
 CSRF_TRUSTED_ORIGINS = [
     f'https://{production_domain}',
     f'https://www.{production_domain}',
