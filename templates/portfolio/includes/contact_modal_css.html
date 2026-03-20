@@ -67,8 +67,8 @@
         background: #F8F9FA;
         border: none;
         border-radius: 50%;
-        width: 40px;
-        height: 40px;
+        width: 44px;
+        height: 44px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -191,6 +191,7 @@
         padding: 8px 12px;
         border-radius: 6px;
         background: rgba(36, 36, 36, 0.05);
+        min-height: 44px;
     }
 
     .contact-method.primary .contact-method-action {
@@ -387,6 +388,26 @@
         color: rgba(255, 255, 255, 0.7);
         text-transform: uppercase;
         letter-spacing: 0.5px;
+    }
+
+    /* reCAPTCHA badge - hide floating widget, show inline notice instead */
+    .grecaptcha-badge {
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    .recaptcha-notice {
+        text-align: center;
+        font-size: 11px;
+        color: #999;
+        margin: 12px 0 0 0;
+        line-height: 1.5;
+    }
+
+    .recaptcha-notice a {
+        color: #6B6B6B;
+        text-decoration: underline;
     }
 
     /* Responsive */
