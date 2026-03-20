@@ -70,3 +70,6 @@ coverage.xml
 # Blog posts (drafts)
 blog_post_*.md
 BLOG_POSTS_*.md
+
+# Claude/AI assistant files
+.claude/

@@ -1,0 +1,37 @@
+{% load simple_i18n %}
+<!-- Mobile Nav Overlay -->
+<div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+
+<!-- Mobile Nav Drawer -->
+<nav class="mobile-nav-drawer" id="mobileNavDrawer" aria-hidden="true">
+    <div class="mobile-nav-header">
+        <div class="mobile-nav-profile">
+            <div class="mobile-nav-avatar">
+                {% if profile and profile.profile_image %}
+                <img src="{{ profile.profile_image.url }}" alt="{{ profile.name }}">
+                {% else %}
+                <div class="mobile-nav-avatar-placeholder">
+                    <i class="fas fa-user"></i>
+                </div>
+                {% endif %}
+            </div>
+            <div class="mobile-nav-info">
+                <span class="mobile-nav-name">{{ profile.name|default:"Your Name" }}</span>
+                <span class="mobile-nav-title">{{ profile.title|default:"Your Title" }}</span>
+            </div>
+        </div>
+        <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close navigation" tabindex="-1">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div class="mobile-nav-links">
+        <a href="{% url 'portfolio:home' %}" class="mobile-nav-link" tabindex="-1">{% trans "Home" %}</a>
+        <a href="{% url 'portfolio:home' %}#about" class="mobile-nav-link" onclick="closeMobileNav()" tabindex="-1">{% trans "About" %}</a>
+        <a href="{% url 'portfolio:home' %}#recent" class="mobile-nav-link" onclick="closeMobileNav()" tabindex="-1">{% trans "Recent" %}</a>
+        <a href="{% url 'portfolio:post-list' %}" class="mobile-nav-link" tabindex="-1">{% trans "All Posts" %}</a>
+        <a href="{% url 'portfolio:resume' %}" class="mobile-nav-link" tabindex="-1">{% trans "Resume" %}</a>
+        <a href="{% url 'portfolio:home' %}#featured" class="mobile-nav-link" onclick="closeMobileNav()" tabindex="-1">{% trans "Featured Work" %}</a>
+        <a href="{% url 'portfolio:home' %}#projects" class="mobile-nav-link" onclick="closeMobileNav()" tabindex="-1">{% trans "Projects" %}</a>
+        <button onclick="closeMobileNav(); openContactModal();" class="mobile-nav-link mobile-nav-contact-btn" tabindex="-1">{% trans "Contact" %}</button>
+    </div>
+</nav>
