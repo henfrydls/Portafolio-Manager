@@ -259,9 +259,16 @@
                                 <span class="project-title">{{ project.title }}</span>
                                 {% endif %}
 
-                                <span class="project-type-badge {{ project.get_project_type_display_class }}">
-                                    {{ project.get_project_type_display }}
-                                </span>
+                                <div class="project-header-links">
+                                    <span class="project-type-badge {{ project.get_project_type_display_class }}">
+                                        {{ project.get_project_type_display }}
+                                    </span>
+                                    {% if project.demo_url %}
+                                    <a href="{{ project.demo_url }}" target="_blank" class="project-demo-link" title="{% trans 'Live Site' %}">
+                                        <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
 
@@ -1548,14 +1555,38 @@
     }
 
     /* Project Type Badges */
+    .project-header-links {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
     .project-type-badge {
         display: inline-block;
         padding: 2px 6px;
         border-radius: 12px;
         font-size: 12px;
         font-weight: 500;
-        margin-left: 8px;
         border: 1px solid;
+    }
+
+    .project-demo-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #f0f0f0;
+        color: #595959;
+        font-size: 11px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .project-demo-link:hover {
+        background: #242424;
+        color: white;
     }
 
     .badge-framework {
