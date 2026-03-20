@@ -115,36 +115,61 @@
                 return true;
             }
 
-            // Form submission with loading state
-            form.addEventListener('submit', function (e) {
-                let isValid = true;
+            // Form submission with reCAPTCHA v3 and graceful degradation
+            let isSubmitting = false;
 
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                if (isSubmitting) return;
+
+                // Run validation
+                let isValid = true;
                 inputs.forEach(input => {
-                    if (!validateField(input)) {
-                        isValid = false;
-                    }
+                    if (!validateField(input)) isValid = false;
                 });
 
-                if (isValid) {
-                    // Show loading state
-                    submitBtn.disabled = true;
-                    submitBtn.classList.add('loading');
-                    btnText.textContent = '{% trans "Sending..." %}';
-                    btnIcon.className = 'fas fa-spinner fa-spin btn-icon';
-
-                    // Add a subtle animation to the modal content
-                    const modalContent = document.querySelector('.modal-content');
-                    if (modalContent) {
-                        modalContent.style.opacity = '0.8';
-                    }
-                } else {
-                    e.preventDefault();
-                    // Focus on first invalid field
+                if (!isValid) {
                     const firstInvalid = form.querySelector('.invalid input, .invalid textarea');
-                    if (firstInvalid) {
-                        firstInvalid.focus();
-                    }
+                    if (firstInvalid) firstInvalid.focus();
+                    return;
                 }
+
+                // Set loading state
+                isSubmitting = true;
+                submitBtn.disabled = true;
+                submitBtn.classList.add('loading');
+                btnText.textContent = '{% trans "Sending..." %}';
+                btnIcon.className = 'fas fa-spinner fa-spin btn-icon';
+
+                // Add a subtle animation to the modal content
+                const modalContent = document.querySelector('.modal-content');
+                if (modalContent) {
+                    modalContent.style.opacity = '0.8';
+                }
+
+                // Graceful degradation - submit without reCAPTCHA if blocked/unavailable
+                if (typeof grecaptcha === 'undefined') {
+                    form.submit();
+                    return;
+                }
+
+                grecaptcha.ready(function() {
+                    const recaptchaScript = document.querySelector('script[src*="recaptcha/api.js"]');
+                    const siteKey = recaptchaScript
+                        ? new URL(recaptchaScript.src).searchParams.get('render')
+                        : '';
+
+                    grecaptcha.execute(siteKey, {action: 'contact'})
+                        .then(function(token) {
+                            document.getElementById('recaptchaResponse').value = token;
+                            setTimeout(function() { form.submit(); }, 400);
+                        })
+                        .catch(function() {
+                            // Token failed - submit without it
+                            form.submit();
+                        });
+                });
             });
         }
 
