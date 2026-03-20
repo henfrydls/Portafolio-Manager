@@ -1,3 +1,5 @@
+import re
+import time
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.html import escape
@@ -105,19 +107,29 @@ class SecureContactForm(forms.ModelForm):
         # Check for spam patterns
         spam_patterns = [
             'viagra', 'casino', 'lottery', 'winner', 'congratulations',
-            'click here', 'free money', 'make money fast'
+            'click here', 'free money', 'make money fast',
+            'seo service', 'web traffic', 'buy followers', 'crypto',
+            'bitcoin', 'forex', 'trading', 'investment opportunity',
+            'marketing agency', 'boost your', 'rank your',
+            'backlink', 'guest post', 'link building',
         ]
         message_lower = message.lower()
         for pattern in spam_patterns:
             if pattern in message_lower:
                 raise ValidationError('El mensaje contiene contenido no permitido.')
-        
+
+        # Block messages with too many URLs (likely spam)
+        url_count = len(re.findall(r'https?://', message_lower))
+        if url_count > 2:
+            raise ValidationError('Too many links in the message.')
+
         return message
 
 
 class SecureContactFormWithHoneypot(SecureContactForm):
     """
     Contact form with honeypot protection against bots.
+    reCAPTCHA v3 validation is handled in the view.
     """
     honeypot = forms.CharField(
         required=False,
@@ -127,3 +139,15 @@ class SecureContactFormWithHoneypot(SecureContactForm):
             'autocomplete': 'off'
         })
     )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        loaded_at = cleaned_data.get('form_loaded_at', '')
+        if loaded_at:
+            try:
+                elapsed = time.time() - float(loaded_at)
+                if elapsed < 3:
+                    raise ValidationError('Form submitted too quickly.')
+            except (ValueError, TypeError):
+                raise ValidationError('Invalid form submission.')
+        return cleaned_data
