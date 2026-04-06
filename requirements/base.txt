@@ -1,5 +1,5 @@
 Django==5.2.12
-Pillow==12.1.1
+Pillow==12.2.0
 whitenoise==6.12.0
 python-decouple==3.8
 python-dotenv==1.2.2
@@ -8,7 +8,7 @@ python-magic-bin==0.4.14; platform_system == "Windows"
 markdown==3.10.2
 django-parler==2.3
 libretranslatepy==2.1.4
-requests==2.32.5
+requests==2.33.1
 dj-database-url==3.1.2
 psycopg2-binary==2.9.11
 django-redis==6.0.0
