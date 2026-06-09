@@ -6,6 +6,30 @@ from django.utils.html import escape
 from ..models import Contact
 from .base import HoneypotMixin
 
+# Spam keywords checked in BOTH subject and message. Kept lowercase.
+# Note: this is a best-effort layer — the primary defenses are reCAPTCHA
+# (fail-closed) and per-IP rate limiting in the view.
+SPAM_PATTERNS = [
+    'viagra', 'casino', 'lottery', 'winner', 'congratulations',
+    'click here', 'free money', 'make money fast',
+    'seo service', 'web traffic', 'buy followers', 'crypto',
+    'bitcoin', 'btc', 'forex', 'trading', 'investment opportunity',
+    'withdraw', 'wallet', 'usdt', 'satoshi', 'blockchain',
+    'binance', 'coinbase', 'metamask', 'airdrop', 'seed phrase',
+    'private key', 'marketing agency', 'boost your', 'rank your',
+    'backlink', 'guest post', 'link building',
+]
+
+
+def contains_spam(text):
+    """Return the first spam pattern found in ``text`` (lowercased), or None."""
+    lowered = text.lower()
+    for pattern in SPAM_PATTERNS:
+        if pattern in lowered:
+            return pattern
+    return None
+
+
 class SecureContactForm(forms.ModelForm):
     """
     Contact form with enhanced security and validation.
@@ -88,7 +112,11 @@ class SecureContactForm(forms.ModelForm):
         
         # Remove potentially dangerous characters
         subject = escape(subject)
-        
+
+        # Spam patterns frequently arrive in the subject (e.g. crypto scams)
+        if contains_spam(subject):
+            raise ValidationError('El asunto contiene contenido no permitido.')
+
         return subject
     
     def clean_message(self):
@@ -103,23 +131,13 @@ class SecureContactForm(forms.ModelForm):
         
         # Remove potentially dangerous characters
         message = escape(message)
-        
-        # Check for spam patterns
-        spam_patterns = [
-            'viagra', 'casino', 'lottery', 'winner', 'congratulations',
-            'click here', 'free money', 'make money fast',
-            'seo service', 'web traffic', 'buy followers', 'crypto',
-            'bitcoin', 'forex', 'trading', 'investment opportunity',
-            'marketing agency', 'boost your', 'rank your',
-            'backlink', 'guest post', 'link building',
-        ]
-        message_lower = message.lower()
-        for pattern in spam_patterns:
-            if pattern in message_lower:
-                raise ValidationError('El mensaje contiene contenido no permitido.')
+
+        # Check for spam patterns (shared list, also applied to the subject)
+        if contains_spam(message):
+            raise ValidationError('El mensaje contiene contenido no permitido.')
 
         # Block messages with too many URLs (likely spam)
-        url_count = len(re.findall(r'https?://', message_lower))
+        url_count = len(re.findall(r'https?://', message.lower()))
         if url_count > 2:
             raise ValidationError('Too many links in the message.')
 
@@ -139,6 +157,9 @@ class SecureContactFormWithHoneypot(SecureContactForm):
             'autocomplete': 'off'
         })
     )
+    # Hidden timestamp of when the page was rendered. The template fills it with
+    # {% now "U" %}; a submission faster than 3s is almost certainly a bot.
+    form_loaded_at = forms.CharField(required=False, widget=forms.HiddenInput())
 
     def clean(self):
         cleaned_data = super().clean()

@@ -83,6 +83,11 @@
                     <form class="contact-form" method="post" action="{% url 'portfolio:home' %}" id="contactForm">
                         {% csrf_token %}
                         <input type="hidden" name="g-recaptcha-response" id="recaptchaResponse">
+                        <input type="hidden" name="form_loaded_at" value="{% now 'U' %}">
+                        {# Honeypot: hidden off-screen; real users never fill it, bots do. #}
+                        <input type="text" name="honeypot" id="hp_field" tabindex="-1" autocomplete="off"
+                            aria-hidden="true"
+                            style="position:absolute !important;left:-9999px !important;width:1px;height:1px;opacity:0;">
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="contact_name">{% trans "Name" %} *</label>
