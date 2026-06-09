@@ -19,7 +19,8 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from portfolio.forms.contact import SecureContactFormWithHoneypot
-from portfolio.models import Contact, Profile
+from portfolio.models import Contact
+from portfolio.tests.test_views_public import create_test_profile
 
 VALID = {
     'name': 'John Doe',
@@ -83,7 +84,8 @@ class ContactViewSecurityTests(TestCase):
     def setUp(self):
         cache.clear()
         self.url = reverse('portfolio:home')
-        Profile.objects.create(email='owner@example.com')
+        # Raw-SQL helper: Profile has legacy NOT NULL columns that .create() trips on.
+        create_test_profile(email='owner@example.com')
 
     def _payload(self, **over):
         data = {**VALID, 'form_loaded_at': str(time.time() - 30), 'honeypot': ''}
