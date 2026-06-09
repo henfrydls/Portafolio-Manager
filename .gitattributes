@@ -1,0 +1,23 @@
+# Normalize line endings: store text as LF in the repo and check out LF on all
+# platforms. Prevents the whole tree from showing as modified when edited on
+# Windows (the CRLF churn this repo hit before).
+* text=auto eol=lf
+
+# Shell scripts and Python must stay LF.
+*.sh text eol=lf
+*.py text eol=lf
+
+# Treat these as binary (never touch line endings / never diff as text).
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.svg text eol=lf
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.mo binary
