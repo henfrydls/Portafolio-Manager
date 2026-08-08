@@ -21,7 +21,7 @@ Readers who finish a post are the most engaged visitors a site gets. Give site o
 | 1 | `portfolio/models.py` | Four fields on `SiteConfiguration`: `newsletter_url` (`URLField`, blank), `newsletter_title` (`CharField(100)`, blank), `newsletter_description` (`CharField(255)`, blank), `newsletter_button_text` (`CharField(50)`, blank). One migration. |
 | 2 | `portfolio/forms/config.py` | Add the four fields to `SiteConfigurationForm` with matching widgets (`URLInput`/`TextInput`, class `form-control`). |
 | 3 | `templates/portfolio/admin/site_configuration.html` | New fields in the dashboard form. |
-| 4 | `templates/portfolio/components/subscribe_cta.html` | New component. Renders only when `site_config.newsletter_url` is set. Each text falls back to generic `{% trans %}` copy when its field is empty. |
+| 4 | `templates/portfolio/includes/subscribe_cta.html` | New component. Renders only when `site_config.newsletter_url` is set. Each text falls back to generic `{% trans %}` copy when its field is empty. |
 | 5 | `templates/portfolio/blog_detail.html` | Conditional: if `newsletter_url` is set, include the component; otherwise keep the existing `post-contact-cta` block (lines 213–222) unchanged. The component reuses the existing CTA CSS classes (`post-contact-cta`, `cta-content`, `cta-title`, `cta-text`, `cta-button`); no new CSS. |
 
 `site_config` is already available in every template through the context processor (`portfolio/context_processors.py`); no view changes needed.
