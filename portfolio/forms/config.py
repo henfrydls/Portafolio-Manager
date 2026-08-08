@@ -22,6 +22,10 @@ class SiteConfigurationForm(forms.ModelForm):
             'translation_api_url',
             'translation_api_key',
             'translation_timeout',
+            'newsletter_url',
+            'newsletter_title',
+            'newsletter_description',
+            'newsletter_button_text',
         ]
         widgets = {
             'default_language': forms.Select(attrs={'class': 'form-select'}),
@@ -30,6 +34,10 @@ class SiteConfigurationForm(forms.ModelForm):
             'translation_api_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://tu-servidor-translate'}),
             'translation_api_key': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Opcional'}),
             'translation_timeout': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'step': 1}),
+            'newsletter_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://...'}),
+            'newsletter_title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Newsletter'}),
+            'newsletter_description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Get notified when new posts are published.'}),
+            'newsletter_button_text': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Subscribe'}),
         }
 
     def clean_default_language(self):
