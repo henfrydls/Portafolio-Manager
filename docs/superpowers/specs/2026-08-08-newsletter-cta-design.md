@@ -1,59 +1,59 @@
-# Bloque de suscripción a la newsletter — Diseño
+# End-of-post subscribe CTA — Design
 
-**Fecha:** 2026-08-08
-**Estado:** diseño aprobado, pendiente plan de implementación
+**Date:** 2026-08-08 (amended same day: made product-generic, no personal branding in code)
+**Status:** design approved, pending implementation plan
 
-## Contexto y objetivo
+## Goal
 
-El lector que termina un post es la persona más interesada que pasa por el sitio, y hoy el único llamado al final del artículo es de contacto. La newsletter "Prueba de concepto" vive en LinkedIn (cadencia mensual). Objetivo: un bloque al final de cada post del blog que invite a suscribirse, con el destino configurable desde el dashboard sin necesidad de deploy.
+Readers who finish a post are the most engaged visitors a site gets. Give site owners a configurable subscribe block at the end of each blog post pointing to wherever their newsletter lives (LinkedIn, Substack, Mailchimp, Kit, etc.), without hardcoding any instance-specific branding into the product.
 
-## Decisiones tomadas
+## Decisions
 
-1. **Destino: la newsletter de LinkedIn.** No se integra Kit/ConvertKit (issue #11, queda como upgrade futuro si crece el tráfico directo) ni se construye sistema propio (issue #52, se recomienda cerrar).
-2. **Sin modal ni popup.** Bloque inline al final del artículo. Razones: los popups interrumpen la lectura y Google penaliza los interstitials intrusivos en móvil, que es donde llega el tráfico de LinkedIn.
-3. **URL configurable, copy en template.** La URL del botón vive en `SiteConfiguration` (editable desde el dashboard); el texto vive en el template con `{% trans %}`. Cuando exista una segunda serie se agregará el override por categoría, no antes.
-4. **El bloque reemplaza al CTA de contacto** "Enjoyed this post?" (`post-contact-cta`). El contacto no se pierde: sigue disponible en "Get in touch" de la bio del autor, justo arriba.
-5. **URL vacía = bloque oculto.** Ese es el interruptor de apagado; no se agrega ningún booleano extra.
+1. **Inline block, not a modal/popup.** Popups interrupt reading and Google penalizes intrusive interstitials on mobile.
+2. **Destination and copy are instance configuration** (`SiteConfiguration`), editable from the dashboard without redeploying. The product ships with generic, translatable default copy.
+3. **Backward compatible.** With no `newsletter_url` configured, the existing contact CTA ("Enjoyed this post?") renders exactly as today. When configured, the subscribe block takes its place; contact remains reachable through the author-bio "Get in touch" link right above.
+4. **Empty URL = feature off.** No extra boolean flag.
 
-## Cambios concretos
+## Changes
 
-| # | Archivo | Cambio |
+| # | File | Change |
 |---|---|---|
-| 1 | `portfolio/models.py` | Campo `newsletter_url` (`URLField`, `blank=True`, `default=''`) en `SiteConfiguration` + migración. |
-| 2 | `portfolio/forms/config.py` | Agregar `newsletter_url` a `SiteConfigurationForm.Meta.fields` con su widget (`URLInput`, clase `form-control`). |
-| 3 | `templates/portfolio/admin/site_configuration.html` | Campo nuevo en el formulario del dashboard. |
-| 4 | `templates/portfolio/components/subscribe_cta.html` | Componente nuevo: título, descripción y botón. Solo se renderiza si `site_config.newsletter_url` tiene valor. |
-| 5 | `templates/portfolio/blog_detail.html` | Quitar el bloque `post-contact-cta` (líneas 213–222) e incluir el componente en su lugar. El componente reutiliza las clases CSS existentes (`post-contact-cta`, `cta-content`, `cta-title`, `cta-text`, `cta-button`), sin CSS nuevo. |
+| 1 | `portfolio/models.py` | Four fields on `SiteConfiguration`: `newsletter_url` (`URLField`, blank), `newsletter_title` (`CharField(100)`, blank), `newsletter_description` (`CharField(255)`, blank), `newsletter_button_text` (`CharField(50)`, blank). One migration. |
+| 2 | `portfolio/forms/config.py` | Add the four fields to `SiteConfigurationForm` with matching widgets (`URLInput`/`TextInput`, class `form-control`). |
+| 3 | `templates/portfolio/admin/site_configuration.html` | New fields in the dashboard form. |
+| 4 | `templates/portfolio/components/subscribe_cta.html` | New component. Renders only when `site_config.newsletter_url` is set. Each text falls back to generic `{% trans %}` copy when its field is empty. |
+| 5 | `templates/portfolio/blog_detail.html` | Conditional: if `newsletter_url` is set, include the component; otherwise keep the existing `post-contact-cta` block (lines 213–222) unchanged. The component reuses the existing CTA CSS classes (`post-contact-cta`, `cta-content`, `cta-title`, `cta-text`, `cta-button`); no new CSS. |
 
-`site_config` ya está disponible en todos los templates vía el context processor (`portfolio/context_processors.py`), no hace falta tocar vistas.
+`site_config` is already available in every template through the context processor (`portfolio/context_processors.py`); no view changes needed.
 
-## Copy
+## Generic default copy (translatable via `{% trans %}`)
 
-| | ES | EN |
-|---|---|---|
-| Título | Prueba de concepto | Prueba de concepto (nombre de marca, no se traduce) |
-| Texto | Ideas puestas a prueba dentro de una empresa real. Una entrega al mes. | Ideas tested inside a real company. One issue a month. |
-| Botón | Suscribirse en LinkedIn | Subscribe on LinkedIn |
+| Field | Default |
+|---|---|
+| Title | Newsletter |
+| Description | Get notified when new posts are published. |
+| Button | Subscribe |
 
-## Métricas
+Deliberately destination-neutral (works whether the newsletter lives on LinkedIn, email, or elsewhere).
 
-El botón lleva `data-umami-event="newsletter-subscribe"` para contar clics en Umami. Nota: el script de Umami no está en los templates del repo (se asume inyectado en producción); el atributo es inofensivo si el script no está, pero **al desplegar hay que verificar que el evento registre**.
+## Analytics hook
 
-El enlace usa `target="_blank" rel="noopener"`.
+The button carries `data-umami-event="newsletter-subscribe"` (inert unless an analytics script is installed — see the Umami integration spec) and uses `target="_blank" rel="noopener"`.
 
-## Manejo de errores
+## Error handling
 
-No hay backend nuevo ni llamadas externas, por lo tanto no hay estados de error. Con `newsletter_url` vacía el bloque simplemente no se renderiza.
+No new backend and no external calls, so no error states. With `newsletter_url` empty the block simply does not render.
 
 ## Tests
 
-1. Con `newsletter_url` configurada, la página de detalle del post contiene el bloque y el enlace apunta a esa URL.
-2. Sin `newsletter_url`, el bloque no aparece en el HTML.
-3. `SiteConfigurationForm` guarda `newsletter_url` correctamente.
+1. No `newsletter_url` → the contact CTA renders, no subscribe block (backward compatibility).
+2. `newsletter_url` set, copy fields empty → block renders with the generic copy and the correct `href`.
+3. Copy fields set → custom copy is rendered verbatim.
+4. `SiteConfigurationForm` saves the four fields.
 
-## Fuera de alcance
+## Out of scope
 
-- **Bug de i18n del sitio** (la sesión queda en `en`): el copy en español no se verá hasta que se arregle; mientras tanto el bloque sale en inglés como el resto del sitio.
-- **Slide-in al ~80% de scroll:** posible fase 2; primero medir los clics del bloque inline con Umami.
-- **Overrides por categoría** para series futuras.
-- **Integración con Kit** (issue #11).
+- Site i18n bug (#115): until fixed, visitors see the default language regardless of the switcher.
+- Per-category/per-series destinations (add when a second series actually exists).
+- Scroll-triggered slide-in (possible phase 2; measure the inline block first).
+- Newsletter provider integrations (Kit — issue #11).
