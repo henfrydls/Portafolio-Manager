@@ -1,0 +1,13 @@
+{% load i18n %}
+{% if site_config.newsletter_url %}
+<!-- Newsletter Subscribe CTA (replaces the contact CTA when configured) -->
+<div class="post-contact-cta">
+    <div class="cta-content">
+        <h4 class="cta-title">{% if site_config.newsletter_title %}{{ site_config.newsletter_title }}{% else %}{% trans "Newsletter" %}{% endif %}</h4>
+        <p class="cta-text">{% if site_config.newsletter_description %}{{ site_config.newsletter_description }}{% else %}{% trans "Get notified when new posts are published." %}{% endif %}</p>
+        <a href="{{ site_config.newsletter_url }}" target="_blank" rel="noopener" class="cta-button" data-umami-event="newsletter-subscribe">
+            {% if site_config.newsletter_button_text %}{{ site_config.newsletter_button_text }}{% else %}{% trans "Subscribe" %}{% endif %}
+        </a>
+    </div>
+</div>
+{% endif %}
