@@ -379,6 +379,11 @@
             }
         }
     </style>
+
+    <!-- Umami analytics (only when configured, never for logged-in users) -->
+    {% if site_config.umami_script_url and site_config.umami_website_id and not user.is_authenticated %}
+    <script defer src="{{ site_config.umami_script_url }}" data-website-id="{{ site_config.umami_website_id }}"></script>
+    {% endif %}
 </head>
 
 <body>

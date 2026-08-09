@@ -383,7 +383,7 @@ msgstr "CV"
 #: templates/portfolio/analytics.html:437
 #: templates/portfolio/analytics.html:449
 msgid "Analytics"
-msgstr "Análisis"
+msgstr "Analítica"
 
 #: templates/portfolio/admin/base_admin.html:565
 #: templates/portfolio/admin/includes/editing_language_notice.html:13
@@ -3665,3 +3665,9 @@ msgstr "Opcional. Reemplaza la descripción genérica."
 msgid "Optional. Replaces the generic 'Subscribe' label."
 msgstr "Opcional. Reemplaza el texto genérico del botón."
 
+
+msgid "Full URL of the Umami tracking script. Leave empty to disable analytics."
+msgstr "URL completa del script de Umami. Vacío desactiva la analítica."
+
+msgid "Website ID from your Umami dashboard."
+msgstr "ID del sitio en tu panel de Umami."

@@ -431,3 +431,55 @@ class BlogDetailSubscribeCtaTest(TestCase):
             )
         self.assertIn('Suscribirse', html)
         self.assertIn('Entérate cuando se publiquen nuevos posts.', html)
+
+
+class UmamiScriptTest(TestCase):
+    """Conditional Umami tracking script (issue #117)."""
+
+    def setUp(self):
+        self.client = Client()
+        self.profile = create_test_profile()
+        translation.activate('en')
+        self.admin = User.objects.create_superuser(
+            username='admin', email='admin@example.com', password='testpass123'
+        )
+
+    def _configure(self):
+        config = SiteConfiguration.get_solo()
+        config.umami_script_url = 'https://stats.example.com/script.js'
+        config.umami_website_id = 'abc123-def456'
+        config.save()
+
+    def test_no_script_without_configuration(self):
+        response = self.client.get(reverse('portfolio:home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'data-website-id')
+
+    def test_script_renders_for_anonymous_visitor(self):
+        self._configure()
+        response = self.client.get(reverse('portfolio:home'))
+        self.assertContains(response, 'https://stats.example.com/script.js')
+        self.assertContains(response, 'data-website-id="abc123-def456"')
+
+    def test_no_script_for_authenticated_user(self):
+        self._configure()
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse('portfolio:home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'data-website-id')
+
+    def test_no_script_with_partial_configuration(self):
+        config = SiteConfiguration.get_solo()
+        config.umami_script_url = 'https://stats.example.com/script.js'
+        config.umami_website_id = ''
+        config.save()
+        response = self.client.get(reverse('portfolio:home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'data-website-id')
+
+        config.umami_script_url = ''
+        config.umami_website_id = 'abc123-def456'
+        config.save()
+        response = self.client.get(reverse('portfolio:home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'data-website-id')

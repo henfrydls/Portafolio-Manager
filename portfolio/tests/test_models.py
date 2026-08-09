@@ -442,6 +442,24 @@ class SiteConfigurationNewsletterFieldsTest(TestCase):
         self.assertEqual(config.newsletter_button_text, 'Subscribe on LinkedIn')
 
 
+class SiteConfigurationUmamiFieldsTest(TestCase):
+    """Umami analytics configuration fields (issue #117)."""
+
+    def test_umami_fields_default_empty(self):
+        config = SiteConfiguration.get_solo()
+        self.assertEqual(config.umami_script_url, '')
+        self.assertEqual(config.umami_website_id, '')
+
+    def test_umami_fields_persist(self):
+        config = SiteConfiguration.get_solo()
+        config.umami_script_url = 'https://stats.example.com/script.js'
+        config.umami_website_id = 'abc123-def456'
+        config.save()
+        config.refresh_from_db()
+        self.assertEqual(config.umami_script_url, 'https://stats.example.com/script.js')
+        self.assertEqual(config.umami_website_id, 'abc123-def456')
+
+
 class UUIDImageFilenameTest(TestCase):
     """Uploaded images are renamed to a UUID (issue #61)."""
 

@@ -1,6 +1,7 @@
 ﻿from django.db import models
 from django.utils.text import slugify
 from django.urls import reverse
+from django.core.cache import cache
 from django.core.exceptions import ValidationError, ImproperlyConfigured
 from parler.models import TranslatableModel, TranslatedFields
 from django.conf import settings
@@ -86,6 +87,19 @@ class SiteConfiguration(models.Model):
         verbose_name="Newsletter button text",
         help_text="Optional. Replaces the generic 'Subscribe' label."
     )
+    umami_script_url = models.URLField(
+        blank=True,
+        default='',
+        verbose_name="Umami script URL",
+        help_text="Full URL of the Umami tracking script, e.g. https://stats.example.com/script.js. Leave empty to disable analytics."
+    )
+    umami_website_id = models.CharField(
+        max_length=64,
+        blank=True,
+        default='',
+        verbose_name="Umami website ID",
+        help_text="Website ID from your Umami dashboard."
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -98,7 +112,9 @@ class SiteConfiguration(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk and SiteConfiguration.objects.exists():
             raise ValidationError('Only one site configuration instance is allowed.')
-        return super().save(*args, **kwargs)
+        result = super().save(*args, **kwargs)
+        cache.delete('umami_analytics_origin')
+        return result
 
     @classmethod
     def get_solo(cls):
