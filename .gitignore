@@ -73,3 +73,6 @@ BLOG_POSTS_*.md
 
 # Claude/AI assistant files
 .claude/
+
+# Internal working documents (specs/plans), local-only
+docs/superpowers/
