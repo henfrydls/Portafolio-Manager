@@ -2,11 +2,14 @@
 Tests for portfolio models.
 """
 from datetime import date, timedelta
+import io
 from django.test import TestCase
 from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
 from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
+from PIL import Image as PILImage
 from portfolio.models import (
     Profile, SiteConfiguration, Project, ProjectType,
     Experience, Education, Skill, Category, BlogPost,
@@ -437,3 +440,29 @@ class SiteConfigurationNewsletterFieldsTest(TestCase):
         self.assertEqual(config.newsletter_title, 'My Newsletter')
         self.assertEqual(config.newsletter_description, 'One issue a month.')
         self.assertEqual(config.newsletter_button_text, 'Subscribe on LinkedIn')
+
+
+class UUIDImageFilenameTest(TestCase):
+    """Uploaded images are renamed to a UUID (issue #61)."""
+
+    @staticmethod
+    def _png(name='Sensitive Customer Data.PNG'):
+        buffer = io.BytesIO()
+        PILImage.new('RGB', (10, 10), color='red').save(buffer, format='PNG')
+        return SimpleUploadedFile(name, buffer.getvalue(), content_type='image/png')
+
+    def test_blog_featured_image_gets_uuid_name(self):
+        category = Category.objects.create(slug='tech-uuid')
+        category.set_current_language('en')
+        category.name = 'Tech'
+        category.save()
+        post = BlogPost()
+        post.set_current_language('en')
+        post.title = 'UUID upload test'
+        post.content = 'Body'
+        post.category = category
+        post.status = 'draft'
+        post.publish_date = timezone.now()
+        post.featured_image = self._png()
+        post.save()
+        self.assertRegex(post.featured_image.name, r'^blog/[0-9a-f]{32}\.png$')
