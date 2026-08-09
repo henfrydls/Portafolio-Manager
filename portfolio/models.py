@@ -7,14 +7,15 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from .utils.validators import (
-    profile_image_validator, 
-    project_image_validator, 
-    blog_image_validator, 
+    profile_image_validator,
+    project_image_validator,
+    blog_image_validator,
     resume_pdf_validator,
     validate_no_executable,
     validate_filename
 )
 from .utils.images import optimize_uploaded_image
+from .utils.uploads import UUIDUploadTo
 from django.utils import timezone
 from django.db import transaction
 
@@ -192,7 +193,7 @@ class Profile(TranslatableModel):
         meta={'unique_together': [('language_code', 'name')]},
     )
     profile_image = models.ImageField(
-        upload_to='profile/',
+        upload_to=UUIDUploadTo('profile'),
         verbose_name="Foto de perfil",
         help_text="Sube una imagen cuadrada (misma anchura y altura). Se optimizará automáticamente a 250x250px. Formatos: JPG, PNG, WebP. Máximo 3MB.",
         validators=[profile_image_validator, validate_no_executable],
@@ -608,7 +609,7 @@ class Project(TranslatableModel):
     slug = models.SlugField(unique=True, verbose_name="Slug",
                            help_text="URL amigable generada automaticamente")
     image = models.ImageField(
-        upload_to='projects/',
+        upload_to=UUIDUploadTo('projects'),
         verbose_name="Imagen principal",
         blank=True,
         validators=[project_image_validator, validate_no_executable]
@@ -1064,7 +1065,7 @@ class BlogPost(TranslatableModel):
     )
     slug = models.SlugField(unique=True, max_length=200, verbose_name="Slug")
     featured_image = models.ImageField(
-        upload_to='blog/',
+        upload_to=UUIDUploadTo('blog'),
         blank=True,
         verbose_name="Imagen destacada",
         validators=[blog_image_validator, validate_no_executable]
