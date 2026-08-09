@@ -1,6 +1,7 @@
 ﻿from django.db import models
 from django.utils.text import slugify
 from django.urls import reverse
+from django.core.cache import cache
 from django.core.exceptions import ValidationError, ImproperlyConfigured
 from parler.models import TranslatableModel, TranslatedFields
 from django.conf import settings
@@ -111,7 +112,9 @@ class SiteConfiguration(models.Model):
     def save(self, *args, **kwargs):
         if not self.pk and SiteConfiguration.objects.exists():
             raise ValidationError('Only one site configuration instance is allowed.')
-        return super().save(*args, **kwargs)
+        result = super().save(*args, **kwargs)
+        cache.delete('umami_analytics_origin')
+        return result
 
     @classmethod
     def get_solo(cls):

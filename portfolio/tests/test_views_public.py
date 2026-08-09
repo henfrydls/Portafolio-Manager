@@ -467,3 +467,19 @@ class UmamiScriptTest(TestCase):
         response = self.client.get(reverse('portfolio:home'))
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, 'data-website-id')
+
+    def test_no_script_with_partial_configuration(self):
+        config = SiteConfiguration.get_solo()
+        config.umami_script_url = 'https://stats.example.com/script.js'
+        config.umami_website_id = ''
+        config.save()
+        response = self.client.get(reverse('portfolio:home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'data-website-id')
+
+        config.umami_script_url = ''
+        config.umami_website_id = 'abc123-def456'
+        config.save()
+        response = self.client.get(reverse('portfolio:home'))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'data-website-id')

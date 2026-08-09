@@ -41,3 +41,14 @@ class CspAnalyticsOriginTest(TestCase):
         config.save()
         cache.delete('umami_analytics_origin')
         self.assertEqual(get_analytics_origin(), 'https://stats.example.com')
+
+    def test_cache_invalidated_on_configuration_save(self):
+        config = SiteConfiguration.get_solo()
+        config.umami_script_url = 'https://stats.example.com/script.js'
+        config.save()
+        self.assertEqual(get_analytics_origin(), 'https://stats.example.com')
+
+        config.umami_script_url = 'https://updated.example.com/script.js'
+        config.save()
+
+        self.assertEqual(get_analytics_origin(), 'https://updated.example.com')
