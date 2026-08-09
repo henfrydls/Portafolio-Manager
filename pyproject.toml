@@ -144,7 +144,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "henfrydls-portfolio"
-version = "1.0.0"
+version = "1.4.0"
 description = "Professional Django portfolio website with multilingual support"
 readme = "README.md"
 requires-python = ">=3.11"
