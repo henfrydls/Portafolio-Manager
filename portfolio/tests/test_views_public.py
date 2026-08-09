@@ -4,6 +4,8 @@ Tests for public views (non-admin).
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils import timezone, translation
+from django.utils.translation import override
+from django.template.loader import render_to_string
 from django.contrib.auth import get_user_model
 from django.db import connection, transaction
 
@@ -417,3 +419,15 @@ class BlogDetailSubscribeCtaTest(TestCase):
         self.assertContains(response, 'Ideas tested inside a real company.')
         self.assertContains(response, 'Subscribe on LinkedIn')
         self.assertNotContains(response, 'Get notified when new posts are published.')
+
+    def test_subscribe_block_generic_copy_in_spanish(self):
+        config = SiteConfiguration.get_solo()
+        config.newsletter_url = 'https://example.com/nl/'
+        config.save()
+        with override('es'):
+            html = render_to_string(
+                'portfolio/includes/subscribe_cta.html',
+                {'site_config': config},
+            )
+        self.assertIn('Suscribirse', html)
+        self.assertIn('Entérate cuando se publiquen nuevos posts.', html)

@@ -3643,3 +3643,25 @@ msgstr "Resumen profesional"
 #: templates/portfolio/resume.html:350
 msgid "Show Less"
 msgstr "Show Less"
+
+msgid "Newsletter"
+msgstr "Newsletter"
+
+msgid "Get notified when new posts are published."
+msgstr "Entérate cuando se publiquen nuevos posts."
+
+msgid "Subscribe"
+msgstr "Suscribirse"
+
+msgid "Destination of the end-of-post subscribe button. Leave empty to keep the contact CTA."
+msgstr "Destino del botón de suscripción al final de cada post. Vacío mantiene el CTA de contacto."
+
+msgid "Optional. Replaces the generic 'Newsletter' heading."
+msgstr "Opcional. Reemplaza el título genérico 'Newsletter'."
+
+msgid "Optional. Replaces the generic description."
+msgstr "Opcional. Reemplaza la descripción genérica."
+
+msgid "Optional. Replaces the generic 'Subscribe' label."
+msgstr "Opcional. Reemplaza el texto genérico del botón."
+
