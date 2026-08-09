@@ -12,20 +12,40 @@ from django.utils.deprecation import MiddlewareMixin
 logger = logging.getLogger('portfolio')
 
 
+def get_analytics_origin():
+    """Origin of the configured Umami instance, cached for 5 minutes; '' when unconfigured."""
+    value = cache.get('umami_analytics_origin')
+    if value is not None:
+        return value
+    from urllib.parse import urlparse
+    try:
+        from portfolio.models import SiteConfiguration
+        url = SiteConfiguration.get_solo().umami_script_url
+    except Exception:
+        url = ''
+    parsed = urlparse(url) if url else None
+    value = f'{parsed.scheme}://{parsed.netloc}' if parsed and parsed.scheme and parsed.netloc else ''
+    cache.set('umami_analytics_origin', value, 300)
+    return value
+
+
 class SecurityHeadersMiddleware(MiddlewareMixin):
     """
     Middleware to add security headers to all responses.
     """
-    
+
     def process_response(self, request, response):
         # Content Security Policy
+        analytics_origin = get_analytics_origin()
+        analytics_src = f'{analytics_origin} ' if analytics_origin else ''
         csp_policy = (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' "
             "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com "
             "https://fonts.googleapis.com https://unpkg.com "
             "https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ "
-            "https://analytics.henfrydls.com; "
+            f"{analytics_src}"
+            "; "
             "style-src 'self' 'unsafe-inline' "
             "https://cdn.jsdelivr.net https://cdnjs.cloudflare.com "
             "https://fonts.googleapis.com https://unpkg.com; "
@@ -33,13 +53,12 @@ class SecurityHeadersMiddleware(MiddlewareMixin):
             "https://cdnjs.cloudflare.com; "
             "img-src 'self' data: https:; "
             "frame-src https://www.google.com/recaptcha/; "
-            "connect-src 'self' https://cdn.jsdelivr.net "
-            "https://analytics.henfrydls.com; "
+            f"connect-src 'self' https://cdn.jsdelivr.net {analytics_src}; "
             "frame-ancestors 'none'; "
             "base-uri 'self'; "
             "form-action 'self';"
         )
-        
+
         # Add security headers
         response['Content-Security-Policy'] = csp_policy
         response['X-Content-Type-Options'] = 'nosniff'
