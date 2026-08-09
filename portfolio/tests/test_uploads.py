@@ -1,5 +1,4 @@
 """Tests for upload-path helpers (issue #61)."""
-import re
 from django.test import SimpleTestCase
 
 from portfolio.utils.uploads import UUIDUploadTo
