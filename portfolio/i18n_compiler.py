@@ -59,13 +59,41 @@ def compile_po_to_mo(po_file_path, mo_file_path):
     # Remove empty translations (but keep the header entry with empty msgid)
     translations = {k: v for k, v in translations.items() if k or (k == "" and v)}
 
-    # Unescape only newlines in the strings to ensure proper header parsing
-    def unescape_newlines(s):
-        # Replace \n with actual newline
-        # Be careful: \\\n is a backslash followed by newline, not double-backslash-n
-        return s.replace('\\n', '\n')
+    # Unescape the PO string escape sequences (\\, \", \n, \t) in a single
+    # left-to-right pass. A pass is required (rather than sequential
+    # str.replace calls) so that, for example, a literal "\\n" (backslash
+    # followed by the two characters n) is not mistaken for an escaped
+    # newline, and so a backslash produced by unescaping "\\\\" doesn't get
+    # reinterpreted by a later replacement.
+    def unescape_po_string(s):
+        result = []
+        i = 0
+        length = len(s)
+        while i < length:
+            ch = s[i]
+            if ch == '\\' and i + 1 < length:
+                next_ch = s[i + 1]
+                if next_ch == 'n':
+                    result.append('\n')
+                    i += 2
+                    continue
+                elif next_ch == 't':
+                    result.append('\t')
+                    i += 2
+                    continue
+                elif next_ch == '"':
+                    result.append('"')
+                    i += 2
+                    continue
+                elif next_ch == '\\':
+                    result.append('\\')
+                    i += 2
+                    continue
+            result.append(ch)
+            i += 1
+        return ''.join(result)
 
-    translations = {unescape_newlines(k): unescape_newlines(v) for k, v in translations.items()}
+    translations = {unescape_po_string(k): unescape_po_string(v) for k, v in translations.items()}
 
     # Create .mo file
     keys = sorted(translations.keys())
