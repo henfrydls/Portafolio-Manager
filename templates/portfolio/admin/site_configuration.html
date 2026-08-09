@@ -165,6 +165,32 @@
                         {% endif %}
                     </div>
                 </div>
+
+                <div style="display: grid; gap: 16px; padding: 16px; background: #f8f9fa; border: 1px dashed #dce3ed; border-radius: 8px;">
+                    <label class="form-label-custom">{% trans "Analytics" %}</label>
+                    <div>
+                        <label for="{{ form.umami_script_url.id_for_label }}" class="form-label-custom">
+                            {{ form.umami_script_url.label }}
+                        </label>
+                        {{ form.umami_script_url }}
+                        {% if form.umami_script_url.errors %}
+                        <p class="form-error">{{ form.umami_script_url.errors|first }}</p>
+                        {% else %}
+                        <p class="form-help">{% trans "Full URL of the Umami tracking script. Leave empty to disable analytics." %}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.umami_website_id.id_for_label }}" class="form-label-custom">
+                            {{ form.umami_website_id.label }}
+                        </label>
+                        {{ form.umami_website_id }}
+                        {% if form.umami_website_id.errors %}
+                        <p class="form-error">{{ form.umami_website_id.errors|first }}</p>
+                        {% else %}
+                        <p class="form-help">{% trans "Website ID from your Umami dashboard." %}</p>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
 
             <div style="margin-top: 32px; display: flex; gap: 12px;">

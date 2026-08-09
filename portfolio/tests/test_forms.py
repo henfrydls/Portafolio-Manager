@@ -407,3 +407,31 @@ class SiteConfigurationFormNewsletterTest(TestCase):
         config = SiteConfiguration.get_solo()
         form = SiteConfigurationForm(data=dict(self.BASE_DATA), instance=config)
         self.assertTrue(form.is_valid(), form.errors)
+
+
+class SiteConfigurationFormUmamiTest(TestCase):
+    """Umami fields on the site configuration form (issue #117)."""
+
+    BASE_DATA = {
+        'default_language': 'en',
+        'translation_provider': 'libretranslate',
+        'translation_timeout': 60,
+    }
+
+    def test_form_saves_umami_fields(self):
+        config = SiteConfiguration.get_solo()
+        data = dict(self.BASE_DATA)
+        data.update({
+            'umami_script_url': 'https://stats.example.com/script.js',
+            'umami_website_id': 'abc123-def456',
+        })
+        form = SiteConfigurationForm(data=data, instance=config)
+        self.assertTrue(form.is_valid(), form.errors)
+        saved = form.save()
+        self.assertEqual(saved.umami_script_url, 'https://stats.example.com/script.js')
+        self.assertEqual(saved.umami_website_id, 'abc123-def456')
+
+    def test_umami_fields_are_optional(self):
+        config = SiteConfiguration.get_solo()
+        form = SiteConfigurationForm(data=dict(self.BASE_DATA), instance=config)
+        self.assertTrue(form.is_valid(), form.errors)

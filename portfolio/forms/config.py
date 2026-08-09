@@ -26,6 +26,8 @@ class SiteConfigurationForm(forms.ModelForm):
             'newsletter_title',
             'newsletter_description',
             'newsletter_button_text',
+            'umami_script_url',
+            'umami_website_id',
         ]
         widgets = {
             'default_language': forms.Select(attrs={'class': 'form-select'}),
@@ -38,6 +40,8 @@ class SiteConfigurationForm(forms.ModelForm):
             'newsletter_title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Newsletter'}),
             'newsletter_description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Get notified when new posts are published.'}),
             'newsletter_button_text': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Subscribe'}),
+            'umami_script_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://stats.example.com/script.js'}),
+            'umami_website_id': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
     def clean_default_language(self):
