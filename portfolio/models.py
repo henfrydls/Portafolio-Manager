@@ -58,6 +58,33 @@ class SiteConfiguration(models.Model):
         default=60,
         verbose_name="Tiempo de espera (segundos)"
     )
+    newsletter_url = models.URLField(
+        blank=True,
+        default='',
+        verbose_name="Newsletter URL",
+        help_text="Destination of the end-of-post subscribe button. Leave empty to keep the contact CTA."
+    )
+    newsletter_title = models.CharField(
+        max_length=100,
+        blank=True,
+        default='',
+        verbose_name="Newsletter title",
+        help_text="Optional. Replaces the generic 'Newsletter' heading."
+    )
+    newsletter_description = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        verbose_name="Newsletter description",
+        help_text="Optional. Replaces the generic description."
+    )
+    newsletter_button_text = models.CharField(
+        max_length=50,
+        blank=True,
+        default='',
+        verbose_name="Newsletter button text",
+        help_text="Optional. Replaces the generic 'Subscribe' label."
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

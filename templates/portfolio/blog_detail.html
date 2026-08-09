@@ -210,6 +210,9 @@
                         </div>
                     </div>
 
+                    {% if site_config.newsletter_url %}
+                    {% include 'portfolio/includes/subscribe_cta.html' %}
+                    {% else %}
                     <!-- Subtle Contact CTA -->
                     <div class="post-contact-cta">
                         <div class="cta-content">
@@ -220,6 +223,7 @@
                             </a>
                         </div>
                     </div>
+                    {% endif %}
                 </footer>
 
                 <!-- Related Posts - Compact -->

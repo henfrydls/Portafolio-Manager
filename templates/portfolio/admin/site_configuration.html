@@ -117,6 +117,54 @@
                         {% endif %}
                     </div>
                 </div>
+
+                <div style="display: grid; gap: 16px; padding: 16px; background: #f8f9fa; border: 1px dashed #dce3ed; border-radius: 8px;">
+                    <label class="form-label-custom">{% trans "Newsletter" %}</label>
+                    <div>
+                        <label for="{{ form.newsletter_url.id_for_label }}" class="form-label-custom">
+                            {{ form.newsletter_url.label }}
+                        </label>
+                        {{ form.newsletter_url }}
+                        {% if form.newsletter_url.errors %}
+                        <p class="form-error">{{ form.newsletter_url.errors|first }}</p>
+                        {% else %}
+                        <p class="form-help">{% trans "Destination of the end-of-post subscribe button. Leave empty to keep the contact CTA." %}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.newsletter_title.id_for_label }}" class="form-label-custom">
+                            {{ form.newsletter_title.label }}
+                        </label>
+                        {{ form.newsletter_title }}
+                        {% if form.newsletter_title.errors %}
+                        <p class="form-error">{{ form.newsletter_title.errors|first }}</p>
+                        {% else %}
+                        <p class="form-help">{% trans "Optional. Replaces the generic 'Newsletter' heading." %}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.newsletter_description.id_for_label }}" class="form-label-custom">
+                            {{ form.newsletter_description.label }}
+                        </label>
+                        {{ form.newsletter_description }}
+                        {% if form.newsletter_description.errors %}
+                        <p class="form-error">{{ form.newsletter_description.errors|first }}</p>
+                        {% else %}
+                        <p class="form-help">{% trans "Optional. Replaces the generic description." %}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.newsletter_button_text.id_for_label }}" class="form-label-custom">
+                            {{ form.newsletter_button_text.label }}
+                        </label>
+                        {{ form.newsletter_button_text }}
+                        {% if form.newsletter_button_text.errors %}
+                        <p class="form-error">{{ form.newsletter_button_text.errors|first }}</p>
+                        {% else %}
+                        <p class="form-help">{% trans "Optional. Replaces the generic 'Subscribe' label." %}</p>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
 
             <div style="margin-top: 32px; display: flex; gap: 12px;">

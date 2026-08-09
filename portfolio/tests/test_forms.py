@@ -371,3 +371,39 @@ class FormSecurityTest(TestCase):
         if form.is_valid():
             # Scripts should be escaped or removed in cleaned data
             self.assertNotIn('<script>', form.cleaned_data['title'])
+
+
+from portfolio.forms.config import SiteConfigurationForm
+from portfolio.models import SiteConfiguration
+
+
+class SiteConfigurationFormNewsletterTest(TestCase):
+    """Newsletter fields on the site configuration form (issue #116)."""
+
+    BASE_DATA = {
+        'default_language': 'en',
+        'translation_provider': 'libretranslate',
+        'translation_timeout': 60,
+    }
+
+    def test_form_saves_newsletter_fields(self):
+        config = SiteConfiguration.get_solo()
+        data = dict(self.BASE_DATA)
+        data.update({
+            'newsletter_url': 'https://example.com/newsletter/',
+            'newsletter_title': 'My Newsletter',
+            'newsletter_description': 'One issue a month.',
+            'newsletter_button_text': 'Subscribe now',
+        })
+        form = SiteConfigurationForm(data=data, instance=config)
+        self.assertTrue(form.is_valid(), form.errors)
+        saved = form.save()
+        self.assertEqual(saved.newsletter_url, 'https://example.com/newsletter/')
+        self.assertEqual(saved.newsletter_title, 'My Newsletter')
+        self.assertEqual(saved.newsletter_description, 'One issue a month.')
+        self.assertEqual(saved.newsletter_button_text, 'Subscribe now')
+
+    def test_newsletter_fields_are_optional(self):
+        config = SiteConfiguration.get_solo()
+        form = SiteConfigurationForm(data=dict(self.BASE_DATA), instance=config)
+        self.assertTrue(form.is_valid(), form.errors)

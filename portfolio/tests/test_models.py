@@ -413,3 +413,27 @@ class LanguageModelTest(TestCase):
         """Test string representation"""
         # Language __str__ format is "name (proficiency)"
         self.assertEqual(str(self.language), "English (Native)")
+
+
+class SiteConfigurationNewsletterFieldsTest(TestCase):
+    """Newsletter CTA configuration fields (issue #116)."""
+
+    def test_newsletter_fields_default_empty(self):
+        config = SiteConfiguration.get_solo()
+        self.assertEqual(config.newsletter_url, '')
+        self.assertEqual(config.newsletter_title, '')
+        self.assertEqual(config.newsletter_description, '')
+        self.assertEqual(config.newsletter_button_text, '')
+
+    def test_newsletter_fields_persist(self):
+        config = SiteConfiguration.get_solo()
+        config.newsletter_url = 'https://www.linkedin.com/newsletters/example-123/'
+        config.newsletter_title = 'My Newsletter'
+        config.newsletter_description = 'One issue a month.'
+        config.newsletter_button_text = 'Subscribe on LinkedIn'
+        config.save()
+        config.refresh_from_db()
+        self.assertEqual(config.newsletter_url, 'https://www.linkedin.com/newsletters/example-123/')
+        self.assertEqual(config.newsletter_title, 'My Newsletter')
+        self.assertEqual(config.newsletter_description, 'One issue a month.')
+        self.assertEqual(config.newsletter_button_text, 'Subscribe on LinkedIn')
