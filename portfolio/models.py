@@ -86,6 +86,19 @@ class SiteConfiguration(models.Model):
         verbose_name="Newsletter button text",
         help_text="Optional. Replaces the generic 'Subscribe' label."
     )
+    umami_script_url = models.URLField(
+        blank=True,
+        default='',
+        verbose_name="Umami script URL",
+        help_text="Full URL of the Umami tracking script, e.g. https://stats.example.com/script.js. Leave empty to disable analytics."
+    )
+    umami_website_id = models.CharField(
+        max_length=64,
+        blank=True,
+        default='',
+        verbose_name="Umami website ID",
+        help_text="Website ID from your Umami dashboard."
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
