@@ -30,7 +30,7 @@ def compile_po_to_mo(po_file_path, mo_file_path):
         line = line.strip()
 
         if line.startswith('msgid "'):
-            if msgid and msgstr:
+            if msgid is not None and msgstr is not None:
                 translations[msgid] = msgstr
             msgid = line[7:-1]  # Remove 'msgid "' and ending '"'
             in_msgid = True
@@ -45,7 +45,7 @@ def compile_po_to_mo(po_file_path, mo_file_path):
             elif in_msgstr and msgstr is not None:
                 msgstr += line[1:-1]
         elif line == '':
-            if msgid and msgstr:
+            if msgid is not None and msgstr is not None:
                 translations[msgid] = msgstr
             msgid = None
             msgstr = None
@@ -53,11 +53,19 @@ def compile_po_to_mo(po_file_path, mo_file_path):
             in_msgstr = False
 
     # Add the last translation if exists
-    if msgid and msgstr:
+    if msgid is not None and msgstr is not None:
         translations[msgid] = msgstr
 
-    # Remove empty translations
-    translations = {k: v for k, v in translations.items() if k and v}
+    # Remove empty translations (but keep the header entry with empty msgid)
+    translations = {k: v for k, v in translations.items() if k or (k == "" and v)}
+
+    # Unescape only newlines in the strings to ensure proper header parsing
+    def unescape_newlines(s):
+        # Replace \n with actual newline
+        # Be careful: \\\n is a backslash followed by newline, not double-backslash-n
+        return s.replace('\\n', '\n')
+
+    translations = {unescape_newlines(k): unescape_newlines(v) for k, v in translations.items()}
 
     # Create .mo file
     keys = sorted(translations.keys())
@@ -125,6 +133,9 @@ def compile_po_to_mo(po_file_path, mo_file_path):
         # Values
         for v in vencoded:
             f.write(v)
+
+        # Add a null terminator to ensure gettext doesn't complain about end-of-file
+        f.write(b'\x00')
 
 
 def compile_all_translations():
