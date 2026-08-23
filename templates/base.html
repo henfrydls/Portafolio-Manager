@@ -211,10 +211,16 @@
             box-shadow: none;
         }
 
+        #portfolio-lang-switcher .portfolio-lang-icon {
+            color: #999;
+            font-size: 13px;
+            margin-right: 6px;
+        }
+
         #portfolio-lang-switcher .portfolio-lang-option {
             background: none;
             border: none;
-            color: #666;
+            color: #0085ff;
             cursor: pointer;
             padding: 0;
             margin: 0;
@@ -230,13 +236,19 @@
         }
 
         #portfolio-lang-switcher .portfolio-lang-option:hover {
-            color: #333;
-            text-decoration: none;
+            color: #0066cc;
+            text-decoration: underline;
         }
 
         #portfolio-lang-switcher .portfolio-lang-option.active {
             color: #242424;
-            font-weight: 400;
+            font-weight: 600;
+            cursor: default;
+        }
+
+        #portfolio-lang-switcher .portfolio-lang-option.active:hover {
+            color: #242424;
+            text-decoration: none;
         }
 
         #portfolio-lang-switcher .portfolio-lang-separator {
@@ -388,7 +400,8 @@
 
 <body>
     <!-- FIX-005: Mobile Header - Hamburger + Language Switcher - Refs #16 -->
-    {% if request.path == '/' or request.path == '/es/' or request.path|slice:'0:7' == '/posts/' or request.path|slice:'0:6' == '/posts' or request.path|slice:'0:10' == '/es/posts/' or request.path|slice:'0:9' == '/es/posts' or request.path|slice:'0:6' == '/post/' or request.path|slice:'0:5' == '/post' or request.path|slice:'0:9' == '/es/post/' or request.path|slice:'0:8' == '/es/post' or request.path|slice:'0:8' == '/resume/' or request.path|slice:'0:7' == '/resume' or request.path|slice:'0:11' == '/es/resume/' or request.path|slice:'0:10' == '/es/resume' %}
+    <!-- Header on every page: a hand-kept path list here left project pages
+         without a language switcher and without a menu button (issue #115) -->
     <header class="mobile-header">
         <!-- Hamburger Menu Button (left side) -->
         {% block mobile_hamburger %}
@@ -399,7 +412,8 @@
         {% endblock %}
 
         <!-- Language Switcher (right side) -->
-        <div id="portfolio-lang-switcher">
+        <div id="portfolio-lang-switcher" role="group" aria-label="Language">
+            <i class="fas fa-globe portfolio-lang-icon" aria-hidden="true"></i>
             {% if LANGUAGE_CODE == 'en' %}
             <span class="portfolio-lang-option active">EN</span>
             <span class="portfolio-lang-separator">|</span>
@@ -425,7 +439,8 @@
     </header>
 
     <!-- Floating Language Switcher - Desktop only (>= 992px) -->
-    <div id="portfolio-lang-switcher">
+    <div id="portfolio-lang-switcher" role="group" aria-label="Language">
+        <i class="fas fa-globe portfolio-lang-icon" aria-hidden="true"></i>
         {% if LANGUAGE_CODE == 'en' %}
         <span class="portfolio-lang-option active">EN</span>
         <span class="portfolio-lang-separator">|</span>
@@ -448,7 +463,6 @@
         <span class="portfolio-lang-option active">ES</span>
         {% endif %}
     </div>
-    {% endif %}
 
     <!-- Navigation -->
     <nav class="top-nav">
@@ -527,14 +541,14 @@
     <!-- Structured Data -->
     {% block structured_data %}{% endblock %}
 
-    <!-- Language Switcher Debug Script -->
+    <!-- Mobile menu button: only when there is a drawer to open -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var langSwitchers = document.querySelectorAll('#portfolio-lang-switcher');
-            if (langSwitchers.length > 0) {
-                console.log('Language switcher(s) found:', langSwitchers.length);
-            } else {
-                console.error('Language switcher NOT found');
+            // The header renders everywhere now, but not every page ships a
+            // mobile drawer. Hide the button when there is nothing to open.
+            if (!document.querySelector('.mobile-nav-drawer')) {
+                document.querySelectorAll('.mobile-header .mobile-menu-toggle')
+                    .forEach(function (button) { button.style.display = 'none'; });
             }
         });
 

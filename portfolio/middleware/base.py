@@ -3,11 +3,11 @@ from django.urls import resolve, reverse
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import translation
+from django.utils.translation import get_language_from_path, get_language_from_request
 from django.http import HttpResponseRedirect
 from django.db import DatabaseError
 from django.db.utils import OperationalError, ProgrammingError
 
-SESSION_LANGUAGE_KEY = getattr(translation, 'LANGUAGE_SESSION_KEY', '_language')
 from portfolio.models import PageVisit, SiteConfiguration
 import logging
 
@@ -72,14 +72,19 @@ class InitialSetupRedirectMiddleware(MiddlewareMixin):
 
 class SiteLanguageMiddleware(MiddlewareMixin):
     """
-    Middleware para aplicar el idioma global configurado.
+    Middleware para resolver el idioma de cada peticion.
 
-    - Fuerza el idioma por defecto en las vistas administrativas.
-    - Define el idioma inicial para visitantes si no han seleccionado uno.
+    - En el panel administrativo fuerza el idioma configurado en SiteConfiguration.
+    - En el sitio publico respeta, en este orden, el prefijo de la URL, la
+      eleccion manual guardada en la cookie de idioma, y el idioma del
+      navegador. Cuando el idioma que corresponde no es el de por defecto,
+      redirige a la URL con prefijo (/es/...) en vez de traducir una URL sin
+      prefijo.
 
-    IMPORTANT: When using i18n_patterns with prefix_default_language=False,
-    the default_language MUST match settings.LANGUAGE_CODE to avoid URL
-    resolution issues. This middleware enforces that constraint.
+    IMPORTANT: with i18n_patterns and prefix_default_language=False an
+    unprefixed URL only resolves while the active language is
+    settings.LANGUAGE_CODE. Activating another language for such a URL turns
+    every page into a 404, which is exactly why this redirects instead.
     """
 
     ADMIN_PATH_PREFIXES = (
@@ -90,52 +95,72 @@ class SiteLanguageMiddleware(MiddlewareMixin):
         '/admin-analytics',
     )
 
+    # Single-language paths. Redirecting these would either 404 or hand a
+    # crawler a redirect instead of the file it asked for.
+    UNTRANSLATED_PATH_PREFIXES = (
+        '/admin/',
+        '/i18n/',
+        '/static/',
+        '/media/',
+        '/api/',
+        '/sitemap.xml',
+        '/robots.txt',
+        '/manifest.json',
+    )
+
     def process_request(self, request):
+        supported = dict(settings.LANGUAGES)
+        path = request.path or ''
+
+        if any(path.startswith(prefix) for prefix in self.ADMIN_PATH_PREFIXES):
+            admin_language = self._configured_default(supported)
+            translation.activate(admin_language)
+            request.LANGUAGE_CODE = admin_language
+            return None
+
+        # The URL prefix always wins; LocaleMiddleware already activated it.
+        if get_language_from_path(path):
+            return None
+
+        preferred = self._preferred_language(request, supported)
+
+        if preferred != settings.LANGUAGE_CODE and self._may_redirect(request, path):
+            return HttpResponseRedirect(f'/{preferred}{request.get_full_path()}')
+
+        # An unprefixed URL only resolves under the default language.
+        translation.activate(settings.LANGUAGE_CODE)
+        request.LANGUAGE_CODE = settings.LANGUAGE_CODE
+        return None
+
+    def _configured_default(self, supported):
+        """Idioma del panel, tomado de SiteConfiguration."""
         try:
             config = SiteConfiguration.get_solo()
-        except Exception:
-            return None
+        except (DatabaseError, OperationalError, ProgrammingError):
+            return settings.LANGUAGE_CODE
+        candidate = config.default_language or settings.LANGUAGE_CODE
+        return candidate if candidate in supported else settings.LANGUAGE_CODE
 
-        # CRITICAL: default_language must match settings.LANGUAGE_CODE for
-        # i18n_patterns with prefix_default_language=False to work correctly.
-        # If they don't match, URLs without language prefix will return 404.
-        default_language = config.default_language or settings.LANGUAGE_CODE
+    def _preferred_language(self, request, supported):
+        """La eleccion manual del visitante manda sobre el idioma del navegador."""
+        if not request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME):
+            # Visitors who switched language before the choice was kept in a cookie.
+            session = getattr(request, 'session', None)
+            legacy_choice = session.get('django_language') if session is not None else None
+            if legacy_choice in supported:
+                return legacy_choice
 
-        # Validate that default_language is a valid choice
-        valid_languages = [lang[0] for lang in settings.LANGUAGES]
-        if default_language not in valid_languages:
-            default_language = settings.LANGUAGE_CODE
+        # Django's own negotiation: language cookie first, then Accept-Language.
+        # translation.get_language() is useless here because LocaleMiddleware
+        # pins unprefixed URLs to LANGUAGE_CODE when prefix_default_language
+        # is False, which is precisely the case this middleware resolves.
+        language = get_language_from_request(request, check_path=False)
+        return language if language in supported else settings.LANGUAGE_CODE
 
-        # If SiteConfiguration.default_language differs from LANGUAGE_CODE,
-        # log a warning and use LANGUAGE_CODE to prevent URL resolution issues
-        if config.default_language and config.default_language != settings.LANGUAGE_CODE:
-            # Use settings.LANGUAGE_CODE for URL resolution consistency
-            # The SiteConfiguration value is only used for admin areas
-            url_default_language = settings.LANGUAGE_CODE
-        else:
-            url_default_language = default_language
-
-        session_language = request.session.get(SESSION_LANGUAGE_KEY)
-        cookie_language = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME)
-
-        path = request.path or ''
-        in_admin_area = any(path.startswith(prefix) for prefix in self.ADMIN_PATH_PREFIXES)
-
-        if in_admin_area:
-            # Admin area uses SiteConfiguration.default_language
-            if session_language != default_language:
-                translation.activate(default_language)
-                request.session[SESSION_LANGUAGE_KEY] = default_language
-                request.LANGUAGE_CODE = default_language
-            return None
-
-        # For public pages, use settings.LANGUAGE_CODE to match i18n_patterns
-        if not session_language and not cookie_language:
-            translation.activate(url_default_language)
-            request.session[SESSION_LANGUAGE_KEY] = url_default_language
-            request.LANGUAGE_CODE = url_default_language
-
-        return None
+    def _may_redirect(self, request, path):
+        if request.method not in ('GET', 'HEAD'):
+            return False
+        return not any(path.startswith(prefix) for prefix in self.UNTRANSLATED_PATH_PREFIXES)
 
 
 class PageVisitMiddleware(MiddlewareMixin):

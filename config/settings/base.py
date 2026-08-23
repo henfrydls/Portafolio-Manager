@@ -138,6 +138,10 @@ LANGUAGES = [
     ('es', 'Espanol'),
 ]
 
+# Remember a visitor's language choice for a year. Without this the cookie
+# would expire with the browser session and the choice would be forgotten.
+LANGUAGE_COOKIE_AGE = 60 * 60 * 24 * 365
+
 PARLER_LANGUAGES = {
     None: (
         {'code': 'en'},
