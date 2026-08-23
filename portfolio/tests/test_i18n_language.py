@@ -9,9 +9,7 @@ from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.utils import timezone, translation
 
-from portfolio.models import (
-    BlogPost, Category, Project, ProjectType, SiteConfiguration
-)
+from portfolio.models import BlogPost, Category, Project, ProjectType
 from portfolio.tests.test_views_public import create_test_profile
 from django.contrib.auth import get_user_model
 
@@ -207,6 +205,26 @@ class SetLanguageViewTest(BasePublicPagesTest):
             response.cookies.get(settings.LANGUAGE_COOKIE_NAME) and
             response.cookies[settings.LANGUAGE_COOKIE_NAME].value, 'de'
         )
+
+    def test_next_cannot_send_the_visitor_off_site(self):
+        response = self.client.post(
+            reverse('set_language'), {'language': 'es', 'next': 'https://evil.example.com/x'}
+        )
+        self.assertEqual(response['Location'], '/es/')
+
+    def test_next_cannot_use_a_scheme_relative_url(self):
+        response = self.client.post(
+            reverse('set_language'), {'language': 'en', 'next': '//evil.example.com/x'}
+        )
+        self.assertEqual(response['Location'], '/')
+
+    def test_stripping_the_prefix_cannot_produce_an_off_site_url(self):
+        """/es//evil.com passes as a relative path, but loses /es and becomes
+        a scheme-relative URL the browser reads as another domain."""
+        response = self.client.post(
+            reverse('set_language'), {'language': 'en', 'next': '/es//evil.example.com/x'}
+        )
+        self.assertNotIn('evil.example.com', response['Location'])
 
     def test_choice_survives_the_next_request(self):
         self.client.post(reverse('set_language'), {'language': 'es', 'next': '/'})
