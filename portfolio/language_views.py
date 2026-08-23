@@ -25,8 +25,19 @@ class SetLanguageView(View):
     def post(self, request):
         """Handle language change requests."""
         language = self._requested_language(request)
+        next_url = self._next_url(request, language)
 
-        response = HttpResponseRedirect(self._safe_next_url(request, language))
+        # This guard sits next to the redirect on purpose. Rewriting the
+        # language prefix can turn an accepted path into an off-site URL, so
+        # the final value is what has to be checked.
+        if not url_has_allowed_host_and_scheme(
+            next_url,
+            allowed_hosts={request.get_host()},
+            require_https=request.is_secure(),
+        ):
+            next_url = self._home_for(language)
+
+        response = HttpResponseRedirect(next_url)
         response.set_cookie(
             settings.LANGUAGE_COOKIE_NAME,
             language,
@@ -52,40 +63,32 @@ class SetLanguageView(View):
                 return code
         return settings.LANGUAGE_CODE
 
-    def _safe_next_url(self, request, language):
-        """Where to send the visitor, refusing anything that leaves the site."""
+    def _next_url(self, request, language):
+        """Rebuild the target URL so it points at the chosen language."""
         next_url = request.POST.get('next') or '/'
-        if not self._is_internal(request, next_url):
+        if not url_has_allowed_host_and_scheme(
+            next_url,
+            allowed_hosts={request.get_host()},
+            require_https=request.is_secure(),
+        ):
             return self._home_for(language)
 
-        # Drop whatever language prefix the URL carries, then apply the new one.
-        # The default language is served without a prefix.
+        # Drop whatever language prefix the URL carries, then apply the new
+        # one. The default language is served without a prefix.
         current_prefix = get_language_from_path(next_url)
         if current_prefix:
             next_url = next_url[len(current_prefix) + 1:]
         if not next_url.startswith('/'):
             next_url = '/' + next_url
-        # After the rewrite the remainder must still be a single-slash path:
-        # '//host' and '/\\host' are read as another domain by browsers.
+
+        # '/es//example.com' loses its prefix and becomes '//example.com',
+        # which a browser reads as another domain. Same for '/\'.
         if next_url.startswith('//') or next_url.startswith('/\\'):
             return self._home_for(language)
+
         if language != settings.LANGUAGE_CODE:
             next_url = f'/{language}{next_url}'
-
-        # Removing the prefix can turn an accepted path into a scheme-relative
-        # URL: '/es//example.com' becomes '//example.com', which a browser
-        # reads as another domain. The rebuilt URL is checked again.
-        if not self._is_internal(request, next_url):
-            return self._home_for(language)
         return next_url
-
-    @staticmethod
-    def _is_internal(request, url):
-        return url_has_allowed_host_and_scheme(
-            url,
-            allowed_hosts={request.get_host()},
-            require_https=request.is_secure(),
-        )
 
     @staticmethod
     def _home_for(language):
