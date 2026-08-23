@@ -231,3 +231,38 @@ class SetLanguageViewTest(BasePublicPagesTest):
         response = self.client.get('/', headers={'accept-language': ENGLISH_HEADER})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], '/es/')
+
+
+@override_settings(MIDDLEWARE=middleware_like_production())
+class RedirectSafetyTest(BasePublicPagesTest):
+    """The switcher takes a 'next' URL from the request and rewrites its
+    language prefix. Both the input and the rewritten result must stay on
+    this site: the rewrite itself can turn an accepted path into an
+    off-site URL."""
+
+    PAYLOADS = [
+        'https://evil.example.com/x', '//evil.example.com', '///evil.example.com',
+        '////evil.example.com', '/\\evil.example.com', '\\\\evil.example.com',
+        '/es//evil.example.com', '/es/\\evil.example.com', '/es///evil.example.com',
+        'https:evil.example.com', 'http:/\\evil.example.com', 'javascript:alert(1)',
+        'data:text/html,<script>alert(1)</script>', '/es/..//evil.example.com',
+        '/es/\t//evil.example.com', '/es/\n//evil.example.com',
+        '/es/%2F%2Fevil.example.com', '/es/@evil.example.com',
+        'https://user@evil.example.com', '/es/', '/es//',
+    ]
+
+    def test_no_payload_leaves_the_site(self):
+        escapes = []
+        for language in ('en', 'es'):
+            for payload in self.PAYLOADS:
+                location = self.client.post(
+                    reverse('set_language'), {'language': language, 'next': payload}
+                )['Location']
+                # A browser resolves elsewhere only on a scheme of its own, or
+                # on an authority after '//' (Chrome reads '\' as '/' too).
+                normalised = location.replace('\\', '/')
+                if (not location.startswith('/')
+                        or ':' in location.split('/')[0]
+                        or (normalised.startswith('//') and normalised.lstrip('/') != '')):
+                    escapes.append((language, payload, location))
+        self.assertEqual(escapes, [])

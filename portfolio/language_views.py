@@ -65,6 +65,10 @@ class SetLanguageView(View):
             next_url = next_url[len(current_prefix) + 1:]
         if not next_url.startswith('/'):
             next_url = '/' + next_url
+        # After the rewrite the remainder must still be a single-slash path:
+        # '//host' and '/\\host' are read as another domain by browsers.
+        if next_url.startswith('//') or next_url.startswith('/\\'):
+            return self._home_for(language)
         if language != settings.LANGUAGE_CODE:
             next_url = f'/{language}{next_url}'
 
