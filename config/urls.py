@@ -7,10 +7,22 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns
 from django.contrib.sitemaps.views import sitemap
+from django.shortcuts import redirect
+from django.templatetags.static import static as static_url
 from portfolio.sitemaps import sitemaps
+
+
+
+def favicon(request):
+    """Browsers, crawlers and feed readers ask for /favicon.ico no matter what
+    the page's <link rel="icon"> says. Temporary redirect: the static URL
+    changes whenever the file is re-hashed."""
+    return redirect(static_url('images/favicon/favicon.ico'))
+
 
 # Non-translatable URLs (like admin)
 urlpatterns = [
+    path('favicon.ico', favicon, name='favicon'),
     path('admin/', admin.site.urls),
     path('i18n/setlang/', include('portfolio.language_urls')),  # Custom language switcher
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),

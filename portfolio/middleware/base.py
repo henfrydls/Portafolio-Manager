@@ -106,6 +106,7 @@ class SiteLanguageMiddleware(MiddlewareMixin):
         '/sitemap.xml',
         '/robots.txt',
         '/manifest.json',
+        '/favicon.ico',
     )
 
     def process_request(self, request):

@@ -172,6 +172,12 @@ class BrowserLanguageDetectionTest(BasePublicPagesTest):
         response = self.client.get('/sitemap.xml', headers={'accept-language': SPANISH_HEADER})
         self.assertEqual(response.status_code, 200)
 
+    def test_favicon_is_not_redirected_to_a_language_prefix(self):
+        response = self.client.get('/favicon.ico', headers={'accept-language': SPANISH_HEADER})
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response['Location'].endswith('images/favicon/favicon.ico'))
+        self.assertNotIn('/es/', response['Location'])
+
     def test_admin_area_is_not_redirected(self):
         self.client.force_login(User.objects.get(username='admin'))
         response = self.client.get('/dashboard/', headers={'accept-language': SPANISH_HEADER})
