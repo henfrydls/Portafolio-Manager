@@ -1,0 +1,29 @@
+{% comment %}
+Language switcher. One markup, three placements, chosen with `variant`:
+header (mobile header), bar (inside a page's own top bar) or floating
+(desktop corner, for pages without a top bar).
+{% endcomment %}
+<div id="portfolio-lang-switcher" class="lang-switcher--{{ variant|default:'floating' }}" role="group" aria-label="Language">
+    <i class="fas fa-globe portfolio-lang-icon" aria-hidden="true"></i>
+    {% if LANGUAGE_CODE == 'en' %}
+    <span class="portfolio-lang-option active">EN</span>
+    <span class="portfolio-lang-separator">|</span>
+    <form method="post" action="{% url 'set_language' %}"
+        style="display:inline; margin:0; padding:0;">
+        {% csrf_token %}
+        <input name="next" type="hidden" value="{{ request.get_full_path }}" />
+        <input name="language" type="hidden" value="es" />
+        <button type="submit" class="portfolio-lang-option">ES</button>
+    </form>
+    {% else %}
+    <form method="post" action="{% url 'set_language' %}"
+        style="display:inline; margin:0; padding:0;">
+        {% csrf_token %}
+        <input name="next" type="hidden" value="{{ request.get_full_path }}" />
+        <input name="language" type="hidden" value="en" />
+        <button type="submit" class="portfolio-lang-option">EN</button>
+    </form>
+    <span class="portfolio-lang-separator">|</span>
+    <span class="portfolio-lang-option active">ES</span>
+    {% endif %}
+</div>

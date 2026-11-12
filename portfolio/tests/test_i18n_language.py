@@ -103,6 +103,50 @@ class LanguageSwitcherVisibilityTest(BasePublicPagesTest):
         self.assertContains(self.client.get(url), 'id="mobileMenuToggle"')
 
 
+class LanguageSwitcherPlacementTest(BasePublicPagesTest):
+    """On desktop the switcher used to float in a corner with a lower z-index
+    than the page's own top bar, so the bar covered it on blog and resume pages
+    and the language could only be changed from home. Pages with a top bar must
+    render the switcher inside the bar and drop the floating copy."""
+
+    FLOATING = 'lang-switcher--floating'
+    IN_BAR = 'lang-switcher--bar'
+
+    def bar_html(self, url, opening, closing):
+        html = self.client.get(url).content.decode()
+        start = html.index(opening)
+        return html, html[start:html.index(closing, start)]
+
+    def assert_switcher_in_bar(self, url, opening, closing):
+        html, bar = self.bar_html(url, opening, closing)
+        self.assertIn(self.IN_BAR, bar)
+        self.assertIn('name="language"', bar)
+        self.assertNotIn(self.FLOATING, html)
+
+    def test_blog_list_has_switcher_inside_top_nav(self):
+        self.assert_switcher_in_bar(
+            reverse('portfolio:post-list'), '<nav class="medium-top-nav">', '</nav>')
+
+    def test_blog_detail_has_switcher_inside_top_nav(self):
+        url = reverse('portfolio:post-detail', kwargs={'slug': self.post.slug})
+        self.assert_switcher_in_bar(url, '<nav class="medium-top-nav">', '</nav>')
+
+    def test_resume_has_switcher_inside_floating_header(self):
+        self.assert_switcher_in_bar(
+            reverse('portfolio:resume'), '<div class="floating-header">', '<!-- Hero Section -->')
+
+    def test_pages_without_top_bar_keep_the_floating_switcher(self):
+        project_url = reverse('portfolio:project-detail', kwargs={'slug': self.project.slug})
+        for url in ('/', project_url):
+            with self.subTest(url=url):
+                self.assertContains(self.client.get(url), self.FLOATING)
+
+    def test_switcher_in_bar_posts_back_to_the_current_page(self):
+        url = reverse('portfolio:post-list') + '?category=idea'
+        _, bar = self.bar_html(url, '<nav class="medium-top-nav">', '</nav>')
+        self.assertIn('name="next" type="hidden" value="/posts/?category=idea"', bar)
+
+
 class SpanishUrlTest(BasePublicPagesTest):
     """/es/ URLs must work for a first-time visitor, with no session warm-up."""
 

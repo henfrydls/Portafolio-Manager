@@ -4,6 +4,8 @@
 
 {% block title %}{{ post.title }} - {{ profile.name|default:"Your Name" }}{% endblock %}
 
+{% block floating_lang_switcher %}{% endblock %}
+
 {% block content %}
 {% include 'portfolio/includes/mobile_nav_drawer.html' %}
 
@@ -25,6 +27,7 @@
                 <a href="{% url 'portfolio:home' %}#featured" class="nav-link">{% trans "Featured Work" %}</a>
                 <a href="{% url 'portfolio:home' %}#projects" class="nav-link">{% trans "Projects" %}</a>
                 <button onclick="openContactModal()" class="nav-link contact-nav-btn">{% trans "Contact" %}</button>
+                {% include 'portfolio/includes/lang_switcher.html' with variant='bar' %}
             </div>
         </div>
     </nav>

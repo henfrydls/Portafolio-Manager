@@ -4,6 +4,8 @@
 
 {% block title %}{% trans "Resume" %} - {{ profile.name }}{% endblock %}
 
+{% block floating_lang_switcher %}{% endblock %}
+
 {% block content %}
 {% include 'portfolio/includes/mobile_nav_drawer.html' %}
 
@@ -17,6 +19,7 @@
             </a>
 
             <div class="header-actions">
+                {% include 'portfolio/includes/lang_switcher.html' with variant='bar' %}
                 {% if profile %}
                 {% get_current_language as LANGUAGE_CODE %}
                 {% with resume_pdf=profile|get_resume_for_language:LANGUAGE_CODE %}
@@ -414,6 +417,13 @@
         align-items: center;
         width: 100%;
         height: 100%;
+    }
+
+    /* Language switcher sits next to the PDF button */
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 20px;
     }
 
     .back-button {
