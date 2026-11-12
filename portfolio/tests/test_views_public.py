@@ -357,6 +357,12 @@ class RobotsAndSEOViewsTest(TestCase):
         self.assertContains(response, 'User-agent')
         self.assertContains(response, 'Sitemap')
 
+    def test_favicon_at_the_site_root(self):
+        """/favicon.ico used to return the HTML 404 page"""
+        response = self.client.get('/favicon.ico')
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response['Location'].endswith('images/favicon/favicon.ico'))
+
     def test_manifest_json_view(self):
         """Test manifest.json view"""
         response = self.client.get('/manifest.json')
