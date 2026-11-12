@@ -211,6 +211,14 @@
             box-shadow: none;
         }
 
+        /* Switcher rendered inside a page's own top bar */
+        #portfolio-lang-switcher.lang-switcher--bar {
+            position: static;
+            padding: 0;
+            align-self: center;
+            white-space: nowrap;
+        }
+
         #portfolio-lang-switcher .portfolio-lang-icon {
             color: #999;
             font-size: 13px;
@@ -412,57 +420,15 @@
         {% endblock %}
 
         <!-- Language Switcher (right side) -->
-        <div id="portfolio-lang-switcher" role="group" aria-label="Language">
-            <i class="fas fa-globe portfolio-lang-icon" aria-hidden="true"></i>
-            {% if LANGUAGE_CODE == 'en' %}
-            <span class="portfolio-lang-option active">EN</span>
-            <span class="portfolio-lang-separator">|</span>
-            <form method="post" action="{% url 'set_language' %}"
-                style="display:inline; margin:0; padding:0;">
-                {% csrf_token %}
-                <input name="next" type="hidden" value="{{ request.get_full_path }}" />
-                <input name="language" type="hidden" value="es" />
-                <button type="submit" class="portfolio-lang-option">ES</button>
-            </form>
-            {% else %}
-            <form method="post" action="{% url 'set_language' %}"
-                style="display:inline; margin:0; padding:0;">
-                {% csrf_token %}
-                <input name="next" type="hidden" value="{{ request.get_full_path }}" />
-                <input name="language" type="hidden" value="en" />
-                <button type="submit" class="portfolio-lang-option">EN</button>
-            </form>
-            <span class="portfolio-lang-separator">|</span>
-            <span class="portfolio-lang-option active">ES</span>
-            {% endif %}
-        </div>
+        {% include 'portfolio/includes/lang_switcher.html' with variant='header' %}
     </header>
 
-    <!-- Floating Language Switcher - Desktop only (>= 992px) -->
-    <div id="portfolio-lang-switcher" role="group" aria-label="Language">
-        <i class="fas fa-globe portfolio-lang-icon" aria-hidden="true"></i>
-        {% if LANGUAGE_CODE == 'en' %}
-        <span class="portfolio-lang-option active">EN</span>
-        <span class="portfolio-lang-separator">|</span>
-        <form method="post" action="{% url 'set_language' %}"
-            style="display:inline; margin:0; padding:0;">
-            {% csrf_token %}
-            <input name="next" type="hidden" value="{{ request.get_full_path }}" />
-            <input name="language" type="hidden" value="es" />
-            <button type="submit" class="portfolio-lang-option">ES</button>
-        </form>
-        {% else %}
-        <form method="post" action="{% url 'set_language' %}"
-            style="display:inline; margin:0; padding:0;">
-            {% csrf_token %}
-            <input name="next" type="hidden" value="{{ request.get_full_path }}" />
-            <input name="language" type="hidden" value="en" />
-            <button type="submit" class="portfolio-lang-option">EN</button>
-        </form>
-        <span class="portfolio-lang-separator">|</span>
-        <span class="portfolio-lang-option active">ES</span>
-        {% endif %}
-    </div>
+    <!-- Floating Language Switcher - Desktop only (>= 992px).
+         Pages with their own top bar override this block with nothing and
+         render the switcher inside the bar: the bar would cover a floating one. -->
+    {% block floating_lang_switcher %}
+    {% include 'portfolio/includes/lang_switcher.html' with variant='floating' %}
+    {% endblock %}
 
     <!-- Navigation -->
     <nav class="top-nav">
