@@ -7,6 +7,7 @@ from django.conf import settings
 from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.text import Truncator
+from django.utils.translation import gettext as _, gettext_lazy
 import re
 
 class SEOGenerator:
@@ -15,9 +16,12 @@ class SEOGenerator:
     """
     
     # Default SEO settings
-    DEFAULT_TITLE = "Portfolio - Desarrollador Full Stack"
-    DEFAULT_DESCRIPTION = "Portfolio profesional de desarrollo web, proyectos innovadores y experiencia en tecnolog?as modernas."
-    DEFAULT_KEYWORDS = "desarrollador, full stack, web development, portfolio, proyectos, tecnolog?a"
+    # Lazy: these are evaluated per request, in the visitor's language
+    DEFAULT_TITLE = gettext_lazy("Portfolio - Full Stack Developer")
+    DEFAULT_DESCRIPTION = gettext_lazy(
+        "Professional web development portfolio: projects and experience with modern technologies."
+    )
+    DEFAULT_KEYWORDS = gettext_lazy("developer, full stack, web development, portfolio, projects, technology")
     DEFAULT_AUTHOR = "Portfolio Developer"
     
     @classmethod
@@ -59,8 +63,8 @@ class SEOGenerator:
             author = profile.name
             image_url = cls._get_image_url(profile.profile_image, request)
         else:
-            title = cls.DEFAULT_TITLE
-            description = cls.DEFAULT_DESCRIPTION
+            title = str(cls.DEFAULT_TITLE)
+            description = str(cls.DEFAULT_DESCRIPTION)
             author = cls.DEFAULT_AUTHOR
             image_url = base_context['default_image']
         
@@ -68,7 +72,7 @@ class SEOGenerator:
             **base_context,
             'title': title,
             'description': description,
-            'keywords': cls.DEFAULT_KEYWORDS,
+            'keywords': str(cls.DEFAULT_KEYWORDS),
             'author': author,
             'canonical_url': base_context['base_url'],
             'og_type': 'website',
@@ -92,9 +96,10 @@ class SEOGenerator:
         """
         base_context = cls.get_base_context(request)
         
-        title = f"{project.title} - Proyecto"
+        # Plain title: this is what link previews show
+        title = project.title
         description = cls._clean_text(project.description)[:160]
-        keywords = f"proyecto, {project.title}, " + ", ".join([
+        keywords = f"{_('project')}, {project.title}, " + ", ".join([
             tech.safe_translation_getter('name', any_language=True) or tech.identifier
             for tech in project.knowledge_bases.all()[:5]
         ])
@@ -131,7 +136,8 @@ class SEOGenerator:
         """
         base_context = cls.get_base_context(request)
         
-        title = f"{post.title} - Blog"
+        # Plain title: this is what link previews show
+        title = post.title
         description = post.excerpt or cls._clean_text(post.content)[:160]
         keywords = f"blog, {post.title}"
         if post.tags:
@@ -174,18 +180,19 @@ class SEOGenerator:
         
         if category:
             title = f"Blog - {category.name}"
-            description = f"Art?culos sobre {category.name.lower()}. {category.description or 'Contenido especializado y actualizado.'}"
+            description = _("Posts about %(category)s.") % {'category': category.name.lower()}
+            description += " " + (category.description or _("Specialized, up-to-date content."))
             canonical_url = f"{base_context['base_url']}{reverse('portfolio:post-list')}?category={category.slug}"
         else:
-            title = "Blog - Art?culos y Noticias"
-            description = "Art?culos sobre desarrollo web, tecnolog?a y proyectos. Contenido actualizado regularmente."
+            title = "Blog"
+            description = _("Posts about web development, technology and projects. Updated regularly.")
             canonical_url = f"{base_context['base_url']}{reverse('portfolio:post-list')}"
         
         return {
             **base_context,
             'title': title,
             'description': description,
-            'keywords': "blog, art?culos, desarrollo web, tecnolog?a, noticias",
+            'keywords': _("blog, posts, web development, technology, news"),
             'canonical_url': canonical_url,
             'og_type': 'website',
             'og_title': title,
@@ -209,12 +216,14 @@ class SEOGenerator:
         base_context = cls.get_base_context(request)
         
         if profile:
-            title = f"CV - {profile.name}"
-            description = f"Curr?culum profesional de {profile.name}. {profile.title}. Experiencia, educaci?n y habilidades."
+            title = _("Resume - %(name)s") % {'name': profile.name}
+            description = _(
+                "Professional resume of %(name)s. %(title)s. Experience, education and skills."
+            ) % {'name': profile.name, 'title': profile.title}
             author = profile.name
         else:
-            title = "CV - Curr?culum Profesional"
-            description = "Curr?culum profesional con experiencia, educaci?n y habilidades t?cnicas."
+            title = _("Professional resume")
+            description = _("Professional resume with experience, education and technical skills.")
             author = cls.DEFAULT_AUTHOR
         
         canonical_url = f"{base_context['base_url']}{reverse('portfolio:resume')}"
@@ -223,7 +232,7 @@ class SEOGenerator:
             **base_context,
             'title': title,
             'description': description,
-            'keywords': "cv, curr?culum, experiencia, educaci?n, habilidades, profesional",
+            'keywords': _("cv, resume, experience, education, skills, professional"),
             'author': author,
             'canonical_url': canonical_url,
             'og_type': 'profile',
@@ -299,7 +308,7 @@ class SEOGenerator:
             "@type": "WebSite",
             "name": getattr(settings, 'SITE_NAME', 'Portfolio'),
             "url": base_url,
-            "description": cls.DEFAULT_DESCRIPTION,
+            "description": str(cls.DEFAULT_DESCRIPTION),
             "potentialAction": {
                 "@type": "SearchAction",
                 "target": f"{base_url}/search?q={{search_term_string}}",
