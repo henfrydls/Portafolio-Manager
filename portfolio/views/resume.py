@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.db.models import Q, Count
 from django.db.models.functions import Coalesce
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils import translation, timezone
@@ -75,8 +75,17 @@ class ResumeView(TemplateView):
         return context
 
 
-class ResumePDFView(TemplateView):
-    template_name = 'portfolio/resume_pdf.html'
+class ResumePDFView(View):
+    """Stable link to the resume PDF: sends the visitor to the file uploaded
+    for the active language, falling back to whichever one exists."""
+
+    def get(self, request, *args, **kwargs):
+        profile = Profile.objects.first()
+        language = translation.get_language() or settings.LANGUAGE_CODE
+        resume_pdf = profile.get_resume_pdf_for_language(language) if profile else None
+        if not resume_pdf:
+            raise Http404("No resume PDF has been uploaded")
+        return redirect(resume_pdf.url)
 
 
 # ============================================================================
