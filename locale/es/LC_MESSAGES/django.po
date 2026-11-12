@@ -3671,3 +3671,44 @@ msgstr "URL completa del script de Umami. Vacío desactiva la analítica."
 
 msgid "Website ID from your Umami dashboard."
 msgstr "ID del sitio en tu panel de Umami."
+
+# SEO metadata (portfolio/utils/seo.py)
+
+msgid "Portfolio - Full Stack Developer"
+msgstr "Portfolio - Desarrollador Full Stack"
+
+msgid "Professional web development portfolio: projects and experience with modern technologies."
+msgstr "Portfolio profesional de desarrollo web: proyectos y experiencia con tecnologías modernas."
+
+msgid "developer, full stack, web development, portfolio, projects, technology"
+msgstr "desarrollador, full stack, desarrollo web, portfolio, proyectos, tecnología"
+
+msgid "project"
+msgstr "proyecto"
+
+msgid "Posts about %(category)s."
+msgstr "Artículos sobre %(category)s."
+
+msgid "Specialized, up-to-date content."
+msgstr "Contenido especializado y actualizado."
+
+msgid "Posts about web development, technology and projects. Updated regularly."
+msgstr "Artículos sobre desarrollo web, tecnología y proyectos. Contenido actualizado regularmente."
+
+msgid "blog, posts, web development, technology, news"
+msgstr "blog, artículos, desarrollo web, tecnología, noticias"
+
+msgid "Resume - %(name)s"
+msgstr "CV - %(name)s"
+
+msgid "Professional resume of %(name)s. %(title)s. Experience, education and skills."
+msgstr "Currículum profesional de %(name)s. %(title)s. Experiencia, educación y habilidades."
+
+msgid "Professional resume"
+msgstr "Currículum profesional"
+
+msgid "Professional resume with experience, education and technical skills."
+msgstr "Currículum profesional con experiencia, educación y habilidades técnicas."
+
+msgid "cv, resume, experience, education, skills, professional"
+msgstr "cv, currículum, experiencia, educación, habilidades, profesional"
