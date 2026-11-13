@@ -109,10 +109,12 @@ class ProjectListAdminView(AdminRequiredMixin, ListView):
         # Filtros de búsqueda
         search = self.request.GET.get('search')
         if search:
+            # Translated fields live on the translations table. Searching
+            # every language can match a project twice, hence distinct().
             queryset = queryset.filter(
-                Q(title__icontains=search) | 
-                Q(description__icontains=search)
-            )
+                Q(translations__title__icontains=search) |
+                Q(translations__description__icontains=search)
+            ).distinct()
         
         visibility = self.request.GET.get('visibility')
         if visibility:
