@@ -88,16 +88,9 @@ SESSION_COOKIE_SECURE = False
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
 
-# Test-specific middleware (remove some for speed)
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-]
+# MIDDLEWARE is deliberately not overridden: tests run with the same stack as
+# production. A trimmed list let the language bug in #115 ship with a green
+# suite, because the middleware that caused it never ran under test.
 
 # Coverage settings
 COVERAGE_MODULE_EXCLUDES = [

@@ -5,7 +5,7 @@ Covers issue #115: /es/ URLs returned 404 on a cold visit and the browser's
 preferred language was ignored, so Spanish content was unreachable.
 """
 from django.conf import settings
-from django.test import TestCase, Client, override_settings
+from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils import timezone, translation
 
@@ -20,19 +20,6 @@ SPANISH_HEADER = 'es-DO,es;q=0.9,en;q=0.8'
 ENGLISH_HEADER = 'en-US,en;q=0.9'
 
 
-def middleware_like_production():
-    """config.settings.test drops SiteLanguageMiddleware, so language behaviour
-    was never exercised. Put it back where production has it: right after
-    LocaleMiddleware, which is the ordering the whole design depends on."""
-    middleware = list(settings.MIDDLEWARE)
-    target = 'portfolio.middleware.SiteLanguageMiddleware'
-    if target not in middleware:
-        locale_index = middleware.index('django.middleware.locale.LocaleMiddleware')
-        middleware.insert(locale_index + 1, target)
-    return middleware
-
-
-@override_settings(MIDDLEWARE=middleware_like_production())
 class BasePublicPagesTest(TestCase):
     """Builds the minimum public content needed to render every public page."""
 
@@ -283,7 +270,6 @@ class SetLanguageViewTest(BasePublicPagesTest):
         self.assertEqual(response['Location'], '/es/')
 
 
-@override_settings(MIDDLEWARE=middleware_like_production())
 class RedirectSafetyTest(BasePublicPagesTest):
     """The switcher takes a 'next' URL from the request and rewrites its
     language prefix. Both the input and the rewritten result must stay on
