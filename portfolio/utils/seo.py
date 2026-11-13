@@ -7,6 +7,7 @@ from django.conf import settings
 from django.urls import reverse, translate_url
 from django.utils.html import strip_tags
 from django.utils.translation import gettext as _, gettext_lazy
+import json
 import re
 
 class SEOGenerator:
@@ -262,8 +263,8 @@ class SEOGenerator:
             "jobTitle": profile.title,
             "description": cls._clean_text(profile.bio) if profile.bio else None,
             "url": base_url,
-            "email": profile.email,
-            "telephone": profile.phone if profile.phone else None,
+            # No email or phone: this markup is public and harvested by
+            # scrapers. Visitors reach the owner through the contact form.
             "address": {
                 "@type": "PostalAddress",
                 "addressLocality": profile.location
@@ -305,12 +306,23 @@ class SEOGenerator:
             "name": getattr(settings, 'SITE_NAME', 'Portfolio'),
             "url": base_url,
             "description": str(cls.DEFAULT_DESCRIPTION),
-            "potentialAction": {
-                "@type": "SearchAction",
-                "target": f"{base_url}/search?q={{search_term_string}}",
-                "query-input": "required name=search_term_string"
-            }
         }
+
+    @staticmethod
+    def to_json_ld(data):
+        """
+        Serialize structured data for a <script type="application/ld+json">.
+
+        The text ends up inside a script element, where a "</script>" in a
+        bio would close it. Escape the same characters Django's json_script
+        does; they stay valid JSON.
+        """
+        if not data:
+            return ''
+        text = json.dumps(data, ensure_ascii=False)
+        return (text.replace('<', '\\u003C')
+                    .replace('>', '\\u003E')
+                    .replace('&', '\\u0026'))
     
     @classmethod
     def _page_links(cls, canonical_url):
