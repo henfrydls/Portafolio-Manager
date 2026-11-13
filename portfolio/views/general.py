@@ -1,5 +1,6 @@
 import logging
 import uuid
+from datetime import timedelta
 import os
 import urllib.request
 import urllib.parse
@@ -8,10 +9,11 @@ from django.conf import settings
 from django.contrib import messages
 from django.core.cache import cache
 from django.core.paginator import Paginator
-from django.http import HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
+from django.templatetags.static import static
 from django.urls import reverse
-from django.utils import translation
+from django.utils import timezone, translation
 from django.utils.translation import gettext as _
 from django.views.generic import TemplateView, View
 from django.core.files.storage import default_storage
@@ -291,36 +293,47 @@ def robots_txt(request):
 
 
 def security_txt(request):
-    """Generate security.txt file"""
+    """
+    Serve /.well-known/security.txt (RFC 9116) when a contact is configured.
+
+    SECURITY_CONTACT is an email address or an https:// URL. Without it the
+    file does not exist: a made-up address would send reports nowhere.
+    """
+    contact = (getattr(settings, 'SECURITY_CONTACT', '') or '').strip()
+    if not contact:
+        raise Http404("No security contact configured")
+    if '://' not in contact and not contact.startswith('mailto:'):
+        contact = f"mailto:{contact}"
+
+    base_url = f"{request.scheme}://{request.get_host()}"
+    # The RFC requires an expiry; the file is generated, so it is always fresh
+    expires = (timezone.now() + timedelta(days=365)).strftime('%Y-%m-%dT%H:%M:%SZ')
     lines = [
-        "Contact: mailto:security@example.com",
-        "Preferred-Languages: en, es",
-        "Canonical: https://example.com/.well-known/security.txt",
+        f"Contact: {contact}",
+        f"Expires: {expires}",
+        "Preferred-Languages: " + ", ".join(code for code, _name in settings.LANGUAGES),
+        f"Canonical: {base_url}/.well-known/security.txt",
     ]
-    return HttpResponse("\n".join(lines), content_type="text/plain")
+    return HttpResponse("\n".join(lines) + "\n", content_type="text/plain; charset=utf-8")
 
 
 def manifest_json(request):
     """Generate manifest.json for PWA"""
     manifest = {
-        "name": "Portfolio",
+        "name": getattr(settings, 'SITE_NAME', 'Portfolio'),
         "short_name": "Portfolio",
-        "description": "Professional Portfolio",
         "start_url": "/",
         "display": "standalone",
         "background_color": "#ffffff",
-        "theme_color": "#000000",
+        "theme_color": "#2563eb",
         "icons": [
             {
-                "src": "/static/images/icon-192.png",
-                "sizes": "192x192",
-                "type": "image/png"
-            },
-            {
-                "src": "/static/images/icon-512.png",
-                "sizes": "512x512",
-                "type": "image/png"
+                "src": static(f'images/favicon/web-app-manifest-{size}x{size}.png'),
+                "sizes": f"{size}x{size}",
+                "type": "image/png",
+                "purpose": "maskable",
             }
-        ]
+            for size in (192, 512)
+        ],
     }
     return JsonResponse(manifest)

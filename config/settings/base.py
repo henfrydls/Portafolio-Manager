@@ -255,6 +255,10 @@ PAGE_VISIT_RETENTION_DAYS = 180      # Mantener visitas de los últimos 6 meses
 SITE_NAME = 'Portfolio Profesional'
 BASE_URL = 'http://localhost:8000'  # Will be overridden in production
 
+# Where to report security issues: an email address or an https:// URL.
+# /.well-known/security.txt is only served when this is set.
+SECURITY_CONTACT = os.environ.get('SECURITY_CONTACT', '')
+
 # Logging configuration
 LOGGING = {
     'version': 1,
