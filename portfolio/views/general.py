@@ -61,10 +61,12 @@ class HomeView(TemplateView):
         # Add SEO context
         seo_context = SEOGenerator.generate_home_seo(context['profile'], self.request)
         context.update(seo_context)
-        context['structured_data'] = [
-            SEOGenerator.generate_structured_data_person(context['profile'], self.request),
+        context['person_structured_data'] = SEOGenerator.to_json_ld(
+            SEOGenerator.generate_structured_data_person(context['profile'], self.request)
+        )
+        context['website_structured_data'] = SEOGenerator.to_json_ld(
             SEOGenerator.generate_structured_data_website(self.request)
-        ]
+        )
 
         # Initialize contact form
         if 'contact_form' not in context:
