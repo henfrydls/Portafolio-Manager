@@ -282,13 +282,16 @@ class PageVisitMiddleware(MiddlewareMixin):
             
         # Obtener la ruta de la URL
         path = request.path
+        # Las listas de rutas están escritas sin prefijo de idioma: /es/posts/
+        # es la misma página que /posts/
+        bare_path = self._strip_language_prefix(path)
         
         # Solo registrar las rutas explícitamente permitidas
-        if not self._is_tracked_path(path):
+        if not self._is_tracked_path(bare_path):
             return None
         
         # Verificar si la ruta debe ser excluida
-        if self._should_exclude_path(path):
+        if self._should_exclude_path(bare_path):
             return None
             
         # Verificar si es un bot conocido
@@ -307,7 +310,7 @@ class PageVisitMiddleware(MiddlewareMixin):
             view_name = 'unknown'
         
         # Generar título de página basado en la URL
-        page_title = self._generate_page_title(path, view_name)
+        page_title = self._generate_page_title(bare_path, view_name)
         
         # Registrar la visita de forma asíncrona para no afectar el rendimiento
         try:
@@ -323,6 +326,18 @@ class PageVisitMiddleware(MiddlewareMixin):
         
         return None
     
+    @staticmethod
+    def _strip_language_prefix(path):
+        """
+        Quita el prefijo de idioma (/es/posts/ -> /posts/). La URL se guarda
+        tal como se visitó; esto solo sirve para decidir si se registra.
+        """
+        for code, _name in settings.LANGUAGES:
+            prefix = f'/{code}'
+            if path == prefix or path.startswith(prefix + '/'):
+                return path[len(prefix):] or '/'
+        return path
+
     def _is_tracked_path(self, path):
         """
         Determina si la ruta actual está dentro del conjunto de páginas públicas que
