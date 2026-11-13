@@ -65,6 +65,10 @@ markers = [
     "unit: marks tests as unit tests",
     "security: marks tests as security tests",
 ]
+filterwarnings = [
+    # WhiteNoise looks for STATIC_ROOT, which only exists after collectstatic
+    "ignore:No directory at:UserWarning",
+]
 
 [tool.coverage.run]
 source = ["portfolio"]

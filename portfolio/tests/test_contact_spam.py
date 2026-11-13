@@ -13,6 +13,7 @@ These cover the holes that let a bot flood the inbox and relay scam
 import time
 from unittest import mock
 
+from django.contrib.auth import get_user_model
 from django.core import mail
 from django.core.cache import cache
 from django.test import TestCase, override_settings
@@ -86,6 +87,11 @@ class ContactViewSecurityTests(TestCase):
         self.url = reverse('portfolio:home')
         # Raw-SQL helper: Profile has legacy NOT NULL columns that .create() trips on.
         create_test_profile(email='owner@example.com')
+        # Without a superuser InitialSetupRedirectMiddleware sends every request
+        # to the setup wizard, and that redirect looks like the form's own 302
+        get_user_model().objects.create_superuser(
+            username='admin', email='admin@example.com', password='testpass123'
+        )
 
     def _payload(self, **over):
         data = {**VALID, 'form_loaded_at': str(time.time() - 30), 'honeypot': ''}
