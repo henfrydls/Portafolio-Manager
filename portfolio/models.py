@@ -798,6 +798,28 @@ class Project(TranslatableModel):
             pass
         return self.github_url
 
+    @property
+    def type_label(self):
+        """
+        Name of the project type shown to visitors.
+
+        The type chosen in the dashboard (`project_type_obj`) wins. The old
+        `project_type` choice field is only a fallback for projects that
+        never got one: it is no longer editable and defaults to "Other".
+        """
+        if self.project_type_obj_id:
+            name = self.project_type_obj.safe_translation_getter('name', any_language=True)
+            if name:
+                return name
+        return self.get_project_type_display()
+
+    @property
+    def type_key(self):
+        """Key used to pick the badge style: the type's slug, or the legacy value."""
+        if self.project_type_obj_id:
+            return (self.project_type_obj.slug or '').replace('-', '_')
+        return self.project_type
+
     def get_project_type_display_class(self):
         type_classes = {
             'framework': 'badge-framework',
@@ -811,7 +833,7 @@ class Project(TranslatableModel):
             'api': 'badge-api',
             'other': 'badge-other',
         }
-        return type_classes.get(self.project_type, 'badge-other')
+        return type_classes.get(self.type_key, 'badge-other')
 
     def get_featured_link_url(self):
         if self.featured_link_type == 'post' and self.featured_link_post:

@@ -261,7 +261,7 @@
 
                                 <div class="project-header-links">
                                     <span class="project-type-badge {{ project.get_project_type_display_class }}">
-                                        {{ project.get_project_type_display }}
+                                        {{ project.type_label }}
                                     </span>
                                     {% if project.demo_url %}
                                     <a href="{{ project.demo_url }}" target="_blank" class="project-demo-link" title="{% trans 'Live Site' %}">
