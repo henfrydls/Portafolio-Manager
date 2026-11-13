@@ -161,6 +161,55 @@ class HomeViewTest(TestCase):
         titles = [project.title for project in response.context['featured_projects']]
         self.assertEqual(titles, ["Featured first", "Featured second"])
 
+    def _typed_project(self, title, project_type=None, legacy='other'):
+        project = Project()
+        project.set_current_language('en')
+        project.title = title
+        project.description = "Description"
+        project.project_type_obj = project_type
+        project.project_type = legacy
+        project.visibility = 'public'
+        project.save()
+        return project
+
+    def _badges(self):
+        """{project title: (badge text, badge css class)} as rendered on the home page."""
+        import re
+        html = self.client.get(reverse('portfolio:home')).content.decode()
+        badges = re.findall(
+            r'<span class="project-type-badge ([\w-]+)">\s*(.*?)\s*</span>', html, re.S)
+        titles = [project.title for project in self.client.get(reverse('portfolio:home')).context['projects']]
+        return {title: (text, css) for title, (css, text) in zip(titles, badges)}
+
+    def test_project_badge_shows_the_type_chosen_in_the_dashboard(self):
+        """The dashboard edits project_type_obj; the card used to read the old
+        project_type field, which defaults to "Other"."""
+        self._typed_project("Dashboard project", project_type=self.project_type)
+        self.assertEqual(self._badges()["Dashboard project"][0], "Web Application")
+
+    def test_project_badge_is_translated(self):
+        self.project_type.set_current_language('es')
+        self.project_type.name = "Aplicación web"
+        self.project_type.save()
+        self._typed_project("Dashboard project", project_type=self.project_type)
+        html = self.client.get('/es/').content.decode()
+        self.assertIn("Aplicación web", html)
+
+    def test_project_without_a_type_falls_back_to_the_legacy_field(self):
+        self._typed_project("Legacy project", project_type=None, legacy='tool')
+        self.assertEqual(self._badges()["Legacy project"], ("Tool", "badge-tool"))
+
+    def test_badge_style_follows_the_dashboard_type(self):
+        tool = ProjectType.objects.create(slug='desktop-app')
+        tool.set_current_language('en')
+        tool.name = "Desktop App"
+        tool.save()
+        project = self._typed_project("Styled project", project_type=tool)
+        self.assertEqual(project.type_key, 'desktop_app')
+        self.assertEqual(project.get_project_type_display_class(),
+                         self._typed_project("Legacy styled", legacy='desktop_app')
+                             .get_project_type_display_class())
+
     def test_home_view_has_projects_context(self):
         """Test that home view has projects pagination"""
         response = self.client.get(reverse('portfolio:home'))
