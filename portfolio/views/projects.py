@@ -11,7 +11,7 @@ from ..forms.projects import SecureProjectForm, SecureProjectTypeForm, SecureKno
 from ..utils.decorators import AdminRequiredMixin
 from ..query_optimizations import QueryOptimizer
 from ..utils.seo import SEOGenerator
-from .base import EditingLanguageContextMixin, AutoTranslationStatusMixin, _build_translation_status_map
+from .base import EditingLanguageContextMixin, AutoTranslationStatusMixin, _build_translation_status_map, DeleteFeedbackMixin
 
 
 # ============================================================================
@@ -184,16 +184,14 @@ class ProjectUpdateView(AutoTranslationStatusMixin, AdminRequiredMixin, UpdateVi
         return super().form_invalid(form)
 
 
-class ProjectDeleteView(AdminRequiredMixin, DeleteView):
+class ProjectDeleteView(AdminRequiredMixin, DeleteFeedbackMixin, DeleteView):
     """Vista para eliminar proyecto con confirmación"""
     model = Project
     template_name = 'portfolio/admin/project_confirm_delete.html'
     success_url = reverse_lazy('portfolio:admin-project-list')
 
-    def delete(self, request, *args, **kwargs):
-        project = self.get_object()
-        messages.success(request, f'Proyecto "{project.title}" eliminado exitosamente.')
-        return super().delete(request, *args, **kwargs)
+    def get_success_message(self, project):
+        return f'Proyecto "{project.title}" eliminado exitosamente.'
 
 
 # ============================================================================
@@ -304,18 +302,16 @@ class ProjectTypeUpdateView(AutoTranslationStatusMixin, AdminRequiredMixin, Upda
         return super().form_invalid(form)
 
 
-class ProjectTypeDeleteView(AdminRequiredMixin, DeleteView):
+class ProjectTypeDeleteView(AdminRequiredMixin, DeleteFeedbackMixin, DeleteView):
     """Vista para eliminar tipos de proyecto."""
 
     model = ProjectType
     template_name = 'portfolio/admin/projecttype_confirm_delete.html'
     success_url = reverse_lazy('portfolio:admin-projecttype-list')
 
-    def delete(self, request, *args, **kwargs):
-        project_type = self.get_object()
+    def get_success_message(self, project_type):
         name = project_type.safe_translation_getter('name', any_language=True) or project_type.slug
-        messages.success(request, f'Tipo de proyecto "{name}" eliminado exitosamente.')
-        return super().delete(request, *args, **kwargs)
+        return f'Tipo de proyecto "{name}" eliminado exitosamente.'
 
 
 # ============================================================================
@@ -420,18 +416,16 @@ class KnowledgeBaseUpdateView(AutoTranslationStatusMixin, AdminRequiredMixin, Up
         return super().form_invalid(form)
 
 
-class KnowledgeBaseDeleteView(AdminRequiredMixin, DeleteView):
+class KnowledgeBaseDeleteView(AdminRequiredMixin, DeleteFeedbackMixin, DeleteView):
     """Vista para eliminar bases de conocimiento."""
 
     model = KnowledgeBase
     template_name = 'portfolio/admin/knowledgebase_confirm_delete.html'
     success_url = reverse_lazy('portfolio:admin-knowledgebase-list')
 
-    def delete(self, request, *args, **kwargs):
-        kb = self.get_object()
+    def get_success_message(self, kb):
         name = kb.safe_translation_getter('name', any_language=True) or kb.identifier
-        messages.success(request, f'Base de conocimiento "{name}" eliminada exitosamente.')
-        return super().delete(request, *args, **kwargs)
+        return f'Base de conocimiento "{name}" eliminada exitosamente.'
 
 
 class ToggleProjectFeaturedView(AdminRequiredMixin, TemplateView):

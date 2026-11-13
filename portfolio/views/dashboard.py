@@ -30,7 +30,7 @@ from ..forms.profile import SecureProfileForm
 from ..utils.decorators import AdminRequiredMixin
 from ..utils.email import EmailService
 from ..utils.analytics import cleanup_old_page_visits
-from .base import EditingLanguageContextMixin, AutoTranslationStatusMixin
+from .base import EditingLanguageContextMixin, AutoTranslationStatusMixin, DeleteFeedbackMixin
 
 LANGUAGE_SESSION_KEY = getattr(translation, 'LANGUAGE_SESSION_KEY', '_language')
 
@@ -566,16 +566,14 @@ class ContactDetailView(AdminRequiredMixin, DetailView):
         return response
 
 
-class ContactDeleteView(AdminRequiredMixin, DeleteView):
+class ContactDeleteView(AdminRequiredMixin, DeleteFeedbackMixin, DeleteView):
     """Vista para eliminar mensaje de contacto con confirmación"""
     model = Contact
     template_name = 'portfolio/admin/contact_confirm_delete.html'
     success_url = reverse_lazy('portfolio:admin-contact-list')
     
-    def delete(self, request, *args, **kwargs):
-        contact = self.get_object()
-        messages.success(request, f'Mensaje de "{contact.name}" eliminado exitosamente.')
-        return super().delete(request, *args, **kwargs)
+    def get_success_message(self, contact):
+        return f'Mensaje de "{contact.name}" eliminado exitosamente.'
 
 
 class ToggleContactReadView(AdminRequiredMixin, TemplateView):

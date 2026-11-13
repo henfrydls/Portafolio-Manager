@@ -16,7 +16,7 @@ from ..utils.decorators import AdminRequiredMixin
 from ..query_optimizations import QueryOptimizer
 from ..utils.seo import SEOGenerator
 from ..translation import schedule_auto_translation
-from .base import EditingLanguageContextMixin, AutoTranslationStatusMixin, _build_translation_status_map
+from .base import EditingLanguageContextMixin, AutoTranslationStatusMixin, _build_translation_status_map, DeleteFeedbackMixin
 
 
 # ============================================================================
@@ -268,16 +268,14 @@ class BlogPostUpdateView(AutoTranslationStatusMixin, AdminRequiredMixin, UpdateV
         return super().form_invalid(form)
 
 
-class BlogPostDeleteView(AdminRequiredMixin, DeleteView):
+class BlogPostDeleteView(AdminRequiredMixin, DeleteFeedbackMixin, DeleteView):
     """Vista para eliminar post del blog con confirmación"""
     model = BlogPost
     template_name = 'portfolio/admin/blogpost_confirm_delete.html'
     success_url = reverse_lazy('portfolio:admin-blog-list')
     
-    def delete(self, request, *args, **kwargs):
-        post = self.get_object()
-        messages.success(request, f'Post "{post.title}" eliminado exitosamente.')
-        return super().delete(request, *args, **kwargs)
+    def get_success_message(self, post):
+        return f'Post "{post.title}" eliminado exitosamente.'
 
 
 # ============================================================================
@@ -388,18 +386,16 @@ class CategoryUpdateView(AutoTranslationStatusMixin, AdminRequiredMixin, UpdateV
         return super().form_invalid(form)
 
 
-class CategoryDeleteView(AdminRequiredMixin, DeleteView):
+class CategoryDeleteView(AdminRequiredMixin, DeleteFeedbackMixin, DeleteView):
     """Vista para eliminar categorías."""
 
     model = Category
     template_name = 'portfolio/admin/category_confirm_delete.html'
     success_url = reverse_lazy('portfolio:admin-category-list')
 
-    def delete(self, request, *args, **kwargs):
-        category = self.get_object()
+    def get_success_message(self, category):
         name = category.safe_translation_getter('name', any_language=True) or category.slug
-        messages.success(request, f'Categoría "{name}" eliminada exitosamente.')
-        return super().delete(request, *args, **kwargs)
+        return f'Categoría "{name}" eliminada exitosamente.'
 
 
 # ============================================================================
