@@ -20,9 +20,14 @@
     {% if meta_description %}<meta name="description" content="{{ meta_description }}">
     {% elif og_description %}<meta name="description" content="{{ og_description }}">{% endif %}
 
+    <!-- Canonical URL and language versions -->
+    {% if canonical_url %}<link rel="canonical" href="{{ canonical_url }}">{% endif %}
+    {% for alternate in hreflang_alternates %}<link rel="alternate" hreflang="{{ alternate.hreflang }}" href="{{ alternate.href }}">
+    {% endfor %}
     <!-- Open Graph / Facebook / WhatsApp / Telegram / LinkedIn -->
     <meta property="og:type" content="{{ og_type|default:'website' }}">
-    {% if request %}<meta property="og:url" content="{{ request.build_absolute_uri }}">{% endif %}
+    {% if og_url %}<meta property="og:url" content="{{ og_url }}">
+    {% elif request %}<meta property="og:url" content="{{ request.build_absolute_uri }}">{% endif %}
     {% if og_title %}<meta property="og:title" content="{{ og_title }}">{% endif %}
     {% if og_description %}<meta property="og:description" content="{{ og_description }}">{% endif %}
     {% if og_image %}<meta property="og:image" content="{{ og_image }}">{% endif %}

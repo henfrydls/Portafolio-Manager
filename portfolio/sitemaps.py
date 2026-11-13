@@ -4,10 +4,21 @@ Sitemaps for portfolio application.
 
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
-from django.utils import timezone, translation
+from django.utils import timezone
 from .models import Project, BlogPost, Category
 
-class StaticViewSitemap(Sitemap):
+
+class BilingualSitemap(Sitemap):
+    """
+    Lists every page once per language and tells crawlers the entries are
+    versions of each other, mirroring the hreflang links in the page head.
+    """
+    i18n = True
+    alternates = True
+    x_default = True
+
+
+class StaticViewSitemap(BilingualSitemap):
     """Sitemap for static views."""
     priority = 0.8
     changefreq = 'weekly'
@@ -21,7 +32,7 @@ class StaticViewSitemap(Sitemap):
     def lastmod(self, item):
         return timezone.now()
 
-class ProjectSitemap(Sitemap):
+class ProjectSitemap(BilingualSitemap):
     """Sitemap for projects."""
     changefreq = 'monthly'
     priority = 0.7
@@ -35,7 +46,7 @@ class ProjectSitemap(Sitemap):
     def location(self, obj):
         return obj.get_absolute_url()
 
-class BlogPostSitemap(Sitemap):
+class BlogPostSitemap(BilingualSitemap):
     """Sitemap for blog posts."""
     changefreq = 'weekly'
     priority = 0.9
@@ -49,17 +60,19 @@ class BlogPostSitemap(Sitemap):
     def location(self, obj):
         return obj.get_absolute_url()
 
-class CategorySitemap(Sitemap):
+class CategorySitemap(BilingualSitemap):
     """Sitemap for blog categories."""
     changefreq = 'monthly'
     priority = 0.6
     
     def items(self):
-        current_language = translation.get_language()
-        qs = Category.objects.filter(is_active=True)
-        if current_language:
-            qs = qs.filter(translations__language_code=current_language)
-        return qs.order_by('translations__name')
+        # A category page with no published posts is an empty page
+        return (
+            Category.objects
+            .filter(is_active=True, blogpost__status='published')
+            .distinct()
+            .order_by('order', 'slug')
+        )
     
     def lastmod(self, obj):
         return obj.updated_at

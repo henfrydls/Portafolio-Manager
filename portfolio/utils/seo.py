@@ -4,9 +4,8 @@ Provides meta tags, Open Graph, and structured data generation.
 """
 
 from django.conf import settings
-from django.urls import reverse
+from django.urls import reverse, translate_url
 from django.utils.html import strip_tags
-from django.utils.text import Truncator
 from django.utils.translation import gettext as _, gettext_lazy
 import re
 
@@ -59,7 +58,7 @@ class SEOGenerator:
         
         if profile:
             title = f"{profile.name} - {profile.title}"
-            description = cls._clean_text(profile.bio)[:160] if profile.bio else cls.DEFAULT_DESCRIPTION
+            description = cls._truncate(cls._clean_text(profile.bio)) if profile.bio else str(cls.DEFAULT_DESCRIPTION)
             author = profile.name
             image_url = cls._get_image_url(profile.profile_image, request)
         else:
@@ -67,19 +66,20 @@ class SEOGenerator:
             description = str(cls.DEFAULT_DESCRIPTION)
             author = cls.DEFAULT_AUTHOR
             image_url = base_context['default_image']
-        
+
+        canonical_url = f"{base_context['base_url']}{reverse('portfolio:home')}"
+
         return {
             **base_context,
             'title': title,
             'description': description,
             'keywords': str(cls.DEFAULT_KEYWORDS),
             'author': author,
-            'canonical_url': base_context['base_url'],
             'og_type': 'website',
             'og_title': title,
             'og_description': description,
             'og_image': image_url,
-            'og_url': base_context['base_url'],
+            **cls._page_links(canonical_url),
         }
     
     @classmethod
@@ -98,7 +98,7 @@ class SEOGenerator:
         
         # Plain title: this is what link previews show
         title = project.title
-        description = cls._clean_text(project.description)[:160]
+        description = cls._truncate(cls._clean_text(project.description))
         keywords = f"{_('project')}, {project.title}, " + ", ".join([
             tech.safe_translation_getter('name', any_language=True) or tech.identifier
             for tech in project.knowledge_bases.all()[:5]
@@ -111,12 +111,11 @@ class SEOGenerator:
             'title': title,
             'description': description,
             'keywords': keywords,
-            'canonical_url': canonical_url,
             'og_type': 'article',
             'og_title': title,
             'og_description': description,
             'og_image': image_url,
-            'og_url': canonical_url,
+            **cls._page_links(canonical_url),
             'article_author': project.github_owner or base_context.get('site_name'),
             'article_published_time': project.created_at.isoformat(),
             'article_modified_time': project.updated_at.isoformat(),
@@ -138,7 +137,7 @@ class SEOGenerator:
         
         # Plain title: this is what link previews show
         title = post.title
-        description = post.excerpt or cls._clean_text(post.content)[:160]
+        description = post.excerpt or cls._truncate(cls._clean_text(post.content))
         keywords = f"blog, {post.title}"
         if post.tags:
             keywords += f", {post.tags}"
@@ -151,12 +150,11 @@ class SEOGenerator:
             'title': title,
             'description': description,
             'keywords': keywords,
-            'canonical_url': canonical_url,
             'og_type': 'article',
             'og_title': title,
             'og_description': description,
             'og_image': image_url,
-            'og_url': canonical_url,
+            **cls._page_links(canonical_url),
             'article_author': base_context.get('site_name'),
             'article_published_time': post.publish_date.isoformat(),
             'article_modified_time': post.updated_at.isoformat(),
@@ -193,12 +191,11 @@ class SEOGenerator:
             'title': title,
             'description': description,
             'keywords': _("blog, posts, web development, technology, news"),
-            'canonical_url': canonical_url,
             'og_type': 'website',
             'og_title': title,
             'og_description': description,
             'og_image': base_context['default_image'],
-            'og_url': canonical_url,
+            **cls._page_links(canonical_url),
         }
     
     @classmethod
@@ -234,12 +231,11 @@ class SEOGenerator:
             'description': description,
             'keywords': _("cv, resume, experience, education, skills, professional"),
             'author': author,
-            'canonical_url': canonical_url,
             'og_type': 'profile',
             'og_title': title,
             'og_description': description,
             'og_image': base_context['default_image'],
-            'og_url': canonical_url,
+            **cls._page_links(canonical_url),
         }
     
     @classmethod
@@ -316,6 +312,40 @@ class SEOGenerator:
             }
         }
     
+    @classmethod
+    def _page_links(cls, canonical_url):
+        """
+        The URLs that identify a page to search engines.
+
+        Every language version is its own canonical and lists all versions,
+        itself included, as alternates. `x-default` is the default-language
+        version, which is the one served without a language prefix.
+        """
+        alternates = [
+            {'hreflang': code, 'href': translate_url(canonical_url, code)}
+            for code, _name in settings.LANGUAGES
+        ]
+        alternates.append({
+            'hreflang': 'x-default',
+            'href': translate_url(canonical_url, settings.LANGUAGE_CODE),
+        })
+        return {
+            'canonical_url': canonical_url,
+            'og_url': canonical_url,
+            'hreflang_alternates': alternates,
+        }
+
+    @classmethod
+    def _truncate(cls, text, limit=160):
+        """Shorten text to `limit` characters without cutting a word in half."""
+        if len(text) <= limit:
+            return text
+        cut = text[:limit - 1]
+        # Only back up to a space if the cut landed inside a word
+        if not text[limit - 1].isspace() and ' ' in cut:
+            cut = cut[:cut.rindex(' ')]
+        return cut.rstrip(' ,;:.-') + '…'
+
     @classmethod
     def _get_base_url(cls, request):
         """Get base URL from request or settings."""
