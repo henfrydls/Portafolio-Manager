@@ -1,9 +1,41 @@
 from django.conf import settings
+from django.contrib import messages
+from django.db.models import ProtectedError
+from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils import translation
 from django.utils.translation import gettext as _
 from django.contrib.contenttypes.models import ContentType
 from ..models import SiteConfiguration, AutoTranslationRecord
+
+
+class DeleteFeedbackMixin:
+    """
+    Tell the admin what happened after a delete.
+
+    DeleteView handles POST through form_valid() since Django 4.0, so
+    overriding delete() no longer runs. Subclasses provide
+    get_success_message(obj); the object is read before it is deleted.
+    """
+
+    protected_message = (
+        'No se puede eliminar "{name}" porque todavía está en uso. '
+        'Reasigna o elimina primero los elementos que lo utilizan.'
+    )
+
+    def get_success_message(self, obj):
+        return ''
+
+    def form_valid(self, form):
+        message = self.get_success_message(self.object)
+        try:
+            response = super().form_valid(form)
+        except ProtectedError:
+            messages.error(self.request, self.protected_message.format(name=str(self.object)))
+            return HttpResponseRedirect(self.get_success_url())
+        if message:
+            messages.success(self.request, message)
+        return response
 
 
 class EditingLanguageContextMixin:

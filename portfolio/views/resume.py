@@ -15,7 +15,7 @@ from ..models import Profile, Experience, Education, Skill, Language, SiteConfig
 from ..forms.profile import SecureExperienceForm, SecureEducationForm, SecureSkillForm
 from ..utils.decorators import AdminRequiredMixin
 from ..utils.seo import SEOGenerator
-from .base import EditingLanguageContextMixin, AutoTranslationStatusMixin
+from .base import EditingLanguageContextMixin, AutoTranslationStatusMixin, DeleteFeedbackMixin
 
 
 # ============================================================================
@@ -198,17 +198,15 @@ class ExperienceUpdateView(AutoTranslationStatusMixin, AdminRequiredMixin, Updat
         return super().form_invalid(form)
 
 
-class ExperienceDeleteView(AdminRequiredMixin, DeleteView):
+class ExperienceDeleteView(AdminRequiredMixin, DeleteFeedbackMixin, DeleteView):
     """Vista para eliminar experiencia laboral con confirmacion"""
     model = Experience
     template_name = 'portfolio/admin/experience_confirm_delete.html'
     success_url = reverse_lazy('portfolio:admin-experience-list')
 
-    def delete(self, request, *args, **kwargs):
-        experience = self.get_object()
+    def get_success_message(self, experience):
         company = experience.safe_translation_getter('company') or experience.company
-        messages.success(request, f'Experiencia en {company} eliminada exitosamente.')
-        return super().delete(request, *args, **kwargs)
+        return f'Experiencia en {company} eliminada exitosamente.'
 
 
 # ============================================================================
@@ -298,17 +296,15 @@ class EducationUpdateView(AutoTranslationStatusMixin, AdminRequiredMixin, Update
         return super().form_invalid(form)
 
 
-class EducationDeleteView(AdminRequiredMixin, DeleteView):
+class EducationDeleteView(AdminRequiredMixin, DeleteFeedbackMixin, DeleteView):
     """Vista para eliminar educacion con confirmacion"""
     model = Education
     template_name = 'portfolio/admin/education_confirm_delete.html'
     success_url = reverse_lazy('portfolio:admin-education-list')
 
-    def delete(self, request, *args, **kwargs):
-        education = self.get_object()
+    def get_success_message(self, education):
         degree = education.safe_translation_getter('degree') or education.degree
-        messages.success(request, f'Educacion {degree} eliminada exitosamente.')
-        return super().delete(request, *args, **kwargs)
+        return f'Educacion {degree} eliminada exitosamente.'
 
 
 # ============================================================================
@@ -402,17 +398,15 @@ class SkillUpdateView(EditingLanguageContextMixin, AdminRequiredMixin, UpdateVie
         return super().form_invalid(form)
 
 
-class SkillDeleteView(AdminRequiredMixin, DeleteView):
+class SkillDeleteView(AdminRequiredMixin, DeleteFeedbackMixin, DeleteView):
     """Vista para eliminar habilidad con confirmación"""
     model = Skill
     template_name = 'portfolio/admin/skill_confirm_delete.html'
     success_url = reverse_lazy('portfolio:admin-skill-list')
     
-    def delete(self, request, *args, **kwargs):
-        skill = self.get_object()
+    def get_success_message(self, skill):
         name = skill.safe_translation_getter('name') or skill.name
-        messages.success(request, f'Habilidad "{name}" eliminada exitosamente.')
-        return super().delete(request, *args, **kwargs)
+        return f'Habilidad "{name}" eliminada exitosamente.'
 
 
 # ============================================================================
