@@ -3578,7 +3578,7 @@ msgstr "Todavía no hay proyectos disponibles."
 
 #: templates/portfolio/resume.html:5
 msgid "Resume"
-msgstr "Resumen"
+msgstr "CV"
 
 #: templates/portfolio/resume.html:14
 msgid "Back to Portfolio"
