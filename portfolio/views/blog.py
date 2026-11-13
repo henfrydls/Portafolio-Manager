@@ -141,11 +141,13 @@ class BlogPostListAdminView(AdminRequiredMixin, ListView):
         # Filtros de búsqueda
         search = self.request.GET.get('search')
         if search:
+            # Translated fields live on the translations table. Searching
+            # every language can match a post twice, hence distinct().
             queryset = queryset.filter(
-                Q(title__icontains=search) | 
-                Q(content__icontains=search) |
-                Q(excerpt__icontains=search)
-            )
+                Q(translations__title__icontains=search) |
+                Q(translations__content__icontains=search) |
+                Q(translations__excerpt__icontains=search)
+            ).distinct()
         
         status = self.request.GET.get('status')
         if status:
