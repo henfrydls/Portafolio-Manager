@@ -107,6 +107,7 @@ class SiteLanguageMiddleware(MiddlewareMixin):
         '/robots.txt',
         '/manifest.json',
         '/favicon.ico',
+        '/.well-known/',
     )
 
     def process_request(self, request):
