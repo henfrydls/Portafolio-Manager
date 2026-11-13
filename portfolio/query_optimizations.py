@@ -31,7 +31,8 @@ class QueryOptimizer:
             return None
     
     @classmethod
-    def get_optimized_projects(cls, visibility='public', featured_only=False, limit=None):
+    def get_optimized_projects(cls, visibility='public', featured_only=False, limit=None,
+                               most_starred_first=False):
         """
         Get projects with optimized queries (select_related, prefetch_related).
         
@@ -39,6 +40,8 @@ class QueryOptimizer:
             visibility: 'public', 'private', or 'all'
             featured_only: Only return featured projects
             limit: Maximum number of projects to return
+            most_starred_first: Sort by stars, most first. The manual order
+                only breaks ties between projects with the same stars.
             
         Returns:
             QuerySet: Optimized projects queryset
@@ -66,7 +69,10 @@ class QueryOptimizer:
             queryset = queryset.filter(featured=True)
         
         # Order and limit
-        queryset = queryset.order_by('order', '-created_at')
+        if most_starred_first:
+            queryset = queryset.order_by('-stars_count', 'order', '-created_at')
+        else:
+            queryset = queryset.order_by('order', '-created_at')
         
         if limit:
             queryset = queryset[:limit]

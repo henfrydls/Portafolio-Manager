@@ -120,6 +120,47 @@ class HomeViewTest(TestCase):
         # But no contact should be created
         self.assertEqual(Contact.objects.count(), 0)
 
+    def _project(self, title, stars, order=0):
+        project = Project()
+        project.set_current_language('en')
+        project.title = title
+        project.description = "Description"
+        project.project_type_obj = self.project_type
+        project.visibility = 'public'
+        project.stars_count = stars
+        project.order = order
+        project.save()
+        return project
+
+    def test_projects_are_listed_most_starred_first(self):
+        """Work & Projects shows the most starred project on top, whatever
+        the manual order says."""
+        self._project("Few stars", stars=2, order=0)
+        self._project("Most stars", stars=20, order=5)
+        self._project("Some stars", stars=7, order=1)
+
+        response = self.client.get(reverse('portfolio:home'))
+        titles = [project.title for project in response.context['projects']]
+        self.assertEqual(titles, ["Most stars", "Some stars", "Few stars"])
+
+    def test_manual_order_breaks_ties_between_equally_starred_projects(self):
+        self._project("Second", stars=7, order=2)
+        self._project("First", stars=7, order=1)
+        self._project("No stars", stars=0, order=0)
+
+        response = self.client.get(reverse('portfolio:home'))
+        titles = [project.title for project in response.context['projects']]
+        self.assertEqual(titles, ["First", "Second", "No stars"])
+
+    def test_featured_projects_keep_the_manual_order(self):
+        first = self._project("Featured first", stars=1, order=1)
+        second = self._project("Featured second", stars=50, order=2)
+        Project.objects.filter(pk__in=[first.pk, second.pk]).update(featured=True)
+
+        response = self.client.get(reverse('portfolio:home'))
+        titles = [project.title for project in response.context['featured_projects']]
+        self.assertEqual(titles, ["Featured first", "Featured second"])
+
     def test_home_view_has_projects_context(self):
         """Test that home view has projects pagination"""
         response = self.client.get(reverse('portfolio:home'))
