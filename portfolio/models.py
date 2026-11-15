@@ -1236,16 +1236,6 @@ class BlogPost(TranslatableModel):
             return self.category.name
         return "Sin categoria"
 
-    def get_category_color(self):
-        if hasattr(self, 'category') and self.category:
-            return self.category.color
-        return "#6c757d"
-
-    def get_category_icon(self):
-        if hasattr(self, 'category') and self.category:
-            return self.category.icon
-        return "fas fa-newspaper"
-
 
 class Contact(models.Model):
     """Modelo para mensajes de contacto"""

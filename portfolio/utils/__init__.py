@@ -22,4 +22,3 @@ from .decorators import (
     session_timeout_check
 )
 from .analytics import cleanup_old_page_visits, get_analytics_summary
-from .resume import get_education_summary, get_skills_summary
