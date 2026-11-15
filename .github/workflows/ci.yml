@@ -30,13 +30,14 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install flake8 black isort pylint
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Run Black (Code Formatting)
+      # Advisory: the code base is not formatted with black or isort yet, so
+      # these two report and never fail the job. Flake8 below is the gate.
+      - name: Run Black (advisory)
         run: black --check --diff .
         continue-on-error: true
 
-      - name: Run isort (Import Sorting)
+      - name: Run isort (advisory)
         run: isort --check-only --diff .
         continue-on-error: true
 
@@ -45,7 +46,7 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-      - name: Run Pylint (Deep Analysis)
+      - name: Run Pylint (advisory)
         run: pylint portfolio/ --exit-zero --reports=y
         continue-on-error: true
 
@@ -67,14 +68,15 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install bandit safety
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Run Bandit (Security Linter)
+      # Advisory reports, uploaded as artifacts. The gating security checks
+      # (CodeQL, Semgrep, dependency scans) live in security.yml.
+      - name: Run Bandit (advisory)
         run: bandit -r portfolio/ -f json -o bandit-report.json
         continue-on-error: true
 
-      - name: Run Safety (Dependency Checker)
-        run: safety check --json --output safety-report.json
+      - name: Run Safety (advisory)
+        run: safety check -r requirements/base.txt --json --output safety-report.json
         continue-on-error: true
 
       - name: Upload Security Reports
@@ -134,7 +136,7 @@ jobs:
           # Run all coverage commands in single container to preserve .coverage file
           docker compose run --rm --no-deps -v $PWD:/workspace web sh -c "
             coverage run --source='portfolio' manage.py test portfolio.tests &&
-            coverage report &&
+            coverage report --fail-under=48 &&
             coverage xml -o /workspace/coverage.xml
           "
 
@@ -215,7 +217,17 @@ jobs:
           echo "- Tests: ${{ needs.test.result }}" >> $GITHUB_STEP_SUMMARY
           echo "- Docker: ${{ needs.docker-build.result }}" >> $GITHUB_STEP_SUMMARY
 
+          failed=0
           if [ "${{ needs.test.result }}" != "success" ]; then
             echo "::error::Tests failed"
-            exit 1
+            failed=1
           fi
+          if [ "${{ needs.lint.result }}" != "success" ]; then
+            echo "::error::Linting failed"
+            failed=1
+          fi
+          if [ "${{ needs.docker-build.result }}" != "success" ]; then
+            echo "::error::Docker build failed"
+            failed=1
+          fi
+          exit $failed
