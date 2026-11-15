@@ -1142,6 +1142,18 @@ class BlogPost(TranslatableModel):
     def __str__(self):
         return self.safe_translation_getter('title', any_language=True) or 'Post'
 
+    @staticmethod
+    def live_q(prefix=''):
+        """
+        Filter for the posts visitors can see: published, and not scheduled
+        for later. `prefix` reaches the post from another model
+        (`'blogpost__'` from Category).
+        """
+        return models.Q(**{
+            f'{prefix}status': 'published',
+            f'{prefix}publish_date__lte': timezone.now(),
+        })
+
     def save(self, *args, **kwargs):
         if not self.slug:
             # Opción A: Generate concise English slug

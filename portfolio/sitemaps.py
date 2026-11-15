@@ -4,7 +4,6 @@ Sitemaps for portfolio application.
 
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
-from django.utils import timezone
 from .models import Project, BlogPost, Category
 
 
@@ -30,7 +29,18 @@ class StaticViewSitemap(BilingualSitemap):
         return reverse(item)
     
     def lastmod(self, item):
-        return timezone.now()
+        # The home page and the post list change when a post does. Claiming
+        # "now" on every request tells crawlers nothing; the resume has no
+        # reliable date, so it gets none.
+        if item == 'portfolio:resume':
+            return None
+        latest = (
+            BlogPost.objects.filter(BlogPost.live_q())
+            .order_by('-updated_at')
+            .values_list('updated_at', flat=True)
+            .first()
+        )
+        return latest
 
 class ProjectSitemap(BilingualSitemap):
     """Sitemap for projects."""
@@ -52,7 +62,7 @@ class BlogPostSitemap(BilingualSitemap):
     priority = 0.9
     
     def items(self):
-        return BlogPost.objects.filter(status='published').order_by('-updated_at')
+        return BlogPost.objects.filter(BlogPost.live_q()).order_by('-updated_at')
     
     def lastmod(self, obj):
         return obj.updated_at
@@ -69,7 +79,7 @@ class CategorySitemap(BilingualSitemap):
         # A category page with no published posts is an empty page
         return (
             Category.objects
-            .filter(is_active=True, blogpost__status='published')
+            .filter(BlogPost.live_q('blogpost__'), is_active=True)
             .distinct()
             .order_by('order', 'slug')
         )
