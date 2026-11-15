@@ -3,6 +3,10 @@
 from django.db import migrations
 from django.utils.text import slugify
 
+from django.utils import timezone
+
+from portfolio.migration_utils import table_columns
+
 
 PROJECT_TYPES = [
     {
@@ -135,6 +139,9 @@ def create_default_project_types(apps, schema_editor):
     connection = schema_editor.connection
     cursor = connection.cursor()
 
+    has_legacy_columns = "name" in table_columns(connection, "portfolio_projecttype")
+    now = timezone.now()
+
     for entry in PROJECT_TYPES:
         slug = slugify(entry["en"]["name"])
 
@@ -145,12 +152,24 @@ def create_default_project_types(apps, schema_editor):
         if row:
             project_type_id = row[0]
         else:
-            # Use raw SQL to insert since PostgreSQL still has legacy 'name' and 'description' columns
-            cursor.execute(
-                "INSERT INTO portfolio_projecttype (slug, is_active, \"order\", name, description, created_at, updated_at) "
-                "VALUES (%s, %s, %s, %s, %s, NOW(), NOW()) RETURNING id",
-                [slug, True, entry["order"], entry["en"]["name"], entry["en"]["description"]]
-            )
+            # Raw SQL because PostgreSQL still has legacy 'name' and
+            # 'description' columns; SQLite dropped them in 0024.
+            if has_legacy_columns:
+                cursor.execute(
+                    "INSERT INTO portfolio_projecttype "
+                    "(slug, is_active, \"order\", name, description, created_at, updated_at) "
+                    "VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                    [slug, True, entry["order"], entry["en"]["name"],
+                     entry["en"]["description"], now, now]
+                )
+            else:
+                cursor.execute(
+                    "INSERT INTO portfolio_projecttype "
+                    "(slug, is_active, \"order\", created_at, updated_at) "
+                    "VALUES (%s, %s, %s, %s, %s)",
+                    [slug, True, entry["order"], now, now]
+                )
+            cursor.execute("SELECT id FROM portfolio_projecttype WHERE slug = %s", [slug])
             project_type_id = cursor.fetchone()[0]
 
         # Create or update English translation

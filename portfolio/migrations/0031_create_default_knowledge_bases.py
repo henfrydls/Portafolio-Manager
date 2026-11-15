@@ -3,6 +3,8 @@
 from django.db import migrations
 from django.utils.text import slugify
 
+from portfolio.migration_utils import table_columns
+
 
 COMMON_KNOWLEDGE_ICONS = {
     # Programming Languages
@@ -181,6 +183,7 @@ def create_default_knowledge_bases(apps, schema_editor):
     KnowledgeBaseTranslation = apps.get_model("portfolio", "KnowledgeBaseTranslation")
     connection = schema_editor.connection
     cursor = connection.cursor()
+    has_legacy_name = "name" in table_columns(connection, "portfolio_knowledgebase")
 
     for name, icon in COMMON_KNOWLEDGE_ICONS.items():
         identifier = _identifier_from_name(name)
@@ -190,13 +193,22 @@ def create_default_knowledge_bases(apps, schema_editor):
 
         color = COLOR_MAPPING.get(name, "#000000")
 
-        # Use raw SQL to insert since PostgreSQL still has legacy 'name' column
-        # but Django's parler expects it to be in the translation table only
+        # Raw SQL because PostgreSQL still has a legacy NOT NULL 'name' column
+        # the model no longer knows about; SQLite dropped it in 0024.
+        if has_legacy_name:
+            cursor.execute(
+                "INSERT INTO portfolio_knowledgebase (identifier, icon, color, name) "
+                "VALUES (%s, %s, %s, %s)",
+                [identifier, icon, color, name]
+            )
+        else:
+            cursor.execute(
+                "INSERT INTO portfolio_knowledgebase (identifier, icon, color) "
+                "VALUES (%s, %s, %s)",
+                [identifier, icon, color]
+            )
         cursor.execute(
-            "INSERT INTO portfolio_knowledgebase (identifier, icon, color, name) "
-            "VALUES (%s, %s, %s, %s) RETURNING id",
-            [identifier, icon, color, name]
-        )
+            "SELECT id FROM portfolio_knowledgebase WHERE identifier = %s", [identifier])
         kb_id = cursor.fetchone()[0]
 
         # Create translations

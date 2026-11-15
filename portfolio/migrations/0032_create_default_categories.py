@@ -3,6 +3,10 @@
 from django.db import migrations
 from django.utils.text import slugify
 
+from django.utils import timezone
+
+from portfolio.migration_utils import table_columns
+
 
 CATEGORIES = [
     {
@@ -38,6 +42,9 @@ def create_default_categories(apps, schema_editor):
     connection = schema_editor.connection
     cursor = connection.cursor()
 
+    has_legacy_columns = "name" in table_columns(connection, "portfolio_category")
+    now = timezone.now()
+
     for entry in CATEGORIES:
         slug = slugify(entry["en"]["name"])
         en_name = entry["en"]["name"]
@@ -49,12 +56,23 @@ def create_default_categories(apps, schema_editor):
         if row:
             category_id = row[0]
         else:
-            # Use raw SQL to insert since PostgreSQL still has legacy 'name' and 'description' columns
-            cursor.execute(
-                "INSERT INTO portfolio_category (slug, is_active, \"order\", name, description, created_at, updated_at) "
-                "VALUES (%s, %s, %s, %s, %s, NOW(), NOW()) RETURNING id",
-                [slug, True, entry["order"], en_name, entry["en"]["description"]]
-            )
+            # Raw SQL because PostgreSQL still has legacy 'name' and
+            # 'description' columns; SQLite dropped them in 0029.
+            if has_legacy_columns:
+                cursor.execute(
+                    "INSERT INTO portfolio_category "
+                    "(slug, is_active, \"order\", name, description, created_at, updated_at) "
+                    "VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                    [slug, True, entry["order"], en_name, entry["en"]["description"], now, now]
+                )
+            else:
+                cursor.execute(
+                    "INSERT INTO portfolio_category "
+                    "(slug, is_active, \"order\", created_at, updated_at) "
+                    "VALUES (%s, %s, %s, %s, %s)",
+                    [slug, True, entry["order"], now, now]
+                )
+            cursor.execute("SELECT id FROM portfolio_category WHERE slug = %s", [slug])
             category_id = cursor.fetchone()[0]
 
         # Create or update English translation
