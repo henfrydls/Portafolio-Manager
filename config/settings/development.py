@@ -54,9 +54,6 @@ csrf_origins_env = os.environ.get('CSRF_TRUSTED_ORIGINS_DEV', '')
 if csrf_origins_env:
     CSRF_TRUSTED_ORIGINS.extend(csrf_origins_env.split(','))
 
-# Static files configuration for development
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
-
 # Cache configuration (Redis if REDIS_URL is set; otherwise LocMem)
 DEFAULT_CACHE = {
     'default': {

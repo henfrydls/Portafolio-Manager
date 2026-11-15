@@ -61,10 +61,15 @@ csrf_origins_env = os.environ.get('CSRF_TRUSTED_ORIGINS_STAGING', '')
 if csrf_origins_env:
     CSRF_TRUSTED_ORIGINS.extend(csrf_origins_env.split(','))
 
-# Static files configuration for staging
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-WHITENOISE_USE_FINDERS = True
-WHITENOISE_AUTOREFRESH = True
+# Static files configuration for staging: hashed file names (so a deploy
+# never leaves browsers with stale CSS or JS) served compressed by WhiteNoise
+# from STATIC_ROOT. `collectstatic` must run before the server starts.
+STORAGES = {
+    **STORAGES,
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
 
 # Security settings for staging (similar to production but less strict)
 # Allow HTTP when running without SSL certificate (localhost or IP addresses)
