@@ -22,4 +22,6 @@ def profile_context(request):
     return {
         'profile': profile,
         'site_config': site_config,
+        # True once the visitor picked a language with the switcher
+        'language_chosen': settings.LANGUAGE_COOKIE_NAME in request.COOKIES,
     }

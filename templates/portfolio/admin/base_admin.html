@@ -7,6 +7,9 @@
 {# Disable the messages banner from base.html - we use custom toast notifications instead #}
 {% block messages_banner %}{% endblock %}
 
+{# The language hint is for visitors, not for the dashboard #}
+{% block lang_hint %}{% endblock %}
+
 {% block extra_css %}
 <style>
 /* Base Styles - Consistent with blog design */

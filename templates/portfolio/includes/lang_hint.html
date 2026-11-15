@@ -1,0 +1,179 @@
+{% comment %}
+Language hint. Tells a first-time visitor that the page exists in their
+browser's language, written in that language rather than the page's.
+
+Unprefixed URLs already follow the browser's language, so this is for the
+visitor who opens a link to one language with a browser set to the other
+(a shared /es/ link, for instance).
+
+Not rendered once the visitor has picked a language with the switcher.
+Otherwise rendered hidden: the script at the end shows it only when the
+browser's preferred language is the other one, and remembers in
+localStorage that it was closed or used, so it never comes back. It never
+changes the language on its own.
+{% endcomment %}
+{% if not language_chosen %}
+{% if LANGUAGE_CODE == 'en' %}
+<aside id="portfolio-lang-hint" class="lang-hint" lang="es" data-hint-language="es"
+    aria-label="Idioma" hidden>
+    <i class="fas fa-globe lang-hint__icon" aria-hidden="true"></i>
+    <span class="lang-hint__text">También disponible en español.</span>
+    <form method="post" action="{% url 'set_language' %}" class="lang-hint__form">
+        {% csrf_token %}
+        <input name="next" type="hidden" value="{{ request.get_full_path }}" />
+        <input name="language" type="hidden" value="es" />
+        <button type="submit" class="lang-hint__action">Ver en español</button>
+    </form>
+    <button type="button" class="lang-hint__close" aria-label="Cerrar">&times;</button>
+</aside>
+{% else %}
+<aside id="portfolio-lang-hint" class="lang-hint" lang="en" data-hint-language="en"
+    aria-label="Language" hidden>
+    <i class="fas fa-globe lang-hint__icon" aria-hidden="true"></i>
+    <span class="lang-hint__text">Also available in English.</span>
+    <form method="post" action="{% url 'set_language' %}" class="lang-hint__form">
+        {% csrf_token %}
+        <input name="next" type="hidden" value="{{ request.get_full_path }}" />
+        <input name="language" type="hidden" value="en" />
+        <button type="submit" class="lang-hint__action">View in English</button>
+    </form>
+    <button type="button" class="lang-hint__close" aria-label="Close">&times;</button>
+</aside>
+{% endif %}
+<style>
+    .lang-hint {
+        position: fixed;
+        left: 50%;
+        bottom: 20px;
+        transform: translateX(-50%);
+        z-index: 1100;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        max-width: calc(100vw - 32px);
+        padding: 10px 12px 10px 16px;
+        background: #ffffff;
+        color: #242424;
+        border: 1px solid #e5e5e5;
+        border-radius: 10px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+        font-family: 'Montserrat', sans-serif;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    .lang-hint[hidden] {
+        display: none;
+    }
+
+    .lang-hint__icon {
+        color: #999;
+        font-size: 14px;
+    }
+
+    .lang-hint__form {
+        display: inline;
+        margin: 0;
+        padding: 0;
+    }
+
+    .lang-hint__action {
+        background: none;
+        border: none;
+        padding: 6px 4px;
+        margin: 0;
+        color: #0085ff;
+        font: inherit;
+        font-weight: 600;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+    .lang-hint__action:hover {
+        color: #0066cc;
+        text-decoration: underline;
+    }
+
+    .lang-hint__close {
+        background: none;
+        border: none;
+        /* 36px square: comfortable to tap on a phone */
+        width: 36px;
+        height: 36px;
+        margin: -4px -4px -4px 0;
+        color: #777;
+        font-size: 22px;
+        line-height: 1;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .lang-hint__close:hover {
+        background: #f2f2f2;
+        color: #242424;
+    }
+
+    /* Phones: under the header, next to the switcher it points to, and
+       clear of the floating buttons some pages keep in the bottom corner */
+    @media (max-width: 575.98px) {
+        .lang-hint {
+            top: 68px;
+            bottom: auto;
+            left: 16px;
+            right: 16px;
+            transform: none;
+            max-width: none;
+        }
+
+        .lang-hint__text {
+            flex: 1;
+        }
+    }
+
+    @media print {
+        .lang-hint {
+            display: none;
+        }
+    }
+</style>
+<script>
+    (function () {
+        var hint = document.getElementById('portfolio-lang-hint');
+        if (!hint) { return; }
+
+        var STORAGE_KEY = 'portfolioLangHintSeen';
+
+        // Storage can be blocked (private windows): the hint still works,
+        // it just cannot remember that it was closed.
+        function alreadySeen() {
+            try { return window.localStorage.getItem(STORAGE_KEY) === '1'; }
+            catch (error) { return false; }
+        }
+
+        function remember() {
+            try { window.localStorage.setItem(STORAGE_KEY, '1'); }
+            catch (error) { /* nothing to do */ }
+        }
+
+        // Anyone who uses the regular switcher already knows where it is
+        document.querySelectorAll('#portfolio-lang-switcher form').forEach(function (form) {
+            form.addEventListener('submit', remember);
+        });
+
+        if (alreadySeen()) { return; }
+
+        // Only the first preference counts: "es-DO, en" is a Spanish reader,
+        // "en-US, es" is not.
+        var preferred = (navigator.languages && navigator.languages[0]) || navigator.language || '';
+        var browserLanguage = preferred.toLowerCase().split('-')[0];
+        if (browserLanguage !== hint.dataset.hintLanguage) { return; }
+
+        hint.hidden = false;
+        hint.querySelector('.lang-hint__form').addEventListener('submit', remember);
+        hint.querySelector('.lang-hint__close').addEventListener('click', function () {
+            remember();
+            hint.hidden = true;
+        });
+    })();
+</script>
+{% endif %}
