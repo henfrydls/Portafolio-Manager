@@ -3,7 +3,9 @@
 from django.db import migrations
 from django.utils.text import slugify
 
-from portfolio.migration_utils import insert_row
+from django.utils import timezone
+
+from portfolio.migration_utils import table_columns
 
 
 PROJECT_TYPES = [
@@ -137,6 +139,9 @@ def create_default_project_types(apps, schema_editor):
     connection = schema_editor.connection
     cursor = connection.cursor()
 
+    has_legacy_columns = "name" in table_columns(connection, "portfolio_projecttype")
+    now = timezone.now()
+
     for entry in PROJECT_TYPES:
         slug = slugify(entry["en"]["name"])
 
@@ -149,15 +154,21 @@ def create_default_project_types(apps, schema_editor):
         else:
             # Raw SQL because PostgreSQL still has legacy 'name' and
             # 'description' columns; SQLite dropped them in 0024.
-            insert_row(
-                connection, "portfolio_projecttype",
-                {"slug": slug, "is_active": True, "order": entry["order"]},
-                legacy_values={
-                    "name": entry["en"]["name"],
-                    "description": entry["en"]["description"],
-                },
-                timestamps=True,
-            )
+            if has_legacy_columns:
+                cursor.execute(
+                    "INSERT INTO portfolio_projecttype "
+                    "(slug, is_active, \"order\", name, description, created_at, updated_at) "
+                    "VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                    [slug, True, entry["order"], entry["en"]["name"],
+                     entry["en"]["description"], now, now]
+                )
+            else:
+                cursor.execute(
+                    "INSERT INTO portfolio_projecttype "
+                    "(slug, is_active, \"order\", created_at, updated_at) "
+                    "VALUES (%s, %s, %s, %s, %s)",
+                    [slug, True, entry["order"], now, now]
+                )
             cursor.execute("SELECT id FROM portfolio_projecttype WHERE slug = %s", [slug])
             project_type_id = cursor.fetchone()[0]
 

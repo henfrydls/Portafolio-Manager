@@ -1,25 +1,44 @@
 from django.db import migrations
 
-from portfolio.migration_utils import add_column_if_missing, drop_column_if_exists
+from portfolio.migration_utils import table_columns
 
 # Legacy columns whose content lives in the translation tables. PostgreSQL
-# kept them; the SQLite rebuilds in 0024 already dropped them.
+# kept them; the SQLite rebuilds already dropped them. The statements are
+# written out because DROP COLUMN IF EXISTS is PostgreSQL only.
 LEGACY_COLUMNS = (
-    ('portfolio_language', 'name', 'varchar(100)'),
-    ('portfolio_knowledgebase', 'name', 'varchar(100)'),
-    ('portfolio_projecttype', 'name', 'varchar(100)'),
-    ('portfolio_projecttype', 'description', 'text'),
+    (
+        'portfolio_language', 'name',
+        'ALTER TABLE portfolio_language DROP COLUMN name',
+        'ALTER TABLE portfolio_language ADD COLUMN name varchar(100) NULL',
+    ),
+    (
+        'portfolio_knowledgebase', 'name',
+        'ALTER TABLE portfolio_knowledgebase DROP COLUMN name',
+        'ALTER TABLE portfolio_knowledgebase ADD COLUMN name varchar(100) NULL',
+    ),
+    (
+        'portfolio_projecttype', 'name',
+        'ALTER TABLE portfolio_projecttype DROP COLUMN name',
+        'ALTER TABLE portfolio_projecttype ADD COLUMN name varchar(100) NULL',
+    ),
+    (
+        'portfolio_projecttype', 'description',
+        'ALTER TABLE portfolio_projecttype DROP COLUMN description',
+        'ALTER TABLE portfolio_projecttype ADD COLUMN description text NULL',
+    ),
 )
 
 
 def drop_legacy_columns(apps, schema_editor):
-    for table, column, _sql_type in LEGACY_COLUMNS:
-        drop_column_if_exists(schema_editor, table, column)
+    for table, column, drop_sql, _add_sql in LEGACY_COLUMNS:
+        if column in table_columns(schema_editor.connection, table):
+            schema_editor.execute(drop_sql)
 
 
 def restore_legacy_columns(apps, schema_editor):
-    for table, column, sql_type in LEGACY_COLUMNS:
-        add_column_if_missing(schema_editor, table, column, sql_type)
+    for table, column, _drop_sql, add_sql in LEGACY_COLUMNS:
+        if column not in table_columns(schema_editor.connection, table):
+            schema_editor.execute(add_sql)
 
 
 class Migration(migrations.Migration):

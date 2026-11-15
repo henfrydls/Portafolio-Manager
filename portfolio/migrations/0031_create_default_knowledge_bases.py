@@ -3,7 +3,7 @@
 from django.db import migrations
 from django.utils.text import slugify
 
-from portfolio.migration_utils import insert_row
+from portfolio.migration_utils import table_columns
 
 
 COMMON_KNOWLEDGE_ICONS = {
@@ -183,6 +183,7 @@ def create_default_knowledge_bases(apps, schema_editor):
     KnowledgeBaseTranslation = apps.get_model("portfolio", "KnowledgeBaseTranslation")
     connection = schema_editor.connection
     cursor = connection.cursor()
+    has_legacy_name = "name" in table_columns(connection, "portfolio_knowledgebase")
 
     for name, icon in COMMON_KNOWLEDGE_ICONS.items():
         identifier = _identifier_from_name(name)
@@ -194,11 +195,18 @@ def create_default_knowledge_bases(apps, schema_editor):
 
         # Raw SQL because PostgreSQL still has a legacy NOT NULL 'name' column
         # the model no longer knows about; SQLite dropped it in 0024.
-        insert_row(
-            connection, "portfolio_knowledgebase",
-            {"identifier": identifier, "icon": icon, "color": color},
-            legacy_values={"name": name},
-        )
+        if has_legacy_name:
+            cursor.execute(
+                "INSERT INTO portfolio_knowledgebase (identifier, icon, color, name) "
+                "VALUES (%s, %s, %s, %s)",
+                [identifier, icon, color, name]
+            )
+        else:
+            cursor.execute(
+                "INSERT INTO portfolio_knowledgebase (identifier, icon, color) "
+                "VALUES (%s, %s, %s)",
+                [identifier, icon, color]
+            )
         cursor.execute(
             "SELECT id FROM portfolio_knowledgebase WHERE identifier = %s", [identifier])
         kb_id = cursor.fetchone()[0]

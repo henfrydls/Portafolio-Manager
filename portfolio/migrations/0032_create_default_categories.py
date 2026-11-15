@@ -3,7 +3,9 @@
 from django.db import migrations
 from django.utils.text import slugify
 
-from portfolio.migration_utils import insert_row
+from django.utils import timezone
+
+from portfolio.migration_utils import table_columns
 
 
 CATEGORIES = [
@@ -40,6 +42,9 @@ def create_default_categories(apps, schema_editor):
     connection = schema_editor.connection
     cursor = connection.cursor()
 
+    has_legacy_columns = "name" in table_columns(connection, "portfolio_category")
+    now = timezone.now()
+
     for entry in CATEGORIES:
         slug = slugify(entry["en"]["name"])
         en_name = entry["en"]["name"]
@@ -53,12 +58,20 @@ def create_default_categories(apps, schema_editor):
         else:
             # Raw SQL because PostgreSQL still has legacy 'name' and
             # 'description' columns; SQLite dropped them in 0029.
-            insert_row(
-                connection, "portfolio_category",
-                {"slug": slug, "is_active": True, "order": entry["order"]},
-                legacy_values={"name": en_name, "description": entry["en"]["description"]},
-                timestamps=True,
-            )
+            if has_legacy_columns:
+                cursor.execute(
+                    "INSERT INTO portfolio_category "
+                    "(slug, is_active, \"order\", name, description, created_at, updated_at) "
+                    "VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                    [slug, True, entry["order"], en_name, entry["en"]["description"], now, now]
+                )
+            else:
+                cursor.execute(
+                    "INSERT INTO portfolio_category "
+                    "(slug, is_active, \"order\", created_at, updated_at) "
+                    "VALUES (%s, %s, %s, %s, %s)",
+                    [slug, True, entry["order"], now, now]
+                )
             cursor.execute("SELECT id FROM portfolio_category WHERE slug = %s", [slug])
             category_id = cursor.fetchone()[0]
 

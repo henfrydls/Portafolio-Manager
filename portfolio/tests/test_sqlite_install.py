@@ -15,7 +15,7 @@ from django.conf import settings
 from django.db import connection
 from django.test import SimpleTestCase, TestCase
 
-from portfolio.migration_utils import insert_row, table_columns
+from portfolio.migration_utils import table_columns
 
 SMOKE_CHECK = """
 from django.test import Client
@@ -63,18 +63,4 @@ class MigrationUtilsTest(TestCase):
     def test_table_columns(self):
         columns = table_columns(connection, 'portfolio_category')
         self.assertLessEqual({'id', 'slug', 'is_active', 'order'}, columns)
-
-    def test_legacy_values_are_written_only_to_existing_columns(self):
-        insert_row(
-            connection, 'portfolio_category',
-            {'slug': 'from-helper', 'is_active': True, 'order': 3},
-            legacy_values={'no_such_column': 'ignored'},
-            timestamps=True,
-        )
-        with connection.cursor() as cursor:
-            cursor.execute(
-                'SELECT "order", created_at FROM portfolio_category WHERE slug = %s',
-                ['from-helper'])
-            order, created_at = cursor.fetchone()
-        self.assertEqual(order, 3)
-        self.assertIsNotNone(created_at)
+        self.assertNotIn('no_such_column', columns)
