@@ -6,69 +6,93 @@ Unprefixed URLs already follow the browser's language, so this is for the
 visitor who opens a link to one language with a browser set to the other
 (a shared /es/ link, for instance).
 
+It is a small dark popover with a caret pointing at the language switcher,
+not a banner, so it stays out of the way of the page. The switcher is
+rendered more than once (mobile header, top bar or floating corner) and only
+one copy is visible, so the script anchors to whichever one has a box.
+
 Not rendered once the visitor has picked a language with the switcher.
-Otherwise rendered hidden: the script at the end shows it only when the
-browser's preferred language is the other one, and remembers in
-localStorage that it was closed or used, so it never comes back. It never
-changes the language on its own.
+Otherwise rendered hidden: the script shows it only when the browser's
+preferred language is the other one, a moment after load, keeps it for a few
+seconds (paused while hovered, focused or touched) and fades it out by
+itself. It is remembered in localStorage as seen when it is closed, used, or
+has timed out, so it does not come back on every page. It never changes the
+language on its own and never takes focus.
 {% endcomment %}
 {% if not language_chosen %}
 {% if LANGUAGE_CODE == 'en' %}
 <aside id="portfolio-lang-hint" class="lang-hint" lang="es" data-hint-language="es"
-    aria-label="Idioma" hidden>
-    <i class="fas fa-globe lang-hint__icon" aria-hidden="true"></i>
-    <span class="lang-hint__text">También disponible en español.</span>
+    role="status" aria-label="Idioma" hidden>
+    <span class="lang-hint__text">Disponible en español</span>
     <form method="post" action="{% url 'set_language' %}" class="lang-hint__form">
         {% csrf_token %}
         <input name="next" type="hidden" value="{{ request.get_full_path }}" />
         <input name="language" type="hidden" value="es" />
-        <button type="submit" class="lang-hint__action">Ver en español</button>
+        <button type="submit" class="lang-hint__action">Cambiar</button>
     </form>
     <button type="button" class="lang-hint__close" aria-label="Cerrar">&times;</button>
 </aside>
 {% else %}
 <aside id="portfolio-lang-hint" class="lang-hint" lang="en" data-hint-language="en"
-    aria-label="Language" hidden>
-    <i class="fas fa-globe lang-hint__icon" aria-hidden="true"></i>
-    <span class="lang-hint__text">Also available in English.</span>
+    role="status" aria-label="Language" hidden>
+    <span class="lang-hint__text">Also in English</span>
     <form method="post" action="{% url 'set_language' %}" class="lang-hint__form">
         {% csrf_token %}
         <input name="next" type="hidden" value="{{ request.get_full_path }}" />
         <input name="language" type="hidden" value="en" />
-        <button type="submit" class="lang-hint__action">View in English</button>
+        <button type="submit" class="lang-hint__action">Switch</button>
     </form>
     <button type="button" class="lang-hint__close" aria-label="Close">&times;</button>
 </aside>
 {% endif %}
 <style>
+    /* Dark on purpose: it reads the same over white and light-grey pages,
+       and it cannot be mistaken for page content. */
     .lang-hint {
         position: fixed;
-        left: 50%;
-        bottom: 20px;
-        transform: translateX(-50%);
-        z-index: 1100;
+        top: 0;
+        left: 0;
+        /* above page top bars (1000) and the mobile header */
+        z-index: 1200;
         display: flex;
         align-items: center;
-        gap: 12px;
-        max-width: calc(100vw - 32px);
-        padding: 10px 12px 10px 16px;
-        background: #ffffff;
-        color: #242424;
-        border: 1px solid #e5e5e5;
-        border-radius: 10px;
-        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+        gap: 4px;
+        padding: 2px 2px 2px 14px;
+        background: #242424;
+        color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
         font-family: 'Montserrat', sans-serif;
-        font-size: 14px;
-        line-height: 1.4;
+        font-size: 13px;
+        line-height: 1.3;
+        white-space: nowrap;
+        opacity: 0;
+        transform: translateY(-4px);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        /* set by the script: distance from the right edge to the caret */
+        --caret-right: 20px;
     }
 
     .lang-hint[hidden] {
         display: none;
     }
 
-    .lang-hint__icon {
-        color: #999;
-        font-size: 14px;
+    .lang-hint.is-visible {
+        opacity: 1;
+        transform: none;
+    }
+
+    /* The caret points up at the switcher */
+    .lang-hint::before {
+        content: "";
+        position: absolute;
+        top: -5px;
+        right: var(--caret-right);
+        width: 10px;
+        height: 10px;
+        background: #242424;
+        transform: rotate(45deg);
+        border-radius: 2px 0 0 0;
     }
 
     .lang-hint__form {
@@ -80,53 +104,52 @@ changes the language on its own.
     .lang-hint__action {
         background: none;
         border: none;
-        padding: 6px 4px;
+        /* tall enough to tap without making the popover big */
+        min-height: 32px;
+        padding: 0 8px;
         margin: 0;
-        color: #0085ff;
+        /* lighter than #0085ff so it passes contrast on the dark surface */
+        color: #66b8ff;
         font: inherit;
         font-weight: 600;
-        white-space: nowrap;
         cursor: pointer;
     }
 
     .lang-hint__action:hover {
-        color: #0066cc;
+        color: #99d0ff;
         text-decoration: underline;
     }
 
     .lang-hint__close {
+        position: relative;
         background: none;
         border: none;
-        /* 36px square: comfortable to tap on a phone */
-        width: 36px;
-        height: 36px;
-        margin: -4px -4px -4px 0;
-        color: #777;
-        font-size: 22px;
+        width: 32px;
+        height: 32px;
+        margin: 0;
+        padding: 0;
+        color: #bbbbbb;
+        font-size: 20px;
         line-height: 1;
-        border-radius: 50%;
+        border-radius: 6px;
         cursor: pointer;
     }
 
     .lang-hint__close:hover {
-        background: #f2f2f2;
-        color: #242424;
+        background: rgba(255, 255, 255, 0.12);
+        color: #ffffff;
     }
 
-    /* Phones: under the header, next to the switcher it points to, and
-       clear of the floating buttons some pages keep in the bottom corner */
-    @media (max-width: 575.98px) {
-        .lang-hint {
-            top: 68px;
-            bottom: auto;
-            left: 16px;
-            right: 16px;
-            transform: none;
-            max-width: none;
-        }
+    .lang-hint__action:focus-visible,
+    .lang-hint__close:focus-visible {
+        outline: 2px solid #66b8ff;
+        outline-offset: -2px;
+    }
 
-        .lang-hint__text {
-            flex: 1;
+    @media (prefers-reduced-motion: reduce) {
+        .lang-hint {
+            transition: none;
+            transform: none;
         }
     }
 
@@ -142,6 +165,10 @@ changes the language on its own.
         if (!hint) { return; }
 
         var STORAGE_KEY = 'portfolioLangHintSeen';
+        var SHOW_DELAY = 700;
+        var VISIBLE_FOR = 7500;
+        var GUTTER = 12;
+        var CARET_SIZE = 10;
 
         // Storage can be blocked (private windows): the hint still works,
         // it just cannot remember that it was closed.
@@ -168,12 +195,127 @@ changes the language on its own.
         var browserLanguage = preferred.toLowerCase().split('-')[0];
         if (browserLanguage !== hint.dataset.hintLanguage) { return; }
 
-        hint.hidden = false;
-        hint.querySelector('.lang-hint__form').addEventListener('submit', remember);
-        hint.querySelector('.lang-hint__close').addEventListener('click', function () {
+        // The id is repeated in the page and only one copy is displayed
+        // (the others are display:none and have no box).
+        function visibleSwitcher() {
+            var copies = document.querySelectorAll('#portfolio-lang-switcher');
+            for (var i = 0; i < copies.length; i++) {
+                var rect = copies[i].getBoundingClientRect();
+                if (copies[i].offsetParent !== null || (rect.width > 0 && rect.height > 0)) {
+                    if (rect.width > 0 && rect.height > 0) { return copies[i]; }
+                }
+            }
+            return null;
+        }
+
+        // Below the switcher, right-aligned to it, kept inside the viewport.
+        function place() {
+            var target = visibleSwitcher();
+            if (!target) { return false; }
+            var rect = target.getBoundingClientRect();
+            var width = hint.offsetWidth;
+            var viewport = document.documentElement.clientWidth;
+            var right = Math.min(rect.right, viewport - GUTTER);
+            var left = Math.max(GUTTER, right - width);
+            right = left + width;
+            // The caret points at the language the hint offers (the option
+            // that is a button), not at the middle of the whole switcher
+            var option = target.querySelector('button.portfolio-lang-option');
+            var optionRect = option ? option.getBoundingClientRect() : rect;
+            var centre = optionRect.left + optionRect.width / 2;
+            var caretRight = right - centre - CARET_SIZE / 2;
+            caretRight = Math.max(10, Math.min(width - 10 - CARET_SIZE, caretRight));
+            hint.style.left = left + 'px';
+            hint.style.top = (rect.bottom + 10) + 'px';
+            hint.style.setProperty('--caret-right', caretRight + 'px');
+            return true;
+        }
+
+        var showTimer = null;
+        var hideTimer = null;
+        var deadline = 0;
+        var paused = false;
+        var shown = false;
+
+        function finish() {
+            clearTimeout(hideTimer);
+            shown = false;
+            hint.classList.remove('is-visible');
+            // Let the fade finish before taking it out of the layout
+            setTimeout(function () { hint.hidden = true; }, 300);
+        }
+
+        function close() {
             remember();
-            hint.hidden = true;
+            finish();
+        }
+
+        function timeOut() {
+            remember();
+            finish();
+        }
+
+        function startCountdown(ms) {
+            clearTimeout(hideTimer);
+            deadline = Date.now() + ms;
+            hideTimer = setTimeout(timeOut, ms);
+        }
+
+        function pause() {
+            if (!shown || paused) { return; }
+            paused = true;
+            clearTimeout(hideTimer);
+            deadline = deadline - Date.now();
+        }
+
+        function resume() {
+            if (!shown || !paused) { return; }
+            if (hint.matches(':hover') || hint.contains(document.activeElement)) { return; }
+            paused = false;
+            startCountdown(Math.max(deadline, 2000));
+        }
+
+        function show() {
+            hint.hidden = false;
+            if (!place()) {
+                hint.hidden = true;
+                return;
+            }
+            shown = true;
+            // Next frame so the transition runs from the hidden state
+            requestAnimationFrame(function () { hint.classList.add('is-visible'); });
+            startCountdown(VISIBLE_FOR);
+        }
+
+        hint.querySelector('.lang-hint__form').addEventListener('submit', remember);
+        hint.querySelector('.lang-hint__close').addEventListener('click', close);
+        hint.addEventListener('mouseenter', pause);
+        hint.addEventListener('mouseleave', resume);
+        hint.addEventListener('focusin', pause);
+        hint.addEventListener('focusout', function () {
+            setTimeout(resume, 0);
         });
+        hint.addEventListener('touchstart', pause, { passive: true });
+        hint.addEventListener('touchend', function () {
+            // Give a tap on the action time to land before the countdown restarts
+            setTimeout(resume, 1500);
+        }, { passive: true });
+        hint.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') { close(); }
+        });
+
+        function reposition() {
+            if (shown && !place()) { finish(); }
+        }
+        window.addEventListener('resize', reposition);
+        window.addEventListener('orientationchange', reposition);
+        window.addEventListener('scroll', reposition, { passive: true });
+
+        function schedule() {
+            showTimer = setTimeout(show, SHOW_DELAY);
+        }
+        if (document.readyState === 'complete') { schedule(); }
+        else { window.addEventListener('load', schedule); }
     })();
 </script>
 {% endif %}

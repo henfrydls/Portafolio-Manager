@@ -31,14 +31,14 @@ class LanguageHintTest(BasePublicPagesTest):
         hint = self.hint('/')
         self.assertIn('data-hint-language="es"', hint)
         self.assertIn('lang="es"', hint)
-        self.assertIn('También disponible en español.', hint)
+        self.assertIn('Disponible en español', hint)
         self.assertIn('name="language" type="hidden" value="es"', hint)
 
     def test_spanish_page_offers_english_in_english(self):
         hint = self.hint('/es/')
         self.assertIn('data-hint-language="en"', hint)
         self.assertIn('lang="en"', hint)
-        self.assertIn('Also available in English.', hint)
+        self.assertIn('Also in English', hint)
         self.assertIn('name="language" type="hidden" value="en"', hint)
 
     def test_hint_is_hidden_until_the_browser_decides(self):
