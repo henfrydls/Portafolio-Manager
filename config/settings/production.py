@@ -39,10 +39,15 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 # Use EMAIL_HOST_USER as DEFAULT_FROM_EMAIL if not specified (simplifies configuration)
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or f'noreply@{os.environ.get("PRODUCTION_DOMAIN", "yourdomain.com")}')
 
-# Static files configuration for production
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-WHITENOISE_USE_FINDERS = True
-WHITENOISE_AUTOREFRESH = True
+# Static files configuration for production: hashed file names (so a deploy
+# never leaves browsers with stale CSS or JS) served compressed by WhiteNoise
+# from STATIC_ROOT. `collectstatic` must run before the server starts.
+STORAGES = {
+    **STORAGES,
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
 
 # Security settings for production
 SECURE_HSTS_SECONDS = 31536000  # 1 year
