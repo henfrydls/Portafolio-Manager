@@ -2,6 +2,25 @@
 
 from django.db import migrations
 
+from portfolio.migration_utils import add_column_if_missing, drop_column_if_exists
+
+# Legacy columns whose content lives in the translation table. PostgreSQL
+# kept them; the SQLite rebuild in 0029 already dropped them.
+LEGACY_COLUMNS = (
+    ('portfolio_category', 'name', 'varchar(100)'),
+    ('portfolio_category', 'description', 'text'),
+)
+
+
+def drop_legacy_columns(apps, schema_editor):
+    for table, column, _sql_type in LEGACY_COLUMNS:
+        drop_column_if_exists(schema_editor, table, column)
+
+
+def restore_legacy_columns(apps, schema_editor):
+    for table, column, sql_type in LEGACY_COLUMNS:
+        add_column_if_missing(schema_editor, table, column, sql_type)
+
 
 class Migration(migrations.Migration):
 
@@ -10,12 +29,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
-            sql="ALTER TABLE portfolio_category DROP COLUMN IF EXISTS name;",
-            reverse_sql="ALTER TABLE portfolio_category ADD COLUMN name VARCHAR(100) NULL;"
-        ),
-        migrations.RunSQL(
-            sql="ALTER TABLE portfolio_category DROP COLUMN IF EXISTS description;",
-            reverse_sql="ALTER TABLE portfolio_category ADD COLUMN description TEXT NULL;"
-        ),
+        # Was RunSQL with DROP COLUMN IF EXISTS, which SQLite does not accept
+        migrations.RunPython(drop_legacy_columns, restore_legacy_columns),
     ]

@@ -3,6 +3,8 @@
 from django.db import migrations
 from django.utils.text import slugify
 
+from portfolio.migration_utils import insert_row
+
 
 PROJECT_TYPES = [
     {
@@ -145,12 +147,18 @@ def create_default_project_types(apps, schema_editor):
         if row:
             project_type_id = row[0]
         else:
-            # Use raw SQL to insert since PostgreSQL still has legacy 'name' and 'description' columns
-            cursor.execute(
-                "INSERT INTO portfolio_projecttype (slug, is_active, \"order\", name, description, created_at, updated_at) "
-                "VALUES (%s, %s, %s, %s, %s, NOW(), NOW()) RETURNING id",
-                [slug, True, entry["order"], entry["en"]["name"], entry["en"]["description"]]
+            # Raw SQL because PostgreSQL still has legacy 'name' and
+            # 'description' columns; SQLite dropped them in 0024.
+            insert_row(
+                connection, "portfolio_projecttype",
+                {"slug": slug, "is_active": True, "order": entry["order"]},
+                legacy_values={
+                    "name": entry["en"]["name"],
+                    "description": entry["en"]["description"],
+                },
+                timestamps=True,
             )
+            cursor.execute("SELECT id FROM portfolio_projecttype WHERE slug = %s", [slug])
             project_type_id = cursor.fetchone()[0]
 
         # Create or update English translation

@@ -264,17 +264,26 @@ class Profile(TranslatableModel):
             default_email = getattr(settings, 'PROFILE_EMAIL', getattr(settings, 'DEFAULT_FROM_EMAIL', 'contact@example.com'))
             default_bio = getattr(settings, 'PROFILE_BIO', 'Update your biography to introduce yourself.')
             with transaction.atomic():
-                # Use raw SQL to handle legacy columns (name, title, bio, location) in PostgreSQL
+                # Raw SQL because PostgreSQL still has the legacy NOT NULL
+                # columns (name, title, bio, location) that the model no
+                # longer knows about; SQLite does not have them.
                 from django.db import connection
-                cursor = connection.cursor()
-                cursor.execute(
-                    "INSERT INTO portfolio_profile (id, email, phone, linkedin_url, github_url, medium_url, "
-                    "profile_image, resume_pdf, resume_pdf_es, show_web_resume, created_at, updated_at, "
-                    "name, title, bio, location) "
-                    "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW(), %s, %s, %s, %s)",
-                    [1, default_email, '', '', '', '', '', '', '', True,
-                     default_name, default_title, default_bio, default_location]
+                from .migration_utils import insert_row
+                insert_row(
+                    connection, 'portfolio_profile',
+                    {
+                        'id': 1, 'email': default_email, 'phone': '',
+                        'linkedin_url': '', 'github_url': '', 'medium_url': '',
+                        'profile_image': '', 'resume_pdf': '', 'resume_pdf_es': '',
+                        'show_web_resume': True,
+                    },
+                    legacy_values={
+                        'name': default_name, 'title': default_title,
+                        'bio': default_bio, 'location': default_location,
+                    },
+                    timestamps=True,
                 )
+                cursor = connection.cursor()
 
                 # Create translations for name, title, bio, location
                 cursor.execute(
