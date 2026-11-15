@@ -435,6 +435,12 @@
     {% include 'portfolio/includes/lang_switcher.html' with variant='floating' %}
     {% endblock %}
 
+    <!-- Hint for visitors whose browser prefers the other language.
+         The dashboard overrides this block with nothing. -->
+    {% block lang_hint %}
+    {% include 'portfolio/includes/lang_hint.html' %}
+    {% endblock %}
+
     <!-- Navigation -->
     <nav class="top-nav">
         <div class="nav-container">
