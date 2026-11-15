@@ -100,7 +100,10 @@ class QueryOptimizer:
         queryset = BlogPost.objects.select_related('category')
         
         # Apply filters
-        if status != 'all':
+        if status == 'published':
+            # Published means visible: a post scheduled for later is not yet
+            queryset = queryset.filter(BlogPost.live_q())
+        elif status != 'all':
             queryset = queryset.filter(status=status)
         
         if featured_only:

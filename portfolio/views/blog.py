@@ -1,3 +1,4 @@
+import re
 import os
 import uuid
 import json
@@ -32,22 +33,26 @@ class BlogListView(ListView):
 
     def get_queryset(self):
         current_language = translation.get_language() or settings.LANGUAGE_CODE
-        queryset = BlogPost.objects.language(current_language).filter(status='published').order_by('-publish_date')
+        queryset = BlogPost.objects.language(current_language).filter(BlogPost.live_q()).order_by('-publish_date')
 
         category_slug = self.request.GET.get('category')
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)
 
-        tag = self.request.GET.get('tag')
+        tag = (self.request.GET.get('tag') or '').strip()
         if tag:
-            queryset = queryset.filter(tags__icontains=tag)
+            # Tags are a comma-separated string: match the whole tag, so
+            # "ai" does not also bring "email" or "maintain".
+            queryset = queryset.filter(tags__iregex=rf'(^|,)\s*{re.escape(tag)}\s*(,|$)')
 
         search = self.request.GET.get('search')
         if search:
+            # Searches every translation; distinct() keeps a post that
+            # matches in both languages from being listed twice.
             queryset = queryset.filter(
                 Q(translations__title__icontains=search) |
                 Q(translations__content__icontains=search)
-            )
+            ).distinct()
 
         return queryset
     
@@ -71,7 +76,7 @@ class BlogListView(ListView):
         )
 
         # Obtener todos los tags únicos
-        all_posts = BlogPost.objects.filter(status='published')
+        all_posts = BlogPost.objects.filter(BlogPost.live_q())
         all_tags = []
         for post in all_posts:
             all_tags.extend(post.get_tags_list())
@@ -84,7 +89,7 @@ class BlogListView(ListView):
 
         # Posts destacados para sidebar
         context['featured_posts'] = BlogPost.objects.filter(
-            status='published',
+            BlogPost.live_q(),
             featured=True
         ).order_by('-publish_date')[:5]
 
@@ -110,7 +115,7 @@ class BlogDetailView(DetailView):
 
     def get_queryset(self):
         current_language = translation.get_language() or settings.LANGUAGE_CODE
-        return BlogPost.objects.language(current_language).filter(status='published')
+        return BlogPost.objects.language(current_language).filter(BlogPost.live_q())
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
