@@ -52,7 +52,8 @@ def get_analytics_summary():
     from ..models import PageVisit, BlogPost, Contact, Project
     
     now = timezone.now()
-    today = now.date()
+    # Local date: timestamp__date is evaluated in TIME_ZONE
+    today = timezone.localdate()
     week_ago = now - timedelta(days=7)
     month_ago = now - timedelta(days=30)
 
