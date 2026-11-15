@@ -125,7 +125,9 @@ class AdminDashboardView(AdminRequiredMixin, TemplateView):
         ]
         
         # Visitas de hoy
-        today = timezone.now().date()
+        # The local date: timestamp__date is evaluated in TIME_ZONE, and the
+        # UTC date is already tomorrow during the evening west of Greenwich.
+        today = timezone.localdate()
         context['today_visits'] = PageVisit.objects.filter(
             timestamp__date=today
         ).count()
@@ -165,7 +167,8 @@ class AnalyticsView(AdminRequiredMixin, TemplateView):
         
         # Definir períodos de tiempo
         now = timezone.now()
-        today = now.date()
+        # Local date, to match timestamp__date and TruncDate (see above)
+        today = timezone.localdate()
         yesterday = today - timedelta(days=1)
         week_ago = now - timedelta(days=7)
         month_ago = now - timedelta(days=30)
@@ -208,7 +211,7 @@ class AnalyticsView(AdminRequiredMixin, TemplateView):
         visit_chart_data = []
         
         # Crear lista completa de días (incluyendo días sin visitas)
-        current_date = month_ago.date()
+        current_date = timezone.localtime(month_ago).date()
         daily_visits_dict = {item['day']: item['visits'] for item in daily_visits}
         
         while current_date <= today:
