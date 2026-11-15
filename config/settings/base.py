@@ -247,10 +247,6 @@ EMAIL_TIMEOUT = 30  # seconds
 TRANSLATION_PROVIDER = os.environ.get('TRANSLATION_PROVIDER', 'libretranslate')
 TRANSLATION_API_URL = os.environ.get('TRANSLATION_API_URL', 'http://libretranslate:5000')
 TRANSLATION_API_KEY = os.environ.get('TRANSLATION_API_KEY', '')
-# Page Visit Tracking Configuration
-PAGE_VISIT_CLEANUP_FREQUENCY = 1000  # Ejecutar limpieza cada 1000 requests
-PAGE_VISIT_RETENTION_DAYS = 180      # Mantener visitas de los últimos 6 meses
-
 # SEO Configuration
 SITE_NAME = 'Portfolio Profesional'
 BASE_URL = 'http://localhost:8000'  # Will be overridden in production

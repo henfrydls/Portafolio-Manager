@@ -84,28 +84,6 @@ ALLOWED_HOSTS = ['*']
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False
 
-# Disable celery in tests
-CELERY_TASK_ALWAYS_EAGER = True
-CELERY_TASK_EAGER_PROPAGATES = True
-
 # MIDDLEWARE is deliberately not overridden: tests run with the same stack as
 # production. A trimmed list let the language bug in #115 ship with a green
 # suite, because the middleware that caused it never ran under test.
-
-# Coverage settings
-COVERAGE_MODULE_EXCLUDES = [
-    'tests$',
-    'settings$',
-    'urls$',
-    'locale$',
-    '__pycache__',
-    'migrations',
-    'fixtures',
-]
-
-# Pytest settings
-PYTEST_ADDOPTS = [
-    '--verbose',
-    '--strict-markers',
-    '--tb=short',
-]
