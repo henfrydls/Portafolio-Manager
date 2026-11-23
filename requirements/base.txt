@@ -13,4 +13,4 @@ dj-database-url==3.1.2
 psycopg2-binary==2.9.13
 django-redis==6.0.0
 gunicorn==23.0.0
-markdownify==1.2.3
+markdownify==1.2.4
